@@ -1,0 +1,19 @@
+[toolchain]
+
+[features]
+seeds = false
+skip-lint = false
+
+[programs.localnet]
+holder_metadata = "AhGkwe5hYZEuKkgxTZn68SmwKS599CqvDFxYDsQw5GJq"
+ai_aliens = "YJSJjSkjboK5TtWYgMHKTQLCi38NiSkabvRa8iCV9g3"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = "/Users/jackson/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
