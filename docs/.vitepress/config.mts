@@ -21,7 +21,7 @@ export default defineConfig({
           },
           {
             text: "Background",
-            link: "/pages/token-2022",
+            link: "/pages/background",
           },
           {
             text: "Field Authority Interface",
@@ -29,9 +29,9 @@ export default defineConfig({
           },
           {
             text: "Holder Metadata Program",
-            link: "/pages/holder-metadata",
+            link: "/pages/holder-metadata-program",
           },
-          { text: "Example: AI Aliens", link: "/pages/ai-aliens" },
+          { text: "Example: AI Aliens", link: "/pages/example-ai-aliens" },
         ],
       },
       {

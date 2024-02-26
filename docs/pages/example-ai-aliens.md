@@ -13,13 +13,13 @@
 
 We'll now show how all these pieces work together with our PFP collection, **AI Aliens**. On <a href="https://www.ai-aliens.xyz/" target="blank">www.ai-alienx.xyz</a>, users can mint aliens and update their metadata giving them nicknames. Go ahead and give it a try if you'd like to reward Garden Labs for this content and be whitelisted for our upcoming projects!
 
-AI Aliens does three things: 1) it forks the <a href="https://github.com/solana-labs/solana-program-library/tree/master/token-metadata/example" target="blank">example metadata program</a> from Solana's Program Library, 2) implements the Field Authority Interface, and 3) assigns the Holder Metadata Program as a field authority for `nickname`.
+AI Aliens does three things: it 1) forks the <a href="https://github.com/solana-labs/solana-program-library/tree/master/token-metadata/example" target="blank">example metadata program</a> from Solana's Program Library, 2) implements the Field Authority Interface, and 3) assigns the Holder Metadata Program as a field authority for `nickname`.
 
 Here's client code example for updating an alien's nickname:
 
 ```
 async function updateNickname(): Promise<void> {
-    // Grab values ...
+    // Grab accounts ...
 
     await program.methods
         .updateHolderField(param, val)
@@ -34,8 +34,12 @@ async function updateNickname(): Promise<void> {
         })
         .rpc();
 
-    // Check emmitted metadata ...
+    // Check new emmitted metadata ...
 }
 ```
 
-You can see we're actually just making a call to the Holder Metadata Program – no code was needed from AI Aliens. If you're developing an NFT collection, you can use these same programs and add holder-editable fields with very little work!
+<div style="text-align: right">
+    <a href="https://github.com/garden-labs/holder-metadata/blob/2293bb41989b0d69e127df51ee540949b6f6d259/tests/ai-aliens.ts#L259" target="blank">source code</a>
+</div>
+
+As you can see we're actually just making a call to the Holder Metadata Program – no code was needed from AI Aliens. If you're developing an NFT collection, you can use these same programs and add holder-editable fields with very little work!
