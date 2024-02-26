@@ -10,7 +10,7 @@
 
 Previously, Solana NFTs only operated through Metaplex's on-chain programs. This allowed Solana's NFT ecosystem to blossom faster than anyone imagined. But in the long-run, the key primative of web3 cannot exist in a single program. NFTs will underpin domain names, user profiles, social graphs, digital real estate, and more. NFT projects will have different needs, and developers need to be able to **permissionlessly innovate** on features.
 
-In CS101, you learn that when different programs need to operate together but maintain separate features and implementations, you build an _interface_. Enter the Token Metadata Interface – Solana's interface for NFTs. The interface describes a set of instructions and accounts that your metadata program needs to implement:
+In CS101, you learn that when different programs need to operate together but maintain separate features and implementations, you build an _interface_. Enter the Token Metadata Interface – Solana's new interface for NFTs shipping with Token-2022. The interface describes a set of instructions and accounts that your metadata program needs to implement:
 
 ```
 pub fn initialize(
