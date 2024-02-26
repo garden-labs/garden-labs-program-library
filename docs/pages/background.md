@@ -1,6 +1,6 @@
 # Background
 
-### Token2022
+### Token-2022
 
 <a href="https://spl.solana.com/token-2022" target="blank">Token-2022</a> is the next generation of Solana's SPL token (similar to Ethereum's ERC-20 token). Notably, it natively supports a vast array of new functionality due to its **Extensions** framework, such as confidential transfers, soulbound tokens, and **new NFT programs** via the <a href="https://forum.solana.com/t/srfc-00017-token-metadata-interface/283" target="blank">Token Metadata Interface</a>.
 
