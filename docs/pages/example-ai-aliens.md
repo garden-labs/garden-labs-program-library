@@ -5,10 +5,6 @@
         <img src="/13.png" width="50%" />
         <img src="/76.png" width="50%" />
     </div>
-    <!-- <div style="display: flex;">
-        <img src="/67.png" width="50%" />
-        <img src="/37.png" width="50%" />
-    </div> -->
 </div>
 
 We'll now show how all these pieces work together with our PFP collection, **AI Aliens**. On <a href="https://www.ai-aliens.xyz/" target="blank">www.ai-alienx.xyz</a>, users can mint aliens and update their metadata giving them nicknames. Go ahead and give it a try if you'd like to reward Garden Labs for this content and be whitelisted for our upcoming projects!
