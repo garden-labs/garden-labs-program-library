@@ -31,20 +31,11 @@ pub struct UpdateFieldWithFieldAuthority {
 }
 
 /// TODO: Doc
-#[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize)]
-pub struct RemoveFieldAuthority {
-    /// TODO: Doc
-    pub field: Field,
-}
-
-/// TODO: Doc
 pub enum FieldAuthorityInstruction {
     /// TODO: Doc, accounts it expects
     AddFieldAuthority(AddFieldAuthority),
     /// TODO: Doc, accounts it expects
     UpdateFieldWithFieldAuthority(UpdateFieldWithFieldAuthority),
-    /// TODO: Doc, accounts it expects
-    RemoveFieldAuthority(RemoveFieldAuthority),
 }
 
 impl FieldAuthorityInstruction {
@@ -62,10 +53,6 @@ impl FieldAuthorityInstruction {
                 let data = UpdateFieldWithFieldAuthority::try_from_slice(rest)?;
                 Self::UpdateFieldWithFieldAuthority(data)
             }
-            2 => {
-                let data = RemoveFieldAuthority::try_from_slice(rest)?;
-                Self::RemoveFieldAuthority(data)
-            }
             _ => return Err(ProgramError::InvalidInstructionData),
         })
     }
@@ -82,15 +69,12 @@ impl FieldAuthorityInstruction {
                 buf.extend_from_slice(&[1]);
                 buf.append(&mut data.try_to_vec().unwrap());
             }
-            Self::RemoveFieldAuthority(data) => {
-                buf.extend_from_slice(&[2]);
-                buf.append(&mut data.try_to_vec().unwrap());
-            }
         };
         buf
     }
 }
 
+// TODO: Change to set_field_authority
 /// Creates `AddFieldAuthority` instruction
 pub fn add_field_authority(
     program_id: &Pubkey,

@@ -7,7 +7,7 @@ The Token Metadata Interface only has a single update authority. If you want gra
 The Field Authority Interface enables metadata programs to grant write access to public keys for specific fields only. These **field authorities** can be basic user keypairs or PDAs of programs that implement their own unique logic. Here are the new instructions:
 
 ```
-pub fn add_field_authority(
+pub fn set_field_authority(
     program_id: &Pubkey,
     payer: &Pubkey,
     metadata: &Pubkey,
