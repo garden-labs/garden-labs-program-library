@@ -23,6 +23,16 @@ pub fn update_field_with_field_authority(
     field: Field,
     value: String,
 ) -> Instruction { ... }
+
+pub fn remove_field_authority(
+    program_id: &Pubkey,
+    payer: &Pubkey,
+    metadata: &Pubkey,
+    update_authority: &Pubkey,
+    field: Field,
+    field_authority: &Pubkey,
+) -> Instruction { ... }
+
 ```
 
 <div style="text-align: right">

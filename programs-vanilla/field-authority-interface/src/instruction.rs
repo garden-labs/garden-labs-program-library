@@ -160,3 +160,14 @@ pub fn update_field_with_field_authority(
         data: data.pack(),
     }
 }
+
+// TODO: Implement remove field authority instruction builder
+// pub fn remove_field_authority(
+//     program_id: &Pubkey,
+//     payer: &Pubkey,
+//     metadata: &Pubkey,
+//     update_authority: &Pubkey,
+//     field: Field,
+//     field_authority: &Pubkey,
+// ) -> Instruction {
+// }
