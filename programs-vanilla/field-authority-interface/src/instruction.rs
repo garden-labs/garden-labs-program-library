@@ -161,13 +161,31 @@ pub fn update_field_with_field_authority(
     }
 }
 
-// TODO: Implement remove field authority instruction builder
-// pub fn remove_field_authority(
-//     program_id: &Pubkey,
-//     payer: &Pubkey,
-//     metadata: &Pubkey,
-//     update_authority: &Pubkey,
-//     field: Field,
-//     field_authority: &Pubkey,
-// ) -> Instruction {
-// }
+/// Creates `RemoveFieldAuthority` instruction
+pub fn remove_field_authority(
+    program_id: &Pubkey,
+    metadata: &Pubkey,
+    update_authority: &Pubkey,
+    field: Field,
+) -> Instruction {
+    // Calculate PDA
+    let field_seed_str = field_to_seed_str(field.clone());
+    let field_pda_seeds = [
+        FIELD_AUTHORITY_PDA_SEED.as_bytes(),
+        field_seed_str.as_bytes(),
+        metadata.as_ref(),
+    ];
+    let (field_pda, _bump) = Pubkey::find_program_address(&field_pda_seeds, program_id);
+
+    let data = FieldAuthorityInstruction::RemoveFieldAuthority(RemoveFieldAuthority { field });
+
+    Instruction {
+        program_id: *program_id,
+        accounts: vec![
+            AccountMeta::new(*metadata, false),
+            AccountMeta::new_readonly(*update_authority, true),
+            AccountMeta::new(field_pda, false),
+        ],
+        data: data.pack(),
+    }
+}
