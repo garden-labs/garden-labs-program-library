@@ -12,43 +12,33 @@ use {
     spl_token_metadata_interface::state::Field,
 };
 
-/// TODO: Doc
 #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize)]
 pub struct AddFieldAuthority {
-    /// TODO: Doc
     pub field: Field,
-    /// TODO: Doc
     pub authority: Pubkey,
 }
 
-/// TODO: Doc
 #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize)]
 pub struct UpdateFieldWithFieldAuthority {
-    /// TODO: Doc
     pub field: Field,
-    /// TODO: Doc
     pub value: String,
 }
 
-/// TODO: Doc
 #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize)]
 pub struct RemoveFieldAuthority {
-    /// TODO: Doc
     pub field: Field,
 }
 
-/// TODO: Doc
 pub enum FieldAuthorityInstruction {
-    /// TODO: Doc, accounts it expects
+    // TODO: Add accounts it expects
     AddFieldAuthority(AddFieldAuthority),
-    /// TODO: Doc, accounts it expects
+    // TODO: Add accounts it expects
     UpdateFieldWithFieldAuthority(UpdateFieldWithFieldAuthority),
-    /// TODO: Doc, accounts it expects
+    // TODO: Add accounts it expects
     RemoveFieldAuthority(RemoveFieldAuthority),
 }
 
 impl FieldAuthorityInstruction {
-    /// TODO: Doc
     pub fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
         let (discriminator, rest) = input
             .split_first()
@@ -70,7 +60,6 @@ impl FieldAuthorityInstruction {
         })
     }
 
-    /// TODO: Doc
     pub fn pack(&self) -> Vec<u8> {
         let mut buf = vec![];
         match self {

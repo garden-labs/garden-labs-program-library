@@ -1,8 +1,6 @@
-//! TODO: Doc
-
 use spl_token_metadata_interface::state::Field;
 
-/// TODO: Doc
+/// Convert a field to a string to use as a seed in the field PDA
 pub fn field_to_seed_str(field: Field) -> String {
     match field {
         Field::Name => "name".to_string(),
