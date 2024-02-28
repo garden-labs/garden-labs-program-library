@@ -1,5 +1,3 @@
-//! TODO: Doc
-
 use {
     crate::{field_to_seed_str, FIELD_AUTHORITY_PDA_SEED},
     borsh::{BorshDeserialize, BorshSerialize},
