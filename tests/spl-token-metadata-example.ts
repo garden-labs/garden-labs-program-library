@@ -5,6 +5,7 @@ import {
   Keypair,
   Transaction,
   sendAndConfirmTransaction,
+  SendTransactionError,
 } from "@solana/web3.js";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 import * as borsh from "@coral-xyz/borsh";
@@ -26,7 +27,6 @@ import {
 
 describe("Token Metadata Example Program", () => {
   const mintKeypair = Keypair.generate();
-  let tokenAddress: PublicKey; // Initialized in setup
   const metadataKeypair = Keypair.generate();
 
   let metadataVals: TokenMetadata = {
@@ -42,7 +42,7 @@ describe("Token Metadata Example Program", () => {
   const fieldAuthority = Keypair.generate();
 
   it("Setup mint, metadata, and token", async () => {
-    tokenAddress = await setupMintMetadataToken(
+    await setupMintMetadataToken(
       mintKeypair,
       metadataKeypair,
       metadataVals,
@@ -57,11 +57,14 @@ describe("Token Metadata Example Program", () => {
     assert.deepStrictEqual(emittedMetadata, metadataVals);
   });
 
-  async function addFieldAuthorityTest(field: Field | string): Promise<void> {
+  async function addFieldAuthorityTest(
+    field: Field | string,
+    updateAuthority: Keypair = ANCHOR_WALLET_KEYPAIR
+  ): Promise<void> {
     const ix = createAddFieldAuthorityIx(
       ANCHOR_WALLET_KEYPAIR.publicKey,
       metadataKeypair.publicKey,
-      ANCHOR_WALLET_KEYPAIR.publicKey,
+      updateAuthority.publicKey,
       fieldAuthority.publicKey,
       field,
       EXAMPLE_PROGRAM_ID
@@ -69,7 +72,10 @@ describe("Token Metadata Example Program", () => {
 
     const tx = new Transaction().add(ix);
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    await sendAndConfirmTransaction(CONNECTION, tx, [
+      ANCHOR_WALLET_KEYPAIR,
+      updateAuthority,
+    ]);
 
     // Check created PDA
     const [fieldPda] = PublicKey.findProgramAddressSync(
@@ -93,11 +99,12 @@ describe("Token Metadata Example Program", () => {
 
   async function updateFieldWithFieldAuthorityTest(
     field: Field | string,
-    val: string
+    val: string,
+    fa: Keypair = fieldAuthority
   ): Promise<void> {
     const ix = createUpdateFieldWithFieldAuthorityIx(
       metadataKeypair.publicKey,
-      fieldAuthority.publicKey,
+      fa.publicKey,
       field,
       val,
       EXAMPLE_PROGRAM_ID
@@ -107,7 +114,7 @@ describe("Token Metadata Example Program", () => {
 
     await sendAndConfirmTransaction(CONNECTION, tx, [
       ANCHOR_WALLET_KEYPAIR,
-      fieldAuthority,
+      fa,
     ]);
 
     // Check emmitted metadata
@@ -156,8 +163,13 @@ describe("Token Metadata Example Program", () => {
   });
 
   it("Add field authority fails with existing field authority", async () => {
-    assert.rejects(async () => {
-      await addFieldAuthorityTest(Field.Name);
+    assert(async () => {
+      try {
+        await addFieldAuthorityTest(Field.Name);
+        throw new Error("Should have thrown");
+      } catch (e) {
+        assert(e instanceof SendTransactionError);
+      }
     });
   });
 
@@ -165,5 +177,29 @@ describe("Token Metadata Example Program", () => {
     await addFieldAuthorityTest("additional field key");
   });
 
-  // TODO: Test with wrong authority
+  it("Add field authority with wrong update authority fails", async () => {
+    assert(async () => {
+      try {
+        await addFieldAuthorityTest(Field.Symbol, Keypair.generate());
+        throw new Error("Should have thrown");
+      } catch (e) {
+        assert(e instanceof SendTransactionError);
+      }
+    });
+  });
+
+  it("Update field fails with wrong field authority", async () => {
+    assert(async () => {
+      try {
+        await updateFieldWithFieldAuthorityTest(
+          Field.Symbol,
+          "NEWSYMBOL",
+          Keypair.generate()
+        );
+        throw new Error("Should have thrown");
+      } catch (e) {
+        assert(e instanceof SendTransactionError);
+      }
+    });
+  });
 });

@@ -1,6 +1,11 @@
 import assert from "assert";
 
-import { Keypair, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import {
+  Keypair,
+  PublicKey,
+  LAMPORTS_PER_SOL,
+  SendTransactionError,
+} from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import {
   getAssociatedTokenAddress,
@@ -290,8 +295,19 @@ describe("AI Aliens Program", () => {
     const index = 5;
     const { mintKeypair, metadataKeypair } = await createNft(index);
     await createToken(mintKeypair);
-    assert.rejects(async () => {
-      await updateNickname(mintKeypair, metadataKeypair, randomStr(31), index);
+
+    assert(async () => {
+      try {
+        await updateNickname(
+          mintKeypair,
+          metadataKeypair,
+          randomStr(31),
+          index
+        );
+        throw new Error("Should have thrown");
+      } catch (e) {
+        assert(e instanceof SendTransactionError);
+      }
     });
   });
 });
