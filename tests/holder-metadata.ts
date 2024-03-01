@@ -131,4 +131,8 @@ describe("Holder Metadata Program", () => {
     // Update if succeeded
     metadataVals = vals;
   });
+
+  // TODO: Update name with non-holder fails
+
+  // TODO: Update name with wrong token fails
 });
