@@ -5,7 +5,7 @@ use crate::instructions::*;
 
 use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
 use anchor_spl::token_interface::{mint_to, MintTo};
-use holder_metadata::HOLDER_METADATA_PDA_SEED;
+use holder_metadata::{state::AnchorField, HOLDER_METADATA_PDA_SEED};
 use spl_token_2022::{extension::metadata_pointer, instruction::initialize_mint2};
 
 pub fn handle_update_state(
@@ -145,6 +145,29 @@ pub fn handle_create_token(ctx: Context<CreateToken>) -> Result<()> {
     let signer_seeds = &[&ai_aliens_pda_seeds[..]];
     let cpi_ctx = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
     mint_to(cpi_ctx, 1)?;
+
+    Ok(())
+}
+
+pub fn handle_update_field(
+    ctx: Context<UpdateField>,
+    field: AnchorField,
+    val: String,
+) -> Result<()> {
+    let update_ix = spl_token_metadata_interface::instruction::update_field(
+        ctx.accounts.metadata_program.key,
+        &ctx.accounts.metadata.key(),
+        &ctx.accounts.ai_aliens_pda.key(),
+        field.into(),
+        val,
+    );
+    let update_accounts = [
+        ctx.accounts.metadata.to_account_info(),
+        ctx.accounts.ai_aliens_pda.to_account_info(),
+    ];
+    let ai_aliens_pda_seeds = [AI_ALIENS_PDA_SEED.as_bytes(), &[ctx.bumps.ai_aliens_pda]];
+    let ai_aliens_only_signer_seeds = [&ai_aliens_pda_seeds[..]];
+    invoke_signed(&update_ix, &update_accounts, &ai_aliens_only_signer_seeds)?;
 
     Ok(())
 }

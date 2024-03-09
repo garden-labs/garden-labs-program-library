@@ -7,7 +7,11 @@ import {
   sendAndConfirmTransaction,
   SendTransactionError,
 } from "@solana/web3.js";
-import { TokenMetadata, Field } from "@solana/spl-token-metadata";
+import {
+  TokenMetadata,
+  Field,
+  createUpdateFieldInstruction,
+} from "@solana/spl-token-metadata";
 import * as borsh from "@coral-xyz/borsh";
 
 import { ANCHOR_WALLET_KEYPAIR, EXAMPLE_PROGRAM_ID } from "../util/constants";
@@ -92,6 +96,33 @@ describe("Token Metadata Example Program", () => {
     const { authority } = fieldAuthoritySchema.decode(fieldPdaInfo.data);
     assert(fieldAuthority.publicKey.equals(authority));
   }
+
+  it("Update field with update authority (regular)", async () => {
+    const val = "new name";
+
+    const ix = createUpdateFieldInstruction({
+      programId: EXAMPLE_PROGRAM_ID,
+      metadata: metadataKeypair.publicKey,
+      updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
+      field: Field.Name,
+      value: val,
+    });
+
+    const tx = new Transaction().add(ix);
+
+    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+
+    // Check emmitted metadata
+    const vals: TokenMetadata = { ...metadataVals, name: val };
+    const emittedMetadata = await getEmittedMetadata(
+      EXAMPLE_PROGRAM_ID,
+      metadataKeypair.publicKey
+    );
+    assert.deepStrictEqual(emittedMetadata, vals);
+
+    // Update if succeeded
+    metadataVals = vals;
+  });
 
   it("Add field authority", async () => {
     await addFieldAuthorityTest(Field.Name);

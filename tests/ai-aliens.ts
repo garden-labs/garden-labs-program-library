@@ -13,7 +13,7 @@ import {
   getMint,
   getMetadataPointerState,
 } from "@solana/spl-token";
-import { TokenMetadata } from "@solana/spl-token-metadata";
+import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 
 import {
   ensureExampleProgramDeployed,
@@ -309,5 +309,34 @@ describe("AI Aliens Program", () => {
         assert(e instanceof SendTransactionError);
       }
     });
+  });
+
+  it("Update field with creator", async () => {
+    const index = 6;
+    const { mintKeypair, metadataKeypair } = await createNft(index);
+
+    const { program } = setAiAliensPayer(ANCHOR_WALLET_KEYPAIR);
+
+    const fieldParam = toAnchorParam(Field.Uri);
+    const val = "uri-placeholder-update";
+
+    await program.methods
+      .updateField(fieldParam, val)
+      .accounts({
+        creator: ANCHOR_WALLET_KEYPAIR.publicKey,
+        metadata: metadataKeypair.publicKey,
+        aiAliensPda,
+        metadataProgram: EXAMPLE_PROGRAM_ID,
+      })
+      .rpc();
+
+    // Check emmitted metadata
+    const metadataVals = getMetadataVals(mintKeypair.publicKey, index);
+    metadataVals.uri = val;
+    const emittedMetadata = await getEmittedMetadata(
+      EXAMPLE_PROGRAM_ID,
+      metadataKeypair.publicKey
+    );
+    assert.deepStrictEqual(emittedMetadata, metadataVals);
   });
 });

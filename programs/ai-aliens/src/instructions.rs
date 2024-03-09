@@ -8,6 +8,7 @@ use anchor_spl::{
     token_2022::Token2022,
     token_interface::{Mint, TokenAccount},
 };
+use holder_metadata::state::AnchorField;
 use spl_token_2022::{
     extension::ExtensionType::{self, MetadataPointer},
     state::Mint as MintState,
@@ -89,4 +90,19 @@ pub struct CreateToken<'info> {
     pub token_program: Program<'info, Token2022>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(field: AnchorField, val: String)]
+pub struct UpdateField<'info> {
+    #[account(mut, address = get_creator_pubkey()?)]
+    pub creator: Signer<'info>,
+    /// CHECK: Account checked in CPI
+    #[account(mut)]
+    pub metadata: UncheckedAccount<'info>,
+    #[account(seeds = [AI_ALIENS_PDA_SEED.as_bytes()], bump)]
+    pub ai_aliens_pda: Account<'info, AiAliensPda>,
+    /// CHECK: Account checked in constraints
+    #[account(executable, address = get_metadata_program_id()?)]
+    pub metadata_program: UncheckedAccount<'info>,
 }

@@ -9,6 +9,7 @@ use instructions::*;
 use processor::*;
 
 use anchor_lang::prelude::*;
+use holder_metadata::state::AnchorField;
 
 declare_id!("YJSJjSkjboK5TtWYgMHKTQLCi38NiSkabvRa8iCV9g3");
 
@@ -30,5 +31,9 @@ pub mod ai_aliens {
 
     pub fn create_token(ctx: Context<CreateToken>) -> Result<()> {
         return handle_create_token(ctx);
+    }
+
+    pub fn update_field(ctx: Context<UpdateField>, field: AnchorField, val: String) -> Result<()> {
+        return handle_update_field(ctx, field, val);
     }
 }
