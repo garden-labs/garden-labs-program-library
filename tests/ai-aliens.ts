@@ -59,7 +59,7 @@ describe("AI Aliens Program", () => {
     const metadataVals: TokenMetadata = {
       name: `AI Alien #${index}`,
       symbol: "AIALIENS",
-      uri: "uri-placeholder",
+      uri: `https://firebasestorage.googleapis.com/v0/b/ai-aliens.appspot.com/o/uri%2F${index}.json?alt=media`,
       updateAuthority: aiAliensPda,
       mint,
       additionalMetadata: [],
@@ -158,40 +158,6 @@ describe("AI Aliens Program", () => {
     return { mintKeypair, metadataKeypair };
   }
 
-  it("Create NFT below index 1 fails", async () => {
-    assert.rejects(async () => {
-      await createNft(0);
-    });
-  });
-
-  it("Create NFT above max supply fails", async () => {
-    assert.rejects(async () => {
-      await createNft(maxSupply + 1);
-    });
-  });
-
-  it("Create NFT at index 1 succeeds", async () => {
-    await createNft(1);
-  });
-
-  it("Create NFT at index 1 fails", async () => {
-    assert.rejects(async () => {
-      await createNft(1);
-    });
-  });
-
-  it("Create NFT at index 2 succeeds", async () => {
-    await createNft(2);
-  });
-
-  it("Create NFT at index 10 succeeds", async () => {
-    await createNft(10);
-  });
-
-  it("Create NFT at index 1000 succeeds", async () => {
-    await createNft(1000);
-  });
-
   async function createToken(mintKeypair: Keypair): Promise<void> {
     const { program } = setAiAliensPayer(ANCHOR_WALLET_KEYPAIR);
 
@@ -229,8 +195,41 @@ describe("AI Aliens Program", () => {
     assert.equal(mintInfo.supply, BigInt(1));
   }
 
-  it("Create token", async () => {
-    const { mintKeypair } = await createNft(3);
+  it("Create NFT below index 1 fails", async () => {
+    assert.rejects(async () => {
+      const { mintKeypair } = await createNft(0);
+      await createToken(mintKeypair);
+    });
+  });
+
+  it("Create NFT above max supply fails", async () => {
+    assert.rejects(async () => {
+      await createNft(maxSupply + 1);
+    });
+  });
+
+  it("Create NFT at index 1 succeeds", async () => {
+    await createNft(1);
+  });
+
+  it("Create NFT at index 1 fails", async () => {
+    assert.rejects(async () => {
+      await createNft(1);
+    });
+  });
+
+  it("Create NFT at index 2 succeeds", async () => {
+    const { mintKeypair } = await createNft(2);
+    await createToken(mintKeypair);
+  });
+
+  it("Create NFT at index 10 succeeds", async () => {
+    const { mintKeypair } = await createNft(10);
+    await createToken(mintKeypair);
+  });
+
+  it("Create NFT at index 1000 succeeds", async () => {
+    const { mintKeypair } = await createNft(1000);
     await createToken(mintKeypair);
   });
 

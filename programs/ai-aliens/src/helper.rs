@@ -22,10 +22,12 @@ pub fn get_token_metadata_init_vals(
     update_authority: Pubkey,
     mint: Pubkey,
 ) -> Result<TokenMetadata> {
+    let uri = format!("https://firebasestorage.googleapis.com/v0/b/ai-aliens.appspot.com/o/uri%2F{}.json?alt=media", index);
+
     let token_metadata = TokenMetadata {
         name: format!("AI Alien #{}", index),
         symbol: "AIALIENS".to_string(),
-        uri: "uri-placeholder".to_string(),
+        uri,
         update_authority: Some(update_authority).try_into().unwrap(),
         mint,
         ..Default::default()
