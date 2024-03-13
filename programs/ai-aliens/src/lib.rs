@@ -25,8 +25,8 @@ pub mod ai_aliens {
         return handle_update_state(ctx, max_supply, mint_price_lamports);
     }
 
-    pub fn create_nft(ctx: Context<CreateNft>, index: u16) -> Result<()> {
-        return handle_create_nft(ctx, index);
+    pub fn create_mint(ctx: Context<CreateMint>, index: u16) -> Result<()> {
+        return handle_create_mint(ctx, index);
     }
 
     pub fn create_token(ctx: Context<CreateToken>) -> Result<()> {

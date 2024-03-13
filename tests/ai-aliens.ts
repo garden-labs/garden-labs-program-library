@@ -89,7 +89,7 @@ describe("AI Aliens Program", () => {
     assert.equal(aiAliensPdaData.mintPriceLamports, mintPriceLamports);
   });
 
-  async function createNft(
+  async function createMint(
     index: number
   ): Promise<{ mintKeypair: Keypair; metadataKeypair: Keypair }> {
     const mintKeypair = Keypair.generate();
@@ -114,7 +114,7 @@ describe("AI Aliens Program", () => {
     const aiAliensPdaBalanceBefore = await CONNECTION.getBalance(aiAliensPda);
 
     await program.methods
-      .createNft(index)
+      .createMint(index)
       .accounts({
         mint: mintKeypair.publicKey,
         metadata: metadataKeypair.publicKey,
@@ -135,7 +135,7 @@ describe("AI Aliens Program", () => {
       aiAliensPdaBalanceAfter - mintPriceLamports
     );
 
-    // Check NFT minted PDA
+    // Check mint minted PDA
     const nftMintedPdaData = await program.account.nftMintedPda.fetch(
       nftMintedPda
     );
@@ -195,41 +195,41 @@ describe("AI Aliens Program", () => {
     assert.equal(mintInfo.supply, BigInt(1));
   }
 
-  it("Create NFT below index 1 fails", async () => {
+  it("Create mint below index 1 fails", async () => {
     assert.rejects(async () => {
-      const { mintKeypair } = await createNft(0);
+      const { mintKeypair } = await createMint(0);
       await createToken(mintKeypair);
     });
   });
 
-  it("Create NFT above max supply fails", async () => {
+  it("Create mint above max supply fails", async () => {
     assert.rejects(async () => {
-      await createNft(maxSupply + 1);
+      await createMint(maxSupply + 1);
     });
   });
 
-  it("Create NFT at index 1 succeeds", async () => {
-    await createNft(1);
+  it("Create mint at index 1 succeeds", async () => {
+    await createMint(1);
   });
 
-  it("Create NFT at index 1 fails", async () => {
+  it("Create mint at index 1 fails", async () => {
     assert.rejects(async () => {
-      await createNft(1);
+      await createMint(1);
     });
   });
 
-  it("Create NFT at index 2 succeeds", async () => {
-    const { mintKeypair } = await createNft(2);
+  it("Create mint at index 2 succeeds", async () => {
+    const { mintKeypair } = await createMint(2);
     await createToken(mintKeypair);
   });
 
-  it("Create NFT at index 10 succeeds", async () => {
-    const { mintKeypair } = await createNft(10);
+  it("Create mint at index 10 succeeds", async () => {
+    const { mintKeypair } = await createMint(10);
     await createToken(mintKeypair);
   });
 
-  it("Create NFT at index 1000 succeeds", async () => {
-    const { mintKeypair } = await createNft(1000);
+  it("Create mint at index 1000 succeeds", async () => {
+    const { mintKeypair } = await createMint(1000);
     await createToken(mintKeypair);
   });
 
@@ -285,14 +285,14 @@ describe("AI Aliens Program", () => {
 
   it("Update nickname", async () => {
     const index = 4;
-    const { mintKeypair, metadataKeypair } = await createNft(index);
+    const { mintKeypair, metadataKeypair } = await createMint(index);
     await createToken(mintKeypair);
     await updateNickname(mintKeypair, metadataKeypair, randomStr(30), index);
   });
 
   it("Update nickname fails with too long nickname", async () => {
     const index = 5;
-    const { mintKeypair, metadataKeypair } = await createNft(index);
+    const { mintKeypair, metadataKeypair } = await createMint(index);
     await createToken(mintKeypair);
 
     assert(async () => {
@@ -312,7 +312,7 @@ describe("AI Aliens Program", () => {
 
   it("Update field with creator", async () => {
     const index = 6;
-    const { mintKeypair, metadataKeypair } = await createNft(index);
+    const { mintKeypair, metadataKeypair } = await createMint(index);
 
     const { program } = setAiAliensPayer(ANCHOR_WALLET_KEYPAIR);
 

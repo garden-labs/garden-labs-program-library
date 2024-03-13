@@ -31,7 +31,7 @@ pub struct UpdateState<'info> {
 
 #[derive(Accounts)]
 #[instruction(index: u16)]
-pub struct CreateNft<'info> {
+pub struct CreateMint<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     /// CHECK: Account checked in CPI
