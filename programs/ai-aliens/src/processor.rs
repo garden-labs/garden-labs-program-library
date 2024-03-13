@@ -80,7 +80,6 @@ fn init_metadata(ctx: &Context<CreateMint>, index: u16) -> Result<()> {
         ctx.accounts.mint.key(),
     )?;
 
-    // Run initialize metadata instruction
     let ix = spl_token_metadata_interface::instruction::initialize(
         ctx.accounts.metadata_program.key,
         &ctx.accounts.metadata.key(),
