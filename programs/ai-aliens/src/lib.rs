@@ -11,7 +11,7 @@ use processor::*;
 use anchor_lang::prelude::*;
 use holder_metadata::state::AnchorField;
 
-declare_id!("GMwH9gmtUNJH9H7xs4jLT22BL5GKrh8JePviUSqL1LJt");
+declare_id!("48MKwUN9uxxGrFCzXAV4kF5RPMVUyruLyYnapNynNtd4");
 
 #[program]
 pub mod ai_aliens {

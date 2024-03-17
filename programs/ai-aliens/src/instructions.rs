@@ -1,5 +1,7 @@
 use crate::constant::{AI_ALIENS_PDA_SEED, NFT_MINTED_PDA_SEED};
-use crate::helper::{get_creator_pubkey, get_metadata_program_id, get_token_metadata_init_space};
+use crate::helper::{
+    get_creator_pubkey, get_metadata_program_id, get_mint_space, get_token_metadata_init_space,
+};
 use crate::state::{AiAliensPda, NftMintedPda};
 
 use anchor_lang::{prelude::*, solana_program::rent::Rent};
@@ -10,7 +12,7 @@ use anchor_spl::{
 };
 use holder_metadata::state::AnchorField;
 use spl_token_2022::{
-    extension::ExtensionType::{self, MetadataPointer},
+    extension::ExtensionType::{self, GroupMemberPointer, MetadataPointer, TransferHook},
     state::Mint as MintState,
 };
 
@@ -38,7 +40,11 @@ pub struct CreateMint<'info> {
     #[account(
         init,
         payer = payer,
-        space = ExtensionType::try_calculate_account_len::<MintState>(&[MetadataPointer])?,
+        space = ExtensionType::try_calculate_account_len::<MintState>(&[
+            MetadataPointer,
+            GroupMemberPointer,
+            TransferHook,
+        ])?,
         owner = token_program.key(),
     )]
     pub mint: UncheckedAccount<'info>,

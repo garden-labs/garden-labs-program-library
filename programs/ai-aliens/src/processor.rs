@@ -150,11 +150,11 @@ fn transfer_lamports_for_nickname(ctx: &Context<CreateMint>, index: u16) -> Resu
 pub fn handle_create_mint(ctx: Context<CreateMint>, index: u16) -> Result<()> {
     check_max_supply(&ctx, index)?;
     pay_mint_price(&ctx)?;
-    init_mp_ext(&ctx)?;
-    init_mint(&ctx)?;
-    init_metadata(&ctx, index)?;
-    add_nickname_as_holder_meta(&ctx)?;
-    transfer_lamports_for_nickname(&ctx, index)?;
+    // init_mp_ext(&ctx)?;
+    // init_mint(&ctx)?;
+    // init_metadata(&ctx, index)?;
+    // add_nickname_as_holder_meta(&ctx)?;
+    // transfer_lamports_for_nickname(&ctx, index)?;
 
     // Set data of NFT minted PDA
     ctx.accounts.nft_minted_pda.mint = ctx.accounts.mint.key();

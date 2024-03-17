@@ -5,8 +5,8 @@ seeds = false
 skip-lint = false
 
 [programs.localnet]
-holder_metadata = "HmpaxJsTQKyYrRaVhArZdLFj8rvRhgU5BJso6usHJdXx"
-ai_aliens = "GMwH9gmtUNJH9H7xs4jLT22BL5GKrh8JePviUSqL1LJt"
+holder_metadata = "3DkEmKWuBJbza9ur1BnVVhXrzkuiMCqBuKHdoDBdLpxZ"
+ai_aliens = "48MKwUN9uxxGrFCzXAV4kF5RPMVUyruLyYnapNynNtd4"
 
 [registry]
 url = "https://api.apr.dev"
