@@ -113,11 +113,14 @@ describe("AI Aliens Program", () => {
 
     const aiAliensPdaBalanceBefore = await CONNECTION.getBalance(aiAliensPda);
 
+    const groupMemberKeypair = Keypair.generate(); // TEMP
+
     await program.methods
       .createMint(index)
       .accounts({
         mint: mintKeypair.publicKey,
         metadata: metadataKeypair.publicKey,
+        groupMember: groupMemberKeypair.publicKey,
         nftMintedPda,
         aiAliensPda,
         fieldPda,

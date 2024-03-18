@@ -3,10 +3,16 @@ use crate::error::AiAliensError;
 use crate::helper::{get_token_metadata_init_vals, get_token_metadata_max_space};
 use crate::instructions::*;
 
-use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
+use anchor_lang::{
+    prelude::*,
+    solana_program::{native_token::LAMPORTS_PER_SOL, program::invoke_signed},
+};
 use anchor_spl::token_interface::{mint_to, MintTo};
 use holder_metadata::{state::AnchorField, HOLDER_METADATA_PDA_SEED};
-use spl_token_2022::{extension::metadata_pointer, instruction::initialize_mint2};
+use spl_token_2022::{
+    extension::{group_member_pointer, metadata_pointer, transfer_hook},
+    instruction::initialize_mint2,
+};
 
 pub fn handle_update_state(
     ctx: Context<UpdateState>,
@@ -48,6 +54,21 @@ fn init_mp_ext(ctx: &Context<CreateMint>) -> Result<()> {
         &ctx.accounts.mint.key(),
         Some(ctx.accounts.ai_aliens_pda.key()),
         Some(ctx.accounts.metadata.key()),
+    )?;
+    let accounts = [ctx.accounts.mint.to_account_info()];
+    let ai_aliens_pda_seeds = [AI_ALIENS_PDA_SEED.as_bytes(), &[ctx.bumps.ai_aliens_pda]];
+    let signer_seeds = [&ai_aliens_pda_seeds[..]];
+    invoke_signed(&ix, &accounts, &signer_seeds)?;
+
+    Ok(())
+}
+
+fn init_gmp_ext(ctx: &Context<CreateMint>) -> Result<()> {
+    let ix = group_member_pointer::instruction::initialize(
+        ctx.accounts.token_program.key,
+        &ctx.accounts.mint.key(),
+        Some(ctx.accounts.ai_aliens_pda.key()),
+        Some(ctx.accounts.group_member.key()),
     )?;
     let accounts = [ctx.accounts.mint.to_account_info()];
     let ai_aliens_pda_seeds = [AI_ALIENS_PDA_SEED.as_bytes(), &[ctx.bumps.ai_aliens_pda]];
@@ -150,7 +171,10 @@ fn transfer_lamports_for_nickname(ctx: &Context<CreateMint>, index: u16) -> Resu
 pub fn handle_create_mint(ctx: Context<CreateMint>, index: u16) -> Result<()> {
     check_max_supply(&ctx, index)?;
     pay_mint_price(&ctx)?;
-    // init_mp_ext(&ctx)?;
+
+    init_mp_ext(&ctx)?;
+    init_gmp_ext(&ctx)?;
+
     // init_mint(&ctx)?;
     // init_metadata(&ctx, index)?;
     // add_nickname_as_holder_meta(&ctx)?;
