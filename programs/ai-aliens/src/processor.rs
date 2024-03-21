@@ -68,7 +68,8 @@ fn init_gmp_ext(ctx: &Context<CreateMint>) -> Result<()> {
         ctx.accounts.token_program.key,
         &ctx.accounts.mint.key(),
         Some(ctx.accounts.ai_aliens_pda.key()),
-        Some(ctx.accounts.group_member.key()),
+        None,
+        // Some(ctx.accounts.group_member.key()),
     )?;
     let accounts = [ctx.accounts.mint.to_account_info()];
     let ai_aliens_pda_seeds = [AI_ALIENS_PDA_SEED.as_bytes(), &[ctx.bumps.ai_aliens_pda]];
@@ -175,10 +176,10 @@ pub fn handle_create_mint(ctx: Context<CreateMint>, index: u16) -> Result<()> {
     init_mp_ext(&ctx)?;
     init_gmp_ext(&ctx)?;
 
-    // init_mint(&ctx)?;
-    // init_metadata(&ctx, index)?;
-    // add_nickname_as_holder_meta(&ctx)?;
-    // transfer_lamports_for_nickname(&ctx, index)?;
+    init_mint(&ctx)?;
+    init_metadata(&ctx, index)?;
+    add_nickname_as_holder_meta(&ctx)?;
+    transfer_lamports_for_nickname(&ctx, index)?;
 
     // Set data of NFT minted PDA
     ctx.accounts.nft_minted_pda.mint = ctx.accounts.mint.key();

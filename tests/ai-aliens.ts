@@ -132,31 +132,31 @@ describe("AI Aliens Program", () => {
 
     const aiAliensPdaBalanceAfter = await CONNECTION.getBalance(aiAliensPda);
 
-    // // Check mint price transfer
-    // assert.equal(
-    //   aiAliensPdaBalanceBefore,
-    //   aiAliensPdaBalanceAfter - mintPriceLamports
-    // );
+    // Check mint price transfer
+    assert.equal(
+      aiAliensPdaBalanceBefore,
+      aiAliensPdaBalanceAfter - mintPriceLamports
+    );
 
-    // // Check mint minted PDA
-    // const nftMintedPdaData = await program.account.nftMintedPda.fetch(
-    //   nftMintedPda
-    // );
-    // assert(nftMintedPdaData.mint.equals(mintKeypair.publicKey));
+    // Check mint minted PDA
+    const nftMintedPdaData = await program.account.nftMintedPda.fetch(
+      nftMintedPda
+    );
+    assert(nftMintedPdaData.mint.equals(mintKeypair.publicKey));
 
-    // // Check metadata pointer
-    // const mintInfo = await getMint(
-    //   CONNECTION,
-    //   mintKeypair.publicKey,
-    //   undefined,
-    //   TOKEN_2022_PROGRAM_ID
-    // );
-    // const metadataPointerState = await getMetadataPointerState(mintInfo);
-    // assert(metadataPointerState);
-    // assert(metadataPointerState.metadataAddress);
-    // assert(
-    //   metadataPointerState.metadataAddress.equals(metadataKeypair.publicKey)
-    // );
+    // Check metadata pointer
+    const mintInfo = await getMint(
+      CONNECTION,
+      mintKeypair.publicKey,
+      undefined,
+      TOKEN_2022_PROGRAM_ID
+    );
+    const metadataPointerState = await getMetadataPointerState(mintInfo);
+    assert(metadataPointerState);
+    assert(metadataPointerState.metadataAddress);
+    assert(
+      metadataPointerState.metadataAddress.equals(metadataKeypair.publicKey)
+    );
 
     return { mintKeypair, metadataKeypair };
   }
