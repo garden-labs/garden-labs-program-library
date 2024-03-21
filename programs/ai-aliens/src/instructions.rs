@@ -10,7 +10,9 @@ use anchor_spl::{
 };
 use holder_metadata::state::AnchorField;
 use spl_token_2022::{
-    extension::ExtensionType::{self, GroupMemberPointer, MetadataPointer, TransferHook},
+    extension::ExtensionType::{
+        self, GroupMemberPointer, MetadataPointer, PermanentDelegate, TransferHook,
+    },
     state::Mint as MintState,
 };
 
@@ -42,6 +44,7 @@ pub struct CreateMint<'info> {
             MetadataPointer,
             GroupMemberPointer,
             TransferHook,
+            PermanentDelegate
         ])?,
         owner = token_program.key(),
     )]
