@@ -85,6 +85,7 @@ pub struct CreateToken<'info> {
     pub dest: UncheckedAccount<'info>,
     #[account(mut)]
     pub mint: InterfaceAccount<'info, Mint>,
+    // NOTE: ImmutableOwner initialized by default in Token2022
     #[account(
         init,
         payer = payer,
