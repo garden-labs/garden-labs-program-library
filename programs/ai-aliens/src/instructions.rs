@@ -41,7 +41,7 @@ pub struct CreateMint<'info> {
         space = ExtensionType::try_calculate_account_len::<MintState>(&[
             MetadataPointer,
             GroupMemberPointer,
-            // TransferHook,
+            TransferHook,
         ])?,
         owner = token_program.key(),
     )]
@@ -54,8 +54,6 @@ pub struct CreateMint<'info> {
         owner = metadata_program.key(),
     )]
     pub metadata: UncheckedAccount<'info>,
-    /// CHECK: TEMP
-    pub group_member: UncheckedAccount<'info>,
     #[account(mut, seeds = [AI_ALIENS_PDA_SEED.as_bytes()], bump)]
     pub ai_aliens_pda: Account<'info, AiAliensPda>,
     #[account(

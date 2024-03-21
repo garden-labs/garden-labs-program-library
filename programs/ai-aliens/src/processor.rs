@@ -69,7 +69,21 @@ fn init_gmp_ext(ctx: &Context<CreateMint>) -> Result<()> {
         &ctx.accounts.mint.key(),
         Some(ctx.accounts.ai_aliens_pda.key()),
         None,
-        // Some(ctx.accounts.group_member.key()),
+    )?;
+    let accounts = [ctx.accounts.mint.to_account_info()];
+    let ai_aliens_pda_seeds = [AI_ALIENS_PDA_SEED.as_bytes(), &[ctx.bumps.ai_aliens_pda]];
+    let signer_seeds = [&ai_aliens_pda_seeds[..]];
+    invoke_signed(&ix, &accounts, &signer_seeds)?;
+
+    Ok(())
+}
+
+fn init_th_ext(ctx: &Context<CreateMint>) -> Result<()> {
+    let ix = transfer_hook::instruction::initialize(
+        ctx.accounts.token_program.key,
+        &ctx.accounts.mint.key(),
+        Some(ctx.accounts.ai_aliens_pda.key()),
+        None,
     )?;
     let accounts = [ctx.accounts.mint.to_account_info()];
     let ai_aliens_pda_seeds = [AI_ALIENS_PDA_SEED.as_bytes(), &[ctx.bumps.ai_aliens_pda]];
@@ -175,6 +189,7 @@ pub fn handle_create_mint(ctx: Context<CreateMint>, index: u16) -> Result<()> {
 
     init_mp_ext(&ctx)?;
     init_gmp_ext(&ctx)?;
+    init_th_ext(&ctx)?;
 
     init_mint(&ctx)?;
     init_metadata(&ctx, index)?;
