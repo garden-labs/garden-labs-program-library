@@ -10,7 +10,9 @@ use anchor_spl::{
 };
 use holder_metadata::state::AnchorField;
 use spl_token_2022::{
-    extension::ExtensionType::{self, MetadataPointer},
+    extension::ExtensionType::{
+        self, GroupMemberPointer, MetadataPointer, PermanentDelegate, TransferHook,
+    },
     state::Mint as MintState,
 };
 
@@ -38,7 +40,12 @@ pub struct CreateMint<'info> {
     #[account(
         init,
         payer = payer,
-        space = ExtensionType::try_calculate_account_len::<MintState>(&[MetadataPointer])?,
+        space = ExtensionType::try_calculate_account_len::<MintState>(&[
+            MetadataPointer,
+            GroupMemberPointer,
+            TransferHook,
+            PermanentDelegate
+        ])?,
         owner = token_program.key(),
     )]
     pub mint: UncheckedAccount<'info>,
@@ -78,6 +85,7 @@ pub struct CreateToken<'info> {
     pub dest: UncheckedAccount<'info>,
     #[account(mut)]
     pub mint: InterfaceAccount<'info, Mint>,
+    // NOTE: ImmutableOwner initialized by default in Token2022
     #[account(
         init,
         payer = payer,
