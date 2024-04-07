@@ -44,6 +44,8 @@ import {
 describe("AI Aliens Program", () => {
   const mintPriceLamports = 0.1 * LAMPORTS_PER_SOL;
   const maxSupply = 1000;
+  const mints: PublicKey[] = [];
+  const metadatas: PublicKey[] = [];
 
   const [aiAliensPda] = PublicKey.findProgramAddressSync(
     [Buffer.from(AI_ALIENS_AUTHORITY_PDA_SEED)],
@@ -55,7 +57,9 @@ describe("AI Aliens Program", () => {
     setHolderMetadataPayer(ANCHOR_WALLET_KEYPAIR).program.programId
   );
 
-  function getMetadataVals(mint: PublicKey, index: number): TokenMetadata {
+  function getMetadataVals(index: number): TokenMetadata {
+    const mint = mints[index - 1];
+
     const metadataVals: TokenMetadata = {
       name: `AI Alien #${index}`,
       symbol: "AIALIENS",
@@ -89,9 +93,7 @@ describe("AI Aliens Program", () => {
     assert.equal(aiAliensPdaData.mintPriceLamports, mintPriceLamports);
   });
 
-  async function createMint(
-    index: number
-  ): Promise<{ mintKeypair: Keypair; metadataKeypair: Keypair }> {
+  async function createMint(index: number): Promise<void> {
     const mintKeypair = Keypair.generate();
     const metadataKeypair = Keypair.generate();
 
@@ -155,14 +157,15 @@ describe("AI Aliens Program", () => {
       metadataPointerState.metadataAddress.equals(metadataKeypair.publicKey)
     );
 
-    return { mintKeypair, metadataKeypair };
+    mints.push(mintKeypair.publicKey);
+    metadatas.push(metadataKeypair.publicKey);
   }
 
-  async function createToken(mintKeypair: Keypair): Promise<void> {
+  async function createToken(mint: PublicKey): Promise<void> {
     const { program } = setAiAliensPayer(ANCHOR_WALLET_KEYPAIR);
 
     const anchorWalletAta = await getAssociatedTokenAddress(
-      mintKeypair.publicKey,
+      mint,
       ANCHOR_WALLET_KEYPAIR.publicKey,
       undefined,
       TOKEN_2022_PROGRAM_ID
@@ -171,7 +174,7 @@ describe("AI Aliens Program", () => {
     await program.methods
       .createToken()
       .accounts({
-        mint: mintKeypair.publicKey,
+        mint,
         dest: ANCHOR_WALLET_KEYPAIR.publicKey,
         destAta: anchorWalletAta,
         aiAliensPda,
@@ -188,7 +191,7 @@ describe("AI Aliens Program", () => {
     // Check mint
     const mintInfo = await getMint(
       CONNECTION,
-      mintKeypair.publicKey,
+      mint,
       undefined,
       TOKEN_2022_PROGRAM_ID
     );
@@ -197,8 +200,7 @@ describe("AI Aliens Program", () => {
 
   it("Create mint below index 1 fails", async () => {
     assert.rejects(async () => {
-      const { mintKeypair } = await createMint(0);
-      await createToken(mintKeypair);
+      await createMint(0);
     });
   });
 
@@ -219,42 +221,42 @@ describe("AI Aliens Program", () => {
   });
 
   it("Create mint at index 2 succeeds", async () => {
-    const { mintKeypair } = await createMint(2);
-    await createToken(mintKeypair);
+    await createMint(2);
   });
 
   it("Create mint at index 10 succeeds", async () => {
-    const { mintKeypair } = await createMint(10);
-    await createToken(mintKeypair);
+    await createMint(10);
   });
 
   it("Create mint at index 1000 succeeds", async () => {
-    const { mintKeypair } = await createMint(1000);
-    await createToken(mintKeypair);
+    await createMint(1000);
   });
 
-  async function updateNickname(
-    mintKeypair: Keypair,
-    metadataKeypair: Keypair,
-    val: string,
-    index: number
-  ): Promise<void> {
+  it("Create token succeeds", async () => {
+    const proms = mints.map(createToken);
+    await Promise.all(proms);
+  });
+
+  async function updateNickname(index: number, val: string): Promise<void> {
     const { program } = setHolderMetadataPayer(ANCHOR_WALLET_KEYPAIR);
 
     const field = NICKNAME_FIELD_KEY;
     const param = toAnchorParam(field);
 
+    const mint = mints[index - 1];
+    const metadata = metadatas[index - 1];
+
     const [fieldPda] = PublicKey.findProgramAddressSync(
       [
         Buffer.from(FIELD_AUTHORITY_PDA_SEED),
         Buffer.from(fieldToSeedStr(field)),
-        metadataKeypair.publicKey.toBuffer(),
+        metadata.toBuffer(),
       ],
       EXAMPLE_PROGRAM_ID
     );
 
     const anchorWalletAta = await getAssociatedTokenAddress(
-      mintKeypair.publicKey,
+      mint,
       ANCHOR_WALLET_KEYPAIR.publicKey,
       undefined,
       TOKEN_2022_PROGRAM_ID
@@ -263,8 +265,8 @@ describe("AI Aliens Program", () => {
     await program.methods
       .updateHolderField(param, val)
       .accounts({
-        mint: mintKeypair.publicKey,
-        metadata: metadataKeypair.publicKey,
+        mint,
+        metadata,
         holderTokenAccount: anchorWalletAta,
         holderMetadataPda,
         fieldPda,
@@ -274,35 +276,23 @@ describe("AI Aliens Program", () => {
       .rpc();
 
     // Check emmitted metadata
-    const metadataVals = getMetadataVals(mintKeypair.publicKey, index);
+    const metadataVals = getMetadataVals(index);
     metadataVals.additionalMetadata.push([field, val]);
     const emittedMetadata = await getEmittedMetadata(
       EXAMPLE_PROGRAM_ID,
-      metadataKeypair.publicKey
+      metadata
     );
     assert.deepStrictEqual(emittedMetadata, metadataVals);
   }
 
   it("Update nickname", async () => {
-    const index = 4;
-    const { mintKeypair, metadataKeypair } = await createMint(index);
-    await createToken(mintKeypair);
-    await updateNickname(mintKeypair, metadataKeypair, randomStr(30), index);
+    await updateNickname(1, randomStr(30));
   });
 
   it("Update nickname fails with too long nickname", async () => {
-    const index = 5;
-    const { mintKeypair, metadataKeypair } = await createMint(index);
-    await createToken(mintKeypair);
-
     assert(async () => {
       try {
-        await updateNickname(
-          mintKeypair,
-          metadataKeypair,
-          randomStr(31),
-          index
-        );
+        await updateNickname(1, randomStr(31));
         throw new Error("Should have thrown");
       } catch (e) {
         assert(e instanceof SendTransactionError);
@@ -310,32 +300,40 @@ describe("AI Aliens Program", () => {
     });
   });
 
-  it("Update field with creator", async () => {
-    const index = 6;
-    const { mintKeypair, metadataKeypair } = await createMint(index);
-
+  async function updateUriWithCreator(
+    index: number,
+    uri: string
+  ): Promise<void> {
     const { program } = setAiAliensPayer(ANCHOR_WALLET_KEYPAIR);
 
     const fieldParam = toAnchorParam(Field.Uri);
-    const val = "uri-placeholder-update";
+    const metadata = metadatas[index - 1];
 
     await program.methods
-      .updateField(fieldParam, val)
+      .updateField(fieldParam, uri)
       .accounts({
         creator: ANCHOR_WALLET_KEYPAIR.publicKey,
-        metadata: metadataKeypair.publicKey,
+        metadata,
         aiAliensPda,
         metadataProgram: EXAMPLE_PROGRAM_ID,
       })
       .rpc();
 
     // Check emmitted metadata
-    const metadataVals = getMetadataVals(mintKeypair.publicKey, index);
-    metadataVals.uri = val;
+    const metadataVals = getMetadataVals(index);
+    metadataVals.uri = uri;
     const emittedMetadata = await getEmittedMetadata(
       EXAMPLE_PROGRAM_ID,
-      metadataKeypair.publicKey
+      metadata
     );
     assert.deepStrictEqual(emittedMetadata, metadataVals);
+  }
+
+  it("Update field with creator", async () => {
+    await updateUriWithCreator(2, "test-uri-update");
+
+    // Clean this up because we use this value live on devnet
+    const metadataVals = getMetadataVals(2);
+    await updateUriWithCreator(2, metadataVals.uri);
   });
 });
