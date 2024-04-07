@@ -14,6 +14,7 @@ import {
   getMetadataPointerState,
   getPermanentDelegate,
   getTransferHook,
+  getGroupMemberPointerState,
 } from "@solana/spl-token";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 
@@ -169,6 +170,13 @@ describe("AI Aliens Program", () => {
     assert(transferHook);
     assert(transferHook.authority.equals(aiAliensPda));
     assert(transferHook.programId.equals(PublicKey.default));
+
+    // Check group member pointer
+    const groupMemberPointerState = await getGroupMemberPointerState(mintInfo);
+    assert(groupMemberPointerState);
+    assert(groupMemberPointerState.authority);
+    assert(groupMemberPointerState.authority.equals(aiAliensPda));
+    assert.equal(groupMemberPointerState.memberAddress, null);
 
     mints.push(mintKeypair.publicKey);
     metadatas.push(metadataKeypair.publicKey);
