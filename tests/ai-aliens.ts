@@ -12,6 +12,8 @@ import {
   TOKEN_2022_PROGRAM_ID,
   getMint,
   getMetadataPointerState,
+  getPermanentDelegate,
+  getTransferHook,
 } from "@solana/spl-token";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 
@@ -156,6 +158,17 @@ describe("AI Aliens Program", () => {
     assert(
       metadataPointerState.metadataAddress.equals(metadataKeypair.publicKey)
     );
+
+    // Check permanent delegate
+    const permanentDelegate = await getPermanentDelegate(mintInfo);
+    assert(permanentDelegate);
+    assert(permanentDelegate.delegate.equals(aiAliensPda));
+
+    // Check transfer hook
+    const transferHook = await getTransferHook(mintInfo);
+    assert(transferHook);
+    assert(transferHook.authority.equals(aiAliensPda));
+    assert(transferHook.programId.equals(PublicKey.default));
 
     mints.push(mintKeypair.publicKey);
     metadatas.push(metadataKeypair.publicKey);
