@@ -7,50 +7,52 @@ use {
         pubkey::Pubkey,
         system_program,
     },
+    spl_discriminator::{discriminator::ArrayDiscriminator, SplDiscriminate},
     spl_token_metadata_interface::state::Field,
 };
 
-#[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize)]
+#[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
+#[discriminator_hash_input("field_interface_interface:add_field_authority")]
 pub struct AddFieldAuthority {
     pub field: Field,
     pub authority: Pubkey,
 }
 
-#[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize)]
+#[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
+#[discriminator_hash_input("field_interface_interface:update_field_with_field_authority")]
 pub struct UpdateFieldWithFieldAuthority {
     pub field: Field,
     pub value: String,
 }
 
-#[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize)]
+#[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
+#[discriminator_hash_input("field_interface_interface:remove_field_authority")]
 pub struct RemoveFieldAuthority {
     pub field: Field,
 }
 
 pub enum FieldAuthorityInstruction {
-    // TODO: Add accounts it expects
     AddFieldAuthority(AddFieldAuthority),
-    // TODO: Add accounts it expects
     UpdateFieldWithFieldAuthority(UpdateFieldWithFieldAuthority),
-    // TODO: Add accounts it expects
     RemoveFieldAuthority(RemoveFieldAuthority),
 }
 
 impl FieldAuthorityInstruction {
     pub fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
-        let (discriminator, rest) = input
-            .split_first()
-            .ok_or(ProgramError::InvalidInstructionData)?;
+        if input.len() < ArrayDiscriminator::LENGTH {
+            return Err(ProgramError::InvalidInstructionData);
+        }
+        let (discriminator, rest) = input.split_at(ArrayDiscriminator::LENGTH);
         Ok(match discriminator {
-            0 => {
+            AddFieldAuthority::SPL_DISCRIMINATOR_SLICE => {
                 let data = AddFieldAuthority::try_from_slice(rest)?;
                 Self::AddFieldAuthority(data)
             }
-            1 => {
+            UpdateFieldWithFieldAuthority::SPL_DISCRIMINATOR_SLICE => {
                 let data = UpdateFieldWithFieldAuthority::try_from_slice(rest)?;
                 Self::UpdateFieldWithFieldAuthority(data)
             }
-            2 => {
+            RemoveFieldAuthority::SPL_DISCRIMINATOR_SLICE => {
                 let data = RemoveFieldAuthority::try_from_slice(rest)?;
                 Self::RemoveFieldAuthority(data)
             }
@@ -62,15 +64,15 @@ impl FieldAuthorityInstruction {
         let mut buf = vec![];
         match self {
             Self::AddFieldAuthority(data) => {
-                buf.extend_from_slice(&[0]);
+                buf.extend_from_slice(AddFieldAuthority::SPL_DISCRIMINATOR_SLICE);
                 buf.append(&mut data.try_to_vec().unwrap());
             }
             Self::UpdateFieldWithFieldAuthority(data) => {
-                buf.extend_from_slice(&[1]);
+                buf.extend_from_slice(UpdateFieldWithFieldAuthority::SPL_DISCRIMINATOR_SLICE);
                 buf.append(&mut data.try_to_vec().unwrap());
             }
             Self::RemoveFieldAuthority(data) => {
-                buf.extend_from_slice(&[2]);
+                buf.extend_from_slice(RemoveFieldAuthority::SPL_DISCRIMINATOR_SLICE);
                 buf.append(&mut data.try_to_vec().unwrap());
             }
         };
@@ -141,7 +143,7 @@ pub fn update_field_with_field_authority(
         program_id: *program_id,
         accounts: vec![
             AccountMeta::new(*metadata, false),
-            AccountMeta::new_readonly(*field_authority, true), // To allow charging fees
+            AccountMeta::new_readonly(*field_authority, true),
             AccountMeta::new_readonly(field_pda, false),
         ],
         data: data.pack(),

@@ -1,4 +1,4 @@
-//! TODO: Doc
+//! Implementation of the field authority interface
 
 use {
     crate::processor::check_update_authority,

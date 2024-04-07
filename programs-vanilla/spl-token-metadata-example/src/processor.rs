@@ -30,7 +30,7 @@ use {
     },
 };
 
-/// Docs
+/// Check the update authority is correct and signing
 pub fn check_update_authority(
     update_authority_info: &AccountInfo,
     expected_update_authority: &OptionalNonZeroPubkey,

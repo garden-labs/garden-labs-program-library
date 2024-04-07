@@ -1,9 +1,5 @@
 use crate::constant::{CREATOR_PUBKEY_STR, METADATA_PROGRAM_ID_STR};
 use crate::error::AiAliensError;
-use spl_token_2022::{
-    extension::ExtensionType::{self, GroupMemberPointer, MetadataPointer, TransferHook},
-    state::Mint as MintState,
-};
 use spl_token_metadata_interface::state::TokenMetadata;
 
 use anchor_lang::prelude::*;

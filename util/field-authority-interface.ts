@@ -15,6 +15,7 @@ import {
   getDataEnumCodec,
   getBytesEncoder,
 } from "@solana/codecs-data-structures";
+import { splDiscriminate } from "@solana/spl-type-length-value";
 import { getStringEncoder } from "@solana/codecs-strings";
 
 export const FIELD_AUTHORITY_PDA_SEED = "field-authority-pda";
@@ -62,7 +63,7 @@ export function createAddFieldAuthorityIx(
       ["field", getDataEnumCodec(getFieldCodec())],
       ["authority", getBytesEncoder({ size: 32 })],
     ],
-    Buffer.from([0]),
+    splDiscriminate("field_interface_interface:add_field_authority"),
     { field: getFieldConfig(field), authority: fieldAuthorityBuffer }
   );
 
@@ -122,7 +123,9 @@ export function createUpdateFieldWithFieldAuthorityIx(
       ["field", getDataEnumCodec(getFieldCodec())],
       ["value", getStringEncoder()],
     ],
-    Buffer.from([1]),
+    splDiscriminate(
+      "field_interface_interface:update_field_with_field_authority"
+    ),
     { field: getFieldConfig(field), value }
   );
 
@@ -164,7 +167,7 @@ export function createRemoveFieldAuthorityIx(
 ): TransactionInstruction {
   const data = packInstruction(
     [["field", getDataEnumCodec(getFieldCodec())]],
-    Buffer.from([2]),
+    splDiscriminate("field_interface_interface:remove_field_authority"),
     { field: getFieldConfig(field) }
   );
 

@@ -20,6 +20,7 @@
     "@solana/codecs-strings": "2.0.0-experimental.8618508",
     "@solana/spl-token": "^0.3.9",
     "@solana/spl-token-metadata": "^0.1.2",
+    "@solana/spl-type-length-value": "^0.1.0",
     "@solana/web3.js": "^1.87.6",
     "dotenv": "^16.3.1",
     "ts-node": "^10.9.2"
