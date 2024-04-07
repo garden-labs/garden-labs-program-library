@@ -5,6 +5,8 @@ import {
   Keypair,
   Transaction,
   sendAndConfirmTransaction,
+  SystemProgram,
+  LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 import * as borsh from "@coral-xyz/borsh";
@@ -27,45 +29,51 @@ import {
 import { CONNECTION, setHolderMetadataPayer } from "../util/config";
 
 describe("Holder Metadata Program", () => {
-  const mintKeypair = Keypair.generate();
-  let tokenAddress: PublicKey; // Initialized in tests
-  const metadataKeypair = Keypair.generate();
+  const mints: PublicKey[] = [];
+  const metadatas: PublicKey[] = [];
+  const tokens: PublicKey[] = [];
+  const testHolder = Keypair.generate();
 
   const [holderMetadataPda] = PublicKey.findProgramAddressSync(
     [Buffer.from(HOLDER_METADATA_PDA_SEED)],
     setHolderMetadataPayer(ANCHOR_WALLET_KEYPAIR).program.programId
   );
 
-  let metadataVals: TokenMetadata = {
-    name: "My test token",
-    symbol: "TEST",
-    uri: "http://test.test",
-    updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
-    mint: mintKeypair.publicKey,
-    additionalMetadata: [],
-  };
+  function getMetadataVals(mint: PublicKey): TokenMetadata {
+    const metadataVals: TokenMetadata = {
+      name: "My test token",
+      symbol: "TEST",
+      uri: "http://test.test",
+      updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
+      mint,
+      additionalMetadata: [],
+    };
+    return metadataVals;
+  }
+
   const additionalFieldKey = "additional field key";
 
   it("Setup mint, metadata, and token", async () => {
-    tokenAddress = await setupMintMetadataToken(
+    const mintKeypair = Keypair.generate();
+    const metadataKeypair = Keypair.generate();
+    const metadataVals = getMetadataVals(mintKeypair.publicKey);
+
+    const token = await setupMintMetadataToken(
       mintKeypair,
       metadataKeypair,
       metadataVals,
       additionalFieldKey
     );
 
-    // Check emmitted metadata
-    const emittedMetadata = await getEmittedMetadata(
-      EXAMPLE_PROGRAM_ID,
-      metadataKeypair.publicKey
-    );
-    assert.deepStrictEqual(emittedMetadata, metadataVals);
+    mints.push(mintKeypair.publicKey);
+    metadatas.push(metadataKeypair.publicKey);
+    tokens.push(token);
   });
 
   it("Add name as holder field", async () => {
     const ix = createAddFieldAuthorityIx(
       ANCHOR_WALLET_KEYPAIR.publicKey,
-      metadataKeypair.publicKey,
+      metadatas[0],
       ANCHOR_WALLET_KEYPAIR.publicKey,
       holderMetadataPda,
       Field.Name,
@@ -81,7 +89,7 @@ describe("Holder Metadata Program", () => {
       [
         Buffer.from(FIELD_AUTHORITY_PDA_SEED),
         Buffer.from(fieldToSeedStr(Field.Name)),
-        metadataKeypair.publicKey.toBuffer(),
+        metadatas[0].toBuffer(),
       ],
       EXAMPLE_PROGRAM_ID
     );
@@ -92,8 +100,13 @@ describe("Holder Metadata Program", () => {
     assert(holderMetadataPda.equals(authority));
   });
 
-  it("update name with holder metadata succeeds", async () => {
-    const { program } = setHolderMetadataPayer(ANCHOR_WALLET_KEYPAIR);
+  async function updateNameWithHolder(
+    mint: PublicKey,
+    metadata: PublicKey,
+    token: PublicKey,
+    payer: Keypair
+  ): Promise<void> {
+    const { program } = setHolderMetadataPayer(payer);
 
     const val = randomStr(10);
 
@@ -103,7 +116,7 @@ describe("Holder Metadata Program", () => {
       [
         Buffer.from(FIELD_AUTHORITY_PDA_SEED),
         Buffer.from(fieldToSeedStr(Field.Name)),
-        metadataKeypair.publicKey.toBuffer(),
+        metadata.toBuffer(),
       ],
       EXAMPLE_PROGRAM_ID
     );
@@ -111,9 +124,9 @@ describe("Holder Metadata Program", () => {
     await program.methods
       .updateHolderField(param, val)
       .accounts({
-        mint: mintKeypair.publicKey,
-        metadata: metadataKeypair.publicKey,
-        holderTokenAccount: tokenAddress,
+        mint,
+        metadata,
+        holderTokenAccount: token,
         holderMetadataPda,
         fieldPda,
         fieldAuthorityProgram: EXAMPLE_PROGRAM_ID,
@@ -121,18 +134,76 @@ describe("Holder Metadata Program", () => {
       .rpc();
 
     // Check emmitted metadata
-    const vals: TokenMetadata = { ...metadataVals, name: val };
+    const metadataVals = getMetadataVals(mint);
+    metadataVals.name = val;
     const emittedMetadata = await getEmittedMetadata(
       EXAMPLE_PROGRAM_ID,
-      metadataKeypair.publicKey
+      metadata
     );
-    assert.deepStrictEqual(emittedMetadata, vals);
+    assert.deepStrictEqual(emittedMetadata, metadataVals);
+  }
 
-    // Update if succeeded
-    metadataVals = vals;
+  it("Update name with holder metadata succeeds", async () => {
+    const index = 0;
+    await updateNameWithHolder(
+      mints[index],
+      metadatas[index],
+      tokens[index],
+      ANCHOR_WALLET_KEYPAIR
+    );
   });
 
-  // TODO: Update name with non-holder fails
+  it("Setup holder for fail test", async () => {
+    const ix = SystemProgram.transfer({
+      fromPubkey: ANCHOR_WALLET_KEYPAIR.publicKey,
+      toPubkey: testHolder.publicKey,
+      lamports: 5 * LAMPORTS_PER_SOL,
+    });
+    const tx = new Transaction().add(ix);
+    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
 
-  // TODO: Update name with wrong token fails
+    // Check balance
+    const balance = await CONNECTION.getBalance(testHolder.publicKey);
+    assert(balance === 5 * LAMPORTS_PER_SOL);
+  });
+
+  it("Update name with non-holder fails", async () => {
+    const index = 0;
+    assert.rejects(async () => {
+      await updateNameWithHolder(
+        mints[index],
+        metadatas[index],
+        tokens[index],
+        testHolder
+      );
+    });
+  });
+
+  it("Setup token for fail test", async () => {
+    const mintKeypair = Keypair.generate();
+    const metadataKeypair = Keypair.generate();
+    const metadataVals = getMetadataVals(mintKeypair.publicKey);
+
+    const token = await setupMintMetadataToken(
+      mintKeypair,
+      metadataKeypair,
+      metadataVals,
+      additionalFieldKey
+    );
+
+    mints.push(mintKeypair.publicKey);
+    metadatas.push(metadataKeypair.publicKey);
+    tokens.push(token);
+  });
+
+  it("Update name with wrong token fails", async () => {
+    assert.rejects(async () => {
+      await updateNameWithHolder(
+        mints[0],
+        metadatas[0],
+        tokens[1],
+        ANCHOR_WALLET_KEYPAIR
+      );
+    });
+  });
 });

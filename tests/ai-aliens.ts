@@ -351,10 +351,11 @@ describe("AI Aliens Program", () => {
   }
 
   it("Update field with creator", async () => {
-    await updateUriWithCreator(2, "test-uri-update");
+    const index = 2;
+    await updateUriWithCreator(index, "test-uri-update");
 
     // Clean this up because we use this value live on devnet
-    const metadataVals = getMetadataVals(2);
-    await updateUriWithCreator(2, metadataVals.uri);
+    const metadataVals = getMetadataVals(index);
+    await updateUriWithCreator(index, metadataVals.uri);
   });
 });
