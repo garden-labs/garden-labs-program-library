@@ -3,7 +3,7 @@
 <div style="margin-top: 20px; margin-bottom: 20px;">
     <div style="display: flex;">
         <img src="/13.png" width="50%" />
-        <img src="/76.png" width="50%" />
+        <img src="/4.png" width="50%" />
     </div>
 </div>
 
