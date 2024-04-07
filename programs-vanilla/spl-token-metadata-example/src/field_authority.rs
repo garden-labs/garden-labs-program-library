@@ -39,7 +39,7 @@ fn check_metadata_update_authority(
     Ok(())
 }
 
-/// TODO: Documentation
+/// Proccesses an AddFieldAuthority instruction
 pub fn process_add_field_authority(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
@@ -103,7 +103,7 @@ pub fn process_add_field_authority(
     Ok(())
 }
 
-/// TODO: Doc
+/// Proccesses an UpdateFieldWithFieldAuthority instruction
 pub fn process_update_field_with_field_authority(
     _program_id: &Pubkey,
     accounts: &[AccountInfo],
@@ -137,7 +137,7 @@ pub fn process_update_field_with_field_authority(
     Ok(())
 }
 
-/// TODO: Documentation
+/// Processes a RemoveFieldAuthority instruction
 pub fn process_remove_field_authority(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
