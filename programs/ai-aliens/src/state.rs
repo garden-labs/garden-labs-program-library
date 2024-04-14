@@ -3,12 +3,14 @@ use spl_token_metadata_interface::state::Field;
 
 #[account]
 pub struct AiAliensPda {
+    pub admin: Pubkey,            // 32
+    pub treasury: Pubkey,         // 32
     pub max_supply: u16,          // 2
     pub mint_price_lamports: u64, // 8
 }
 
 impl AiAliensPda {
-    pub const LEN: usize = 2 + 8 + 8; // Extra 8 bytes for account discriminator
+    pub const LEN: usize = 32 + 32 + 2 + 8 + 8; // Extra 8 bytes for account discriminator
 }
 
 #[account]

@@ -17,12 +17,24 @@ declare_id!("48MKwUN9uxxGrFCzXAV4kF5RPMVUyruLyYnapNynNtd4");
 pub mod ai_aliens {
     use super::*;
 
-    pub fn update_state(
-        ctx: Context<UpdateState>,
+    pub fn init(
+        ctx: Context<Init>,
+        admin: Pubkey,
+        treasury: Pubkey,
         max_supply: u16,
         mint_price_lamports: u64,
     ) -> Result<()> {
-        return handle_update_state(ctx, max_supply, mint_price_lamports);
+        return handle_init(ctx, admin, treasury, max_supply, mint_price_lamports);
+    }
+
+    pub fn update_state(
+        ctx: Context<UpdateState>,
+        admin: Pubkey,
+        treasury: Pubkey,
+        max_supply: u16,
+        mint_price_lamports: u64,
+    ) -> Result<()> {
+        return handle_update_state(ctx, admin, treasury, max_supply, mint_price_lamports);
     }
 
     pub fn create_mint(ctx: Context<CreateMint>, index: u16) -> Result<()> {

@@ -1,5 +1,5 @@
 use crate::constant::{AI_ALIENS_PDA_SEED, NFT_MINTED_PDA_SEED};
-use crate::helper::{get_creator_pubkey, get_metadata_program_id, get_token_metadata_init_space};
+use crate::helper::{get_metadata_program_id, get_token_metadata_init_space};
 use crate::state::{AiAliensPda, NftMintedPda};
 
 use anchor_lang::{prelude::*, solana_program::rent::Rent};
@@ -17,13 +17,26 @@ use spl_token_2022::{
 };
 
 #[derive(Accounts)]
-pub struct UpdateState<'info> {
-    #[account(mut, address = get_creator_pubkey()?)]
-    pub creator: Signer<'info>,
+pub struct Init<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
     #[account(
-        init_if_needed,
+        init,
         space = AiAliensPda::LEN,
-        payer = creator,
+        payer = payer,
+        seeds = [AI_ALIENS_PDA_SEED.as_bytes()],
+        bump)
+    ]
+    pub ai_aliens_pda: Account<'info, AiAliensPda>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct UpdateState<'info> {
+    #[account(address = ai_aliens_pda.admin)]
+    pub admin: Signer<'info>,
+    #[account(
+        mut,
         seeds = [AI_ALIENS_PDA_SEED.as_bytes()],
         bump)
     ]
@@ -36,6 +49,9 @@ pub struct UpdateState<'info> {
 pub struct CreateMint<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+    /// CHECK: Account checked in constraints
+    #[account(mut, address = ai_aliens_pda.treasury)]
+    pub treasury: UncheckedAccount<'info>,
     /// CHECK: Account checked in CPI
     #[account(
         init,
@@ -103,8 +119,8 @@ pub struct CreateToken<'info> {
 #[derive(Accounts)]
 #[instruction(field: AnchorField, val: String)]
 pub struct UpdateField<'info> {
-    #[account(mut, address = get_creator_pubkey()?)]
-    pub creator: Signer<'info>,
+    #[account(address = ai_aliens_pda.admin)]
+    pub admin: Signer<'info>,
     /// CHECK: Account checked in CPI
     #[account(mut)]
     pub metadata: UncheckedAccount<'info>,

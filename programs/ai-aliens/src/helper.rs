@@ -1,4 +1,4 @@
-use crate::constant::{CREATOR_PUBKEY_STR, METADATA_PROGRAM_ID_STR};
+use crate::constant::{DUMMY_PUBKEY_STR, METADATA_PROGRAM_ID_STR};
 use crate::error::AiAliensError;
 use spl_token_metadata_interface::state::TokenMetadata;
 
@@ -9,8 +9,8 @@ fn get_pubkey(str: &str) -> Result<Pubkey> {
     Pubkey::from_str(str).map_err(|_| AiAliensError::InvalidPublicKey.into())
 }
 
-pub fn get_creator_pubkey() -> Result<Pubkey> {
-    return get_pubkey(CREATOR_PUBKEY_STR);
+fn get_dummy_pubkey() -> Result<Pubkey> {
+    return get_pubkey(DUMMY_PUBKEY_STR);
 }
 
 pub fn get_metadata_program_id() -> Result<Pubkey> {
@@ -37,7 +37,7 @@ pub fn get_token_metadata_init_vals(
 
 // We need to start with this because setting a new field always creates space
 pub fn get_token_metadata_init_space(index: u16) -> Result<usize> {
-    let dummy_pubkey: Pubkey = get_creator_pubkey()?;
+    let dummy_pubkey: Pubkey = get_dummy_pubkey()?;
 
     let dummy_token_metadata = get_token_metadata_init_vals(index, dummy_pubkey, dummy_pubkey)?;
 
@@ -45,7 +45,7 @@ pub fn get_token_metadata_init_space(index: u16) -> Result<usize> {
 }
 
 pub fn get_token_metadata_max_space(index: u16) -> Result<usize> {
-    let dummy_pubkey: Pubkey = get_creator_pubkey()?;
+    let dummy_pubkey: Pubkey = get_dummy_pubkey()?;
 
     let mut dummy_token_metadata = get_token_metadata_init_vals(index, dummy_pubkey, dummy_pubkey)?;
 

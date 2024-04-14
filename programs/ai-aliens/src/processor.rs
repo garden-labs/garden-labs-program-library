@@ -11,12 +11,32 @@ use spl_token_2022::{
     instruction::{initialize_mint2, initialize_permanent_delegate},
 };
 
-pub fn handle_update_state(
-    ctx: Context<UpdateState>,
+pub fn handle_init(
+    ctx: Context<Init>,
+    admin: Pubkey,
+    treasury: Pubkey,
     max_supply: u16,
     mint_price_lamports: u64,
 ) -> Result<()> {
     // Set PDA data
+    ctx.accounts.ai_aliens_pda.admin = admin;
+    ctx.accounts.ai_aliens_pda.treasury = treasury;
+    ctx.accounts.ai_aliens_pda.max_supply = max_supply;
+    ctx.accounts.ai_aliens_pda.mint_price_lamports = mint_price_lamports;
+
+    Ok(())
+}
+
+pub fn handle_update_state(
+    ctx: Context<UpdateState>,
+    admin: Pubkey,
+    treasury: Pubkey,
+    max_supply: u16,
+    mint_price_lamports: u64,
+) -> Result<()> {
+    // Set PDA data
+    ctx.accounts.ai_aliens_pda.admin = admin;
+    ctx.accounts.ai_aliens_pda.treasury = treasury;
     ctx.accounts.ai_aliens_pda.max_supply = max_supply;
     ctx.accounts.ai_aliens_pda.mint_price_lamports = mint_price_lamports;
 
@@ -33,12 +53,12 @@ fn check_max_supply(ctx: &Context<CreateMint>, index: u16) -> Result<()> {
 fn pay_mint_price(ctx: &Context<CreateMint>) -> Result<()> {
     let ix = &anchor_lang::solana_program::system_instruction::transfer(
         ctx.accounts.payer.key,
-        &ctx.accounts.ai_aliens_pda.key(),
+        ctx.accounts.treasury.key,
         ctx.accounts.ai_aliens_pda.mint_price_lamports,
     );
     let accounts = &[
         ctx.accounts.payer.to_account_info(),
-        ctx.accounts.ai_aliens_pda.to_account_info(),
+        ctx.accounts.treasury.to_account_info(),
     ];
     anchor_lang::solana_program::program::invoke(ix, accounts)?;
 
