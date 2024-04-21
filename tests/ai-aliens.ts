@@ -5,6 +5,10 @@ import {
   PublicKey,
   LAMPORTS_PER_SOL,
   SendTransactionError,
+  SystemProgram,
+  sendAndConfirmTransaction,
+  Transaction,
+  TransactionError,
 } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import {
@@ -43,6 +47,7 @@ import {
   HOLDER_METADATA_PDA_SEED,
   toAnchorParam,
 } from "../util/holder-metadata";
+import { interpretTxErr, InterpretedTxErr } from "../util/tx";
 
 describe("AI Aliens Program", () => {
   const mintPriceLamports = 0.1 * LAMPORTS_PER_SOL;
@@ -51,6 +56,7 @@ describe("AI Aliens Program", () => {
   const metadatas: PublicKey[] = [];
   const admin = ANCHOR_WALLET_KEYPAIR.publicKey;
   const treasury = Keypair.generate().publicKey;
+  const insufficientFundsAccount = Keypair.generate();
 
   const [aiAliensPda] = PublicKey.findProgramAddressSync(
     [Buffer.from(AI_ALIENS_AUTHORITY_PDA_SEED)],
@@ -133,15 +139,18 @@ describe("AI Aliens Program", () => {
     assert.equal(aiAliensPdaData.mintPriceLamports, mintPriceLamports);
   });
 
-  async function createMint(index: number): Promise<void> {
+  async function createMint(
+    index: number,
+    payer: Keypair = ANCHOR_WALLET_KEYPAIR
+  ): Promise<void> {
     const mintKeypair = Keypair.generate();
     const metadataKeypair = Keypair.generate();
 
-    const { program } = setAiAliensPayer(ANCHOR_WALLET_KEYPAIR);
+    const { program } = setAiAliensPayer(payer);
 
     const [nftMintedPda] = PublicKey.findProgramAddressSync(
       [Buffer.from(NFT_MINTED_PDA_SEED), indexToSeed(index)],
-      setAiAliensPayer(ANCHOR_WALLET_KEYPAIR).program.programId
+      setAiAliensPayer(payer).program.programId
     );
 
     const [fieldPda] = PublicKey.findProgramAddressSync(
@@ -289,6 +298,35 @@ describe("AI Aliens Program", () => {
 
   it("Create mint at index 1000 succeeds", async () => {
     await createMint(1000);
+  });
+
+  it("Create insufficent funds account", async () => {
+    const ix = SystemProgram.transfer({
+      fromPubkey: ANCHOR_WALLET_KEYPAIR.publicKey,
+      toPubkey: insufficientFundsAccount.publicKey,
+      lamports: mintPriceLamports, // With fees and rent this will be slightly under
+    });
+    const tx = new Transaction().add(ix);
+    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+  });
+
+  it("Create mint fails with insufficient funds", async () => {
+    try {
+      await createMint(3, insufficientFundsAccount);
+    } catch (err) {
+      const interpretedTxErr = interpretTxErr(err);
+      assert.equal(interpretedTxErr, InterpretedTxErr.InsufficientFunds);
+    }
+  });
+
+  it("Create mint fails with zero funds", async () => {
+    const zeroFundsAccount = Keypair.generate();
+    try {
+      await createMint(4, zeroFundsAccount);
+    } catch (err) {
+      const interpretedTxErr = interpretTxErr(err);
+      assert.equal(interpretedTxErr, InterpretedTxErr.InsufficientFunds);
+    }
   });
 
   it("Create token succeeds", async () => {
