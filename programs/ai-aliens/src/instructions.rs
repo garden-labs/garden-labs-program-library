@@ -130,3 +130,20 @@ pub struct UpdateField<'info> {
     #[account(executable, address = get_metadata_program_id()?)]
     pub metadata_program: UncheckedAccount<'info>,
 }
+
+// NOTE: We allow anyone to call this to make running it on all mints easier
+#[derive(Accounts)]
+#[instruction(index: u16)]
+pub struct NullifyMintAuthority<'info> {
+    #[account(mut, address = nft_minted_pda.mint)]
+    pub mint: InterfaceAccount<'info, Mint>,
+    // We'll add this to be a little careful
+    #[account(
+        seeds = [NFT_MINTED_PDA_SEED.as_bytes(), &index.to_le_bytes()],
+        bump,
+    )]
+    pub nft_minted_pda: Account<'info, NftMintedPda>,
+    #[account(seeds = [AI_ALIENS_PDA_SEED.as_bytes()], bump)]
+    pub ai_aliens_pda: Account<'info, AiAliensPda>,
+    pub token_program: Program<'info, Token2022>,
+}

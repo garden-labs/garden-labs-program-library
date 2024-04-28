@@ -48,4 +48,8 @@ pub mod ai_aliens {
     pub fn update_field(ctx: Context<UpdateField>, field: AnchorField, val: String) -> Result<()> {
         return handle_update_field(ctx, field, val);
     }
+
+    pub fn nullify_mint_authority(ctx: Context<NullifyMintAuthority>, index: u16) -> Result<()> {
+        return handle_nullify_mint_authority(ctx, index);
+    }
 }

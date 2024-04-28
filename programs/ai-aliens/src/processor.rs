@@ -8,7 +8,7 @@ use anchor_spl::token_interface::{mint_to, MintTo};
 use holder_metadata::{state::AnchorField, HOLDER_METADATA_PDA_SEED};
 use spl_token_2022::{
     extension::{group_member_pointer, metadata_pointer, transfer_hook},
-    instruction::{initialize_mint2, initialize_permanent_delegate},
+    instruction::{initialize_mint2, initialize_permanent_delegate, set_authority, AuthorityType},
 };
 
 pub fn handle_init(
@@ -254,20 +254,42 @@ pub fn handle_update_field(
     field: AnchorField,
     val: String,
 ) -> Result<()> {
-    let update_ix = spl_token_metadata_interface::instruction::update_field(
+    let ix = spl_token_metadata_interface::instruction::update_field(
         ctx.accounts.metadata_program.key,
         &ctx.accounts.metadata.key(),
         &ctx.accounts.ai_aliens_pda.key(),
         field.into(),
         val,
     );
-    let update_accounts = [
+    let accounts = [
         ctx.accounts.metadata.to_account_info(),
         ctx.accounts.ai_aliens_pda.to_account_info(),
     ];
     let ai_aliens_pda_seeds = [AI_ALIENS_PDA_SEED.as_bytes(), &[ctx.bumps.ai_aliens_pda]];
     let ai_aliens_only_signer_seeds = [&ai_aliens_pda_seeds[..]];
-    invoke_signed(&update_ix, &update_accounts, &ai_aliens_only_signer_seeds)?;
+    invoke_signed(&ix, &accounts, &ai_aliens_only_signer_seeds)?;
+
+    Ok(())
+}
+
+pub fn handle_nullify_mint_authority(ctx: Context<NullifyMintAuthority>, index: u16) -> Result<()> {
+    // NOTE: Need to use spl-token-2022 crate directly because Anchor has a mismatched version
+    // TODO: Match versions and update program carefully
+    let ix = set_authority(
+        ctx.accounts.token_program.key,
+        &ctx.accounts.mint.key(),
+        None,
+        AuthorityType::MintTokens,
+        &ctx.accounts.ai_aliens_pda.key(),
+        &[&ctx.accounts.ai_aliens_pda.key()],
+    )?;
+    let accounts = [
+        ctx.accounts.mint.to_account_info(),
+        ctx.accounts.ai_aliens_pda.to_account_info(),
+    ];
+    let ai_aliens_pda_seeds = [AI_ALIENS_PDA_SEED.as_bytes(), &[ctx.bumps.ai_aliens_pda]];
+    let signer_seeds = [&ai_aliens_pda_seeds[..]];
+    invoke_signed(&ix, &accounts, &signer_seeds)?;
 
     Ok(())
 }

@@ -47,7 +47,11 @@ import {
   HOLDER_METADATA_PDA_SEED,
   toAnchorParam,
 } from "../util/holder-metadata";
-import { interpretTxErr, InterpretedTxErr } from "../util/tx";
+import {
+  interpretTxErr,
+  InterpretedTxErr,
+  InterpretedTxErrType,
+} from "../util/tx";
 
 describe("AI Aliens Program", () => {
   const mintPriceLamports = 0.1 * LAMPORTS_PER_SOL;
@@ -315,7 +319,10 @@ describe("AI Aliens Program", () => {
       await createMint(3, insufficientFundsAccount);
     } catch (err) {
       const interpretedTxErr = interpretTxErr(err);
-      assert.equal(interpretedTxErr, InterpretedTxErr.InsufficientFunds);
+      assert.equal(
+        interpretedTxErr.type,
+        InterpretedTxErrType.InsufficientFunds
+      );
     }
   });
 
@@ -325,7 +332,10 @@ describe("AI Aliens Program", () => {
       await createMint(4, zeroFundsAccount);
     } catch (err) {
       const interpretedTxErr = interpretTxErr(err);
-      assert.equal(interpretedTxErr, InterpretedTxErr.InsufficientFunds);
+      assert.equal(
+        interpretedTxErr.type,
+        InterpretedTxErrType.InsufficientFunds
+      );
     }
   });
 
@@ -429,5 +439,35 @@ describe("AI Aliens Program", () => {
     // Clean this up because we use this value live on devnet
     const metadataVals = getMetadataVals(index);
     await updateUriWithAdmin(index, metadataVals.uri);
+  });
+
+  it("Nullify mint authority", async () => {
+    const { program } = setAiAliensPayer(ANCHOR_WALLET_KEYPAIR);
+
+    const index = 1;
+    const mint = mints[index - 1];
+    const [nftMintedPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from(NFT_MINTED_PDA_SEED), indexToSeed(index)],
+      setAiAliensPayer(ANCHOR_WALLET_KEYPAIR).program.programId
+    );
+
+    await program.methods
+      .nullifyMintAuthority(index)
+      .accounts({
+        mint,
+        nftMintedPda,
+        aiAliensPda,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
+      })
+      .rpc();
+
+    // Check mint authority
+    const mintInfo = await getMint(
+      CONNECTION,
+      mint,
+      undefined,
+      TOKEN_2022_PROGRAM_ID
+    );
+    assert.equal(mintInfo.mintAuthority, null);
   });
 });

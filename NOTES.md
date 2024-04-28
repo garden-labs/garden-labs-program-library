@@ -11,4 +11,4 @@ Holder Metadata
 AI Aliens
 
 - Program ID: 48MKwUN9uxxGrFCzXAV4kF5RPMVUyruLyYnapNynNtd4
-- Solana Verify Hash: 270308f9aebe70e10ec68a1f8163090263c2715f7e68cb8a6a0aa311e3038a05
+- Solana Verify Hash: 81294793bddaeafbff5dd22af361eeb6ece5870caedd32877e82c0c8f2657ead
