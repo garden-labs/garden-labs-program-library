@@ -32,9 +32,9 @@ pub async fn setup(
     Arc<Keypair>,
 ) {
     let mut program_test = ProgramTest::new(
-        "spl_token_metadata_example",
+        "advanced_token_metadata",
         *program_id,
-        processor!(spl_token_metadata_example::processor::process),
+        processor!(advanced_token_metadata::processor::process),
     );
 
     program_test.prefer_bpf(false); // simplicity in the build

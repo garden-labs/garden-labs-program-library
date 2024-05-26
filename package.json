@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "anchor build && scripts/build/spl-token-metadata-example.sh",
+    "build": "anchor build && scripts/build/advanced-token-metadata.sh",
     "set-network:localnet": "solana config set --url http://localhost:8899",
     "set-network:devnet": "solana config set --url https://api.devnet.solana.com",
     "set-network:mainnet": "solana config set --url https://api.mainnet-beta.solana.com",
@@ -15,9 +15,9 @@
     "upgrade:mainnet": "solana program upgrade $(solana-keygen pubkey buffer.json) --",
     "start:localnet": "solana-test-validator",
     "restart:localnet": "solana-test-validator -r",
-    "test:localnet": "yarn set-network:localnet && scripts/build/spl-token-metadata-example.sh && TEST_ENV=localnet anchor test",
+    "test:localnet": "yarn set-network:localnet && scripts/build/advanced-token-metadata.sh && TEST_ENV=localnet anchor test",
     "test:localnet:keep-open": "yarn test:localnet -- --skip-local-validator",
-    "test:devnet": "TEST_ENV=devnet ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts",
+    "test:devnet": "TEST_ENV=devnet ts-mocha -p ./tsconfig.json -t 1000000 **/test/**/*.ts",
     "test:devnet:redeploy": "yarn build && yarn deploy:devnet && yarn test:devnet",
     "lint": "eslint ."
   },

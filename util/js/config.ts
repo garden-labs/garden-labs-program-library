@@ -10,7 +10,7 @@ import {
 } from "@coral-xyz/anchor";
 import { Connection, Keypair } from "@solana/web3.js";
 
-import { HolderMetadata } from "../../target/types/holder_metadata";
+import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 import { AiAliens } from "../../target/types/ai_aliens";
 
 const commitmentLevel = "confirmed";
@@ -68,14 +68,14 @@ if (process.env.TEST_ENV !== "localnet") {
   setProv(Keypair.generate());
 }
 const aliensProgram = workspace.AiAliens as Program<AiAliens>;
-const holderMetadataProgram =
-  workspace.HolderMetadata as Program<HolderMetadata>;
+const holderMetadataPluginProgram =
+  workspace.HolderMetadataPlugin as Program<HolderMetadataPlugin>;
 
 export function setHolderMetadataPayer(payer: Keypair): {
   provider: AnchorProvider;
-  program: Program<HolderMetadata>;
+  program: Program<HolderMetadataPlugin>;
 } {
-  return setPayer(payer, holderMetadataProgram);
+  return setPayer(payer, holderMetadataPluginProgram);
 }
 
 export function setAiAliensPayer(payer: Keypair): {

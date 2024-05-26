@@ -5,7 +5,7 @@ use crate::instructions::*;
 
 use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
 use anchor_spl::token_interface::{mint_to, MintTo};
-use holder_metadata::{state::AnchorField, HOLDER_METADATA_PDA_SEED};
+use holder_metadata_plugin::{state::AnchorField, HOLDER_METADATA_PDA_SEED};
 use spl_token_2022::{
     extension::{group_member_pointer, metadata_pointer, transfer_hook},
     instruction::{initialize_mint2, initialize_permanent_delegate, set_authority, AuthorityType},
@@ -172,7 +172,7 @@ fn init_metadata(ctx: &Context<CreateMint>, index: u16) -> Result<()> {
 fn add_nickname_as_holder_meta(ctx: &Context<CreateMint>) -> Result<()> {
     let holder_metadata_pda_seeds = [HOLDER_METADATA_PDA_SEED.as_bytes()];
     let (holder_metadata_pda, _bump) =
-        Pubkey::find_program_address(&holder_metadata_pda_seeds, &holder_metadata::id());
+        Pubkey::find_program_address(&holder_metadata_pda_seeds, &holder_metadata_plugin::id());
 
     let ix = field_authority_interface::instruction::add_field_authority(
         ctx.accounts.metadata_program.key,

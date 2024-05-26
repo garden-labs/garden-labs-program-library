@@ -28,6 +28,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 
 [[package]]
+name = "advanced-token-metadata"
+version = "0.2.0"
+dependencies = [
+ "borsh 0.10.3",
+ "field-authority-interface",
+ "solana-program",
+ "solana-program-test",
+ "solana-sdk",
+ "spl-pod",
+ "spl-token-2022 1.0.0",
+ "spl-token-client",
+ "spl-token-metadata-interface",
+ "spl-type-length-value",
+ "test-case",
+]
+
+[[package]]
 name = "aead"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -103,7 +120,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "field-authority-interface",
- "holder-metadata",
+ "holder-metadata-plugin",
  "spl-pod",
  "spl-token-2022 1.0.0",
  "spl-token-metadata-interface",
@@ -1914,7 +1931,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "holder-metadata"
+name = "holder-metadata-plugin"
 version = "0.2.0"
 dependencies = [
  "anchor-lang",
@@ -5184,23 +5201,6 @@ dependencies = [
  "spl-discriminator 0.1.0",
  "spl-pod",
  "spl-program-error",
-]
-
-[[package]]
-name = "spl-token-metadata-example"
-version = "0.2.0"
-dependencies = [
- "borsh 0.10.3",
- "field-authority-interface",
- "solana-program",
- "solana-program-test",
- "solana-sdk",
- "spl-pod",
- "spl-token-2022 1.0.0",
- "spl-token-client",
- "spl-token-metadata-interface",
- "spl-type-length-value",
- "test-case",
 ]
 
 [[package]]

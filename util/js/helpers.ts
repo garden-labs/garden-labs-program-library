@@ -28,8 +28,8 @@ import {
 
 import {
   ANCHOR_WALLET_KEYPAIR,
-  DEPLOY_EXAMPLE_SCRIPT_PATH,
-  EXAMPLE_PROGRAM_ID,
+  DEPLOY_ATM_SCRIPT_PATH,
+  ATM_PROGRAM_ID,
 } from "./constants";
 import { CONNECTION } from "./config";
 
@@ -38,10 +38,10 @@ export function randomStr(numChars: number): string {
 }
 
 // Alternative Method
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function getAccountMetadata(
   metadataPubkey: PublicKey
 ): Promise<TokenMetadata> {
-  console.log("Read data test...");
   const accountInfo = await CONNECTION.getAccountInfo(metadataPubkey);
   if (!accountInfo) {
     throw new Error("Account not found");
@@ -69,6 +69,7 @@ export async function getEmittedMetadata(
       ]);
     } catch (err) {
       if (retries === 0) {
+        // eslint-disable-next-line no-console
         console.error(err);
         throw new Error("Max retries reached");
       }
@@ -97,12 +98,14 @@ export async function getEmittedMetadata(
   return unpack(data);
 }
 
-let exampleProgramDeployed = process.env.TEST_ENV !== "localnet";
-export function ensureExampleProgramDeployed(): void {
-  if (!exampleProgramDeployed) {
-    console.log("Deploying example program...");
-    execSync(DEPLOY_EXAMPLE_SCRIPT_PATH);
-    exampleProgramDeployed = true;
+// TODO: Deploy via Anchor config? Perhaps we need this method for local validator
+let atmProgramDeployed = process.env.TEST_ENV !== "localnet";
+export function ensureAtmProgramDeployed(): void {
+  if (!atmProgramDeployed) {
+    // eslint-disable-next-line no-console
+    console.log("Deploying advanced token metadata program...");
+    execSync(DEPLOY_ATM_SCRIPT_PATH);
+    atmProgramDeployed = true;
   }
 }
 
@@ -135,7 +138,7 @@ export async function createMetadataAccount(
     newAccountPubkey: metadataKeypair.publicKey,
     lamports,
     space,
-    programId: EXAMPLE_PROGRAM_ID,
+    programId: ATM_PROGRAM_ID,
   });
   const createAccountTx = new Transaction().add(createAccountIx);
   await sendAndConfirmTransaction(CONNECTION, createAccountTx, [
@@ -181,7 +184,7 @@ export async function setupMintMetadataToken(
     undefined
   );
 
-  ensureExampleProgramDeployed();
+  ensureAtmProgramDeployed();
 
   await createMetadataAccount(
     metadataKeypair,
@@ -191,7 +194,7 @@ export async function setupMintMetadataToken(
 
   // Set metadata account data
   const initDataIx = createInitializeInstruction({
-    programId: EXAMPLE_PROGRAM_ID,
+    programId: ATM_PROGRAM_ID,
     metadata: metadataKeypair.publicKey,
     updateAuthority: metadataVals.updateAuthority as PublicKey,
     mint: metadataVals.mint,
@@ -205,7 +208,7 @@ export async function setupMintMetadataToken(
 
   // Check emmitted metadata
   const emittedMetadata = await getEmittedMetadata(
-    EXAMPLE_PROGRAM_ID,
+    ATM_PROGRAM_ID,
     metadataKeypair.publicKey
   );
   assert.deepStrictEqual(emittedMetadata, metadataVals);

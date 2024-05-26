@@ -14,32 +14,34 @@ export const ANCHOR_WALLET_KEYPAIR = Keypair.fromSecretKey(
   )
 );
 
-export const BUILD_EXAMPLE_SCRIPT_PATH = path.join(
+export const BUILD_ATM_SCRIPT_PATH = path.join(
   __dirname,
+  "..",
   "..",
   "scripts",
   "build",
-  "spl-token-metadata-example.sh"
+  "advanced-token-metadata.sh"
 );
 
-export const DEPLOY_EXAMPLE_SCRIPT_PATH = path.join(
+export const DEPLOY_ATM_SCRIPT_PATH = path.join(
   __dirname,
+  "..",
   "..",
   "scripts",
   "deploy",
-  "spl-token-metadata-example.sh"
+  "advanced-token-metadata.sh"
 );
 
-const EXAMPLE_KEYPAIR_PATH = path.join(
+const ATM_KEYPAIR_PATH = path.join(
   __dirname,
   "..",
   "target",
   "deploy",
-  "spl_token_metadata_example-keypair.json"
+  "advanced_token_metadata-keypair.json"
 );
 
-const EXAMPLE_KEYPAIR = web3.Keypair.fromSecretKey(
-  Uint8Array.from(JSON.parse(readFileSync(EXAMPLE_KEYPAIR_PATH).toString()))
+const ATM_KEYPAIR = web3.Keypair.fromSecretKey(
+  Uint8Array.from(JSON.parse(readFileSync(ATM_KEYPAIR_PATH).toString()))
 );
 
-export const EXAMPLE_PROGRAM_ID = EXAMPLE_KEYPAIR.publicKey;
+export const ATM_PROGRAM_ID = ATM_KEYPAIR.publicKey;

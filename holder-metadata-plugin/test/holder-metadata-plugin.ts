@@ -11,11 +11,11 @@ import {
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 import * as borsh from "@coral-xyz/borsh";
 
+import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
 import {
-  ANCHOR_WALLET_KEYPAIR,
-  EXAMPLE_PROGRAM_ID,
-} from "../../util/js/constants";
-import { HOLDER_METADATA_PDA_SEED, toAnchorParam } from "../js/holder-metadata";
+  HOLDER_METADATA_PDA_SEED,
+  toAnchorParam,
+} from "../js/holder-metadata-plugin";
 import {
   createAddFieldAuthorityIx,
   FIELD_AUTHORITY_PDA_SEED,
@@ -77,7 +77,7 @@ describe("Holder Metadata Program", () => {
       ANCHOR_WALLET_KEYPAIR.publicKey,
       holderMetadataPda,
       Field.Name,
-      EXAMPLE_PROGRAM_ID
+      ATM_PROGRAM_ID
     );
 
     const tx = new Transaction().add(ix);
@@ -91,7 +91,7 @@ describe("Holder Metadata Program", () => {
         Buffer.from(fieldToSeedStr(Field.Name)),
         metadatas[0].toBuffer(),
       ],
-      EXAMPLE_PROGRAM_ID
+      ATM_PROGRAM_ID
     );
     const pdaInfo = await CONNECTION.getAccountInfo(pda);
     assert(pdaInfo);
@@ -118,7 +118,7 @@ describe("Holder Metadata Program", () => {
         Buffer.from(fieldToSeedStr(Field.Name)),
         metadata.toBuffer(),
       ],
-      EXAMPLE_PROGRAM_ID
+      ATM_PROGRAM_ID
     );
 
     await program.methods
@@ -129,17 +129,14 @@ describe("Holder Metadata Program", () => {
         holderTokenAccount: token,
         holderMetadataPda,
         fieldPda,
-        fieldAuthorityProgram: EXAMPLE_PROGRAM_ID,
+        fieldAuthorityProgram: ATM_PROGRAM_ID,
       })
       .rpc();
 
     // Check emmitted metadata
     const metadataVals = getMetadataVals(mint);
     metadataVals.name = val;
-    const emittedMetadata = await getEmittedMetadata(
-      EXAMPLE_PROGRAM_ID,
-      metadata
-    );
+    const emittedMetadata = await getEmittedMetadata(ATM_PROGRAM_ID, metadata);
     assert.deepStrictEqual(emittedMetadata, metadataVals);
   }
 

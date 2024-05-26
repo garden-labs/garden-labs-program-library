@@ -22,7 +22,7 @@ import {
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 
 import {
-  ensureExampleProgramDeployed,
+  ensureAtmProgramDeployed,
   getEmittedMetadata,
   randomStr,
 } from "../../util/js/helpers";
@@ -31,10 +31,7 @@ import {
   setAiAliensPayer,
   setHolderMetadataPayer,
 } from "../../util/js/config";
-import {
-  ANCHOR_WALLET_KEYPAIR,
-  EXAMPLE_PROGRAM_ID,
-} from "../../util/js/constants";
+import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
 import {
   FIELD_AUTHORITY_PDA_SEED,
   fieldToSeedStr,
@@ -48,7 +45,7 @@ import {
 import {
   HOLDER_METADATA_PDA_SEED,
   toAnchorParam,
-} from "../../holder-metadata-plugin/js/holder-metadata";
+} from "../../holder-metadata-plugin/js/holder-metadata-plugin";
 import { interpretTxErr, InterpretedTxErrType } from "../../util/js/tx";
 
 describe("AI Aliens Program", () => {
@@ -85,7 +82,7 @@ describe("AI Aliens Program", () => {
   }
 
   before(async () => {
-    ensureExampleProgramDeployed();
+    ensureAtmProgramDeployed();
   });
 
   it("Handle init", async () => {
@@ -161,7 +158,7 @@ describe("AI Aliens Program", () => {
         Buffer.from(fieldToSeedStr(NICKNAME_FIELD_KEY)),
         metadataKeypair.publicKey.toBuffer(),
       ],
-      EXAMPLE_PROGRAM_ID
+      ATM_PROGRAM_ID
     );
 
     const treasuryBalanceBefore = await CONNECTION.getBalance(treasury);
@@ -175,7 +172,7 @@ describe("AI Aliens Program", () => {
         nftMintedPda,
         aiAliensPda,
         fieldPda,
-        metadataProgram: EXAMPLE_PROGRAM_ID,
+        metadataProgram: ATM_PROGRAM_ID,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
       })
       .signers([mintKeypair, metadataKeypair])
@@ -357,7 +354,7 @@ describe("AI Aliens Program", () => {
         Buffer.from(fieldToSeedStr(field)),
         metadata.toBuffer(),
       ],
-      EXAMPLE_PROGRAM_ID
+      ATM_PROGRAM_ID
     );
 
     const anchorWalletAta = await getAssociatedTokenAddress(
@@ -375,7 +372,7 @@ describe("AI Aliens Program", () => {
         holderTokenAccount: anchorWalletAta,
         holderMetadataPda,
         fieldPda,
-        fieldAuthorityProgram: EXAMPLE_PROGRAM_ID,
+        fieldAuthorityProgram: ATM_PROGRAM_ID,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
       })
       .rpc();
@@ -383,10 +380,7 @@ describe("AI Aliens Program", () => {
     // Check emmitted metadata
     const metadataVals = getMetadataVals(index);
     metadataVals.additionalMetadata.push([field, val]);
-    const emittedMetadata = await getEmittedMetadata(
-      EXAMPLE_PROGRAM_ID,
-      metadata
-    );
+    const emittedMetadata = await getEmittedMetadata(ATM_PROGRAM_ID, metadata);
     assert.deepStrictEqual(emittedMetadata, metadataVals);
   }
 
@@ -416,17 +410,14 @@ describe("AI Aliens Program", () => {
       .accounts({
         metadata,
         aiAliensPda,
-        metadataProgram: EXAMPLE_PROGRAM_ID,
+        metadataProgram: ATM_PROGRAM_ID,
       })
       .rpc();
 
     // Check emmitted metadata
     const metadataVals = getMetadataVals(index);
     metadataVals.uri = uri;
-    const emittedMetadata = await getEmittedMetadata(
-      EXAMPLE_PROGRAM_ID,
-      metadata
-    );
+    const emittedMetadata = await getEmittedMetadata(ATM_PROGRAM_ID, metadata);
     assert.deepStrictEqual(emittedMetadata, metadataVals);
   }
 

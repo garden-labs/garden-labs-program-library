@@ -6,7 +6,7 @@ edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "holder_metadata"
+name = "holder_metadata_plugin"
 
 [features]
 no-entrypoint = []
