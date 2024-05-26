@@ -11,22 +11,22 @@ import {
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 import * as borsh from "@coral-xyz/borsh";
 
-import { ANCHOR_WALLET_KEYPAIR, EXAMPLE_PROGRAM_ID } from "../util/constants";
 import {
-  HOLDER_METADATA_PDA_SEED,
-  toAnchorParam,
-} from "../util/holder-metadata";
+  ANCHOR_WALLET_KEYPAIR,
+  EXAMPLE_PROGRAM_ID,
+} from "../../util/js/constants";
+import { HOLDER_METADATA_PDA_SEED, toAnchorParam } from "../js/holder-metadata";
 import {
   createAddFieldAuthorityIx,
   FIELD_AUTHORITY_PDA_SEED,
   fieldToSeedStr,
-} from "../util/field-authority-interface";
+} from "../../field-authority-interface/js/field-authority-interface";
 import {
   getEmittedMetadata,
   randomStr,
   setupMintMetadataToken,
-} from "../util/helpers";
-import { CONNECTION, setHolderMetadataPayer } from "../util/config";
+} from "../../util/js/helpers";
+import { CONNECTION, setHolderMetadataPayer } from "../../util/js/config";
 
 describe("Holder Metadata Program", () => {
   const mints: PublicKey[] = [];

@@ -1,7 +1,9 @@
 [workspace]
 members = [
-    "programs/*",
-    "programs-vanilla/*"
+    "field-authority-interface/programs-vanilla/*"
+    "metadata/program/*",
+    "holder-metadata-plugin/*",
+    "ai-aliens/program/*"
 ]
 
 [profile.release]

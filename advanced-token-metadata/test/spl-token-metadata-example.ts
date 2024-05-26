@@ -14,20 +14,23 @@ import {
 } from "@solana/spl-token-metadata";
 import * as borsh from "@coral-xyz/borsh";
 
-import { ANCHOR_WALLET_KEYPAIR, EXAMPLE_PROGRAM_ID } from "../util/constants";
+import {
+  ANCHOR_WALLET_KEYPAIR,
+  EXAMPLE_PROGRAM_ID,
+} from "../../util/js/constants";
 import {
   getEmittedMetadata,
   randomStr,
   setupMintMetadataToken,
-} from "../util/helpers";
-import { CONNECTION } from "../util/config";
+} from "../../util/js/helpers";
+import { CONNECTION } from "../../util/js/config";
 import {
   createAddFieldAuthorityIx,
   fieldToSeedStr,
   createUpdateFieldWithFieldAuthorityIx,
   FIELD_AUTHORITY_PDA_SEED,
   createRemoveFieldAuthorityIx,
-} from "../util/field-authority-interface";
+} from "../../field-authority-interface/js/field-authority-interface";
 
 describe("Token Metadata Example Program", () => {
   const mintKeypair = Keypair.generate();

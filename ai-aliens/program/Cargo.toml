@@ -20,6 +20,6 @@ anchor-lang = {version = "0.29.0", features = ["init-if-needed"]}
 anchor-spl = "0.29.0"
 spl-token-metadata-interface = "0.2.0"
 spl-token-2022 = { version = "1.0.0", features = [ "no-entrypoint" ] }
-holder-metadata = { version = "0.2.0", path = "../holder-metadata", features = ["cpi"]}
+holder-metadata = { version = "0.2.0", path = "../../holder-metadata-plugin/program", features = ["cpi"]}
 spl-pod = "0.1.0"
-field-authority-interface = { version = "0.2.0", path = "../../programs-vanilla/field-authority-interface" }
+field-authority-interface = { version = "0.2.0", path = "../../field-authority-interface/program" }

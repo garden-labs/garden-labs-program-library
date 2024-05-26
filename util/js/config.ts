@@ -10,8 +10,8 @@ import {
 } from "@coral-xyz/anchor";
 import { Connection, Keypair } from "@solana/web3.js";
 
-import { HolderMetadata } from "../target/types/holder_metadata";
-import { AiAliens } from "../target/types/ai_aliens";
+import { HolderMetadata } from "../../target/types/holder_metadata";
+import { AiAliens } from "../../target/types/ai_aliens";
 
 const commitmentLevel = "confirmed";
 
@@ -62,6 +62,7 @@ function setPayer<T extends Idl>(
   return { provider, program };
 }
 
+// TODO: Move these to test files
 // TEMP to get values below
 if (process.env.TEST_ENV !== "localnet") {
   setProv(Keypair.generate());

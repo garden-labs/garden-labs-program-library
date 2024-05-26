@@ -8,7 +8,6 @@ import {
   SystemProgram,
   sendAndConfirmTransaction,
   Transaction,
-  TransactionError,
 } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 import {
@@ -26,32 +25,31 @@ import {
   ensureExampleProgramDeployed,
   getEmittedMetadata,
   randomStr,
-} from "../util/helpers";
+} from "../../util/js/helpers";
 import {
   CONNECTION,
   setAiAliensPayer,
   setHolderMetadataPayer,
-} from "../util/config";
-import { ANCHOR_WALLET_KEYPAIR, EXAMPLE_PROGRAM_ID } from "../util/constants";
+} from "../../util/js/config";
+import {
+  ANCHOR_WALLET_KEYPAIR,
+  EXAMPLE_PROGRAM_ID,
+} from "../../util/js/constants";
 import {
   FIELD_AUTHORITY_PDA_SEED,
   fieldToSeedStr,
-} from "../util/field-authority-interface";
+} from "../../field-authority-interface/js/field-authority-interface";
 import {
   AI_ALIENS_AUTHORITY_PDA_SEED,
   NFT_MINTED_PDA_SEED,
   NICKNAME_FIELD_KEY,
   indexToSeed,
-} from "../util/ai-aliens";
+} from "../js/ai-aliens";
 import {
   HOLDER_METADATA_PDA_SEED,
   toAnchorParam,
-} from "../util/holder-metadata";
-import {
-  interpretTxErr,
-  InterpretedTxErr,
-  InterpretedTxErrType,
-} from "../util/tx";
+} from "../../holder-metadata-plugin/js/holder-metadata";
+import { interpretTxErr, InterpretedTxErrType } from "../../util/js/tx";
 
 describe("AI Aliens Program", () => {
   const mintPriceLamports = 0.1 * LAMPORTS_PER_SOL;
