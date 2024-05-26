@@ -35,6 +35,7 @@ export const DEPLOY_ATM_SCRIPT_PATH = path.join(
 const ATM_KEYPAIR_PATH = path.join(
   __dirname,
   "..",
+  "..",
   "target",
   "deploy",
   "advanced_token_metadata-keypair.json"

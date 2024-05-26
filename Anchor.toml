@@ -17,3 +17,9 @@ wallet = "/Users/jackson/.config/solana/id.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 **/test/**/*.ts"
+
+[workspace]
+members = [
+  "holder-metadata-plugin/program",
+  "ai-aliens/program",
+]

@@ -14,7 +14,7 @@ use anchor_lang::prelude::*;
 declare_id!("3DkEmKWuBJbza9ur1BnVVhXrzkuiMCqBuKHdoDBdLpxZ");
 
 #[program]
-pub mod holder_metadata {
+pub mod holder_metadata_plugin {
     use super::*;
 
     pub fn update_holder_field(
