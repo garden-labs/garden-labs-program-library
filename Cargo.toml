@@ -3,7 +3,8 @@ members = [
     "field-authority-interface/program",
     "advanced-token-metadata/program",
     "holder-metadata-plugin/program",
-    "ai-aliens/program"
+    "ai-aliens/program",
+    "vending-machine/program"
 ]
 
 [profile.release]

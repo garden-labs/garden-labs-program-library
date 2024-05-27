@@ -28,7 +28,7 @@ import {
 } from "../../util/js/helpers";
 import { CONNECTION, setHolderMetadataPayer } from "../../util/js/config";
 
-describe("Holder Metadata Program", () => {
+describe("Holder Metadata Plugin", () => {
   const mints: PublicKey[] = [];
   const metadatas: PublicKey[] = [];
   const tokens: PublicKey[] = [];

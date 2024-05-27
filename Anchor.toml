@@ -7,6 +7,7 @@ skip-lint = false
 [programs.localnet]
 holder_metadata_plugin = "3DkEmKWuBJbza9ur1BnVVhXrzkuiMCqBuKHdoDBdLpxZ"
 ai_aliens = "48MKwUN9uxxGrFCzXAV4kF5RPMVUyruLyYnapNynNtd4"
+vending_machine = "DMdzKuw3G1PmPkb1GdxMAWHkAyDAwW72SiM11BFW3cib"
 
 [registry]
 url = "https://api.apr.dev"
@@ -22,4 +23,5 @@ test = "yarn run mocha"
 members = [
   "holder-metadata-plugin/program",
   "ai-aliens/program",
+  "vending-machine/program",
 ]
