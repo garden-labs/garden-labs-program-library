@@ -6,7 +6,8 @@
     "module": "commonjs",
     "target": "es6",
     "esModuleInterop": true,
-    "strict": true
+    "strict": true,
+    "baseUrl": "."
   },
   "exclude": ["tsconfig.json"]
 }
