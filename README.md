@@ -14,6 +14,6 @@ Full docs: <a href="https://developers.gardenlabs.com/">developers.gardenlabs.co
 - Replace the `wallet` path in `Anchor.toml` with the path to your system's wallet
 - Create `.env` file based on `.env.example`
 - Run `yarn build`
-- Replace `METADATA_PROGRAM_ID_STR` in `programs/ai-aliens/src/constant` with the generated program ID
+- Replace `METADATA_PROGRAM_ID_STR` in `ai-aliens/program/src/constant` with the generated program ID
 - Test on local validator with `yarn scripts/test:localnet`
 - Test on Devnet with `yarn scripts/test:devnet:redeploy`
