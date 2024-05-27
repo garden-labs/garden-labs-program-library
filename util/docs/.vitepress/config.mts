@@ -46,8 +46,8 @@ export default defineConfig({
             link: "/pages/holder-metadata/field-authority-interface",
           },
           {
-            text: "Holder Metadata Program",
-            link: "/pages/holder-metadata/holder-metadata-program",
+            text: "Holder Metadata Plugin",
+            link: "/pages/holder-metadata/holder-metadata-plugin",
           },
           {
             text: "Example: AI Aliens",

@@ -1,6 +1,6 @@
-# Holder Metadata Program
+# Holder Metadata Plugin
 
-Now that we have the Field Authority Interface, our Holder Metadata Program has very little it needs to do. The Field Authority Interface assigns the Holder Metadata Program's PDA as a field authority, and the Holder Metadata Program implements one instruction to check that the sender is indeed a token holder before updating the field:
+Now that we have the Field Authority Interface, our Holder Metadata Plugin has very little it needs to do. The Field Authority Interface assigns the plugin's PDA as a field authority, and the plugin implements one instruction to check that the sender is indeed a token holder before updating the field:
 
 ```
 pub fn handle_update_holder_field(
