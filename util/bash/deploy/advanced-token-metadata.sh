@@ -2,7 +2,7 @@
 
 set -e
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 DEPLOY_DIR="$ROOT_DIR/target/deploy"
 
 ATM_KEYPAIR="$DEPLOY_DIR/advanced_token_metadata-keypair.json"

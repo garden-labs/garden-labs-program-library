@@ -17,8 +17,7 @@ export const ANCHOR_WALLET_KEYPAIR = Keypair.fromSecretKey(
 export const BUILD_ATM_SCRIPT_PATH = path.join(
   __dirname,
   "..",
-  "..",
-  "scripts",
+  "bash",
   "build",
   "advanced-token-metadata.sh"
 );
@@ -26,8 +25,7 @@ export const BUILD_ATM_SCRIPT_PATH = path.join(
 export const DEPLOY_ATM_SCRIPT_PATH = path.join(
   __dirname,
   "..",
-  "..",
-  "scripts",
+  "bash",
   "deploy",
   "advanced-token-metadata.sh"
 );
