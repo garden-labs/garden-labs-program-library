@@ -2,12 +2,12 @@ import { defineConfig } from "vitepress";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "Holder Metadata",
-  description: "Documentation for Holder Metadata on Solana",
+  title: "Garden Labs Docs",
+  description: "Documentation for Garden Labs",
   head: [["link", { rel: "icon", type: "image/png", href: "/icon.png" }]],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: "/logo.svg",
+    logo: "/icon.png",
 
     nav: [{ text: "Garden Labs", link: "https://gardenlabs.com/" }],
 
@@ -19,19 +19,40 @@ export default defineConfig({
             text: "Introduction",
             link: "/",
           },
+        ],
+      },
+      {
+        text: "Vending Machine",
+        items: [
+          {
+            text: "Introduction",
+            link: "/pages/vending-machine/introduction",
+          },
+        ],
+      },
+      {
+        text: "Holder Metadata",
+        items: [
+          {
+            text: "Introduction",
+            link: "/pages/holder-metadata/introduction",
+          },
           {
             text: "Background",
-            link: "/pages/background",
+            link: "/pages/holder-metadata/background",
           },
           {
             text: "Field Authority Interface",
-            link: "/pages/field-authority-interface",
+            link: "/pages/holder-metadata/field-authority-interface",
           },
           {
             text: "Holder Metadata Program",
-            link: "/pages/holder-metadata-program",
+            link: "/pages/holder-metadata/holder-metadata-program",
           },
-          { text: "Example: AI Aliens", link: "/pages/example-ai-aliens" },
+          {
+            text: "Example: AI Aliens",
+            link: "/pages/holder-metadata/example-ai-aliens",
+          },
         ],
       },
       {
