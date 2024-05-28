@@ -8,6 +8,7 @@ import {
   SystemProgram,
   LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 import * as borsh from "@coral-xyz/borsh";
 
@@ -127,9 +128,9 @@ describe("Holder Metadata Plugin", () => {
         mint,
         metadata,
         holderTokenAccount: token,
-        holderMetadataPda,
         fieldPda,
         fieldAuthorityProgram: ATM_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
       })
       .rpc();
 

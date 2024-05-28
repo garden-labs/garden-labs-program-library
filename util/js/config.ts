@@ -58,7 +58,7 @@ function setPayer<T extends Idl>(
 } {
   const provider = setProv(payer);
 
-  const program = new Program(prog.idl, prog.programId, provider);
+  const program = new Program(prog.idl, provider);
 
   return { provider, program };
 }
