@@ -1,5 +1,7 @@
 # Garden Labs Program Library
 
+Open source Solana smart contracts developed and maintained by Garden Labs.
+
 Full docs: <a href="https://developers.gardenlabs.com/">developers.gardenlabs.com</a>
 
 ### Programs
