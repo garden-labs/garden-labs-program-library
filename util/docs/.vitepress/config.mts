@@ -22,15 +22,6 @@ export default defineConfig({
         ],
       },
       {
-        text: "Vending Machine",
-        items: [
-          {
-            text: "Introduction",
-            link: "/pages/vending-machine/introduction",
-          },
-        ],
-      },
-      {
         text: "Holder Metadata",
         items: [
           {
@@ -56,8 +47,21 @@ export default defineConfig({
         ],
       },
       {
+        text: "Vending Machine",
+        items: [
+          {
+            text: "Introduction",
+            link: "/pages/vending-machine/introduction",
+          },
+        ],
+      },
+      {
         text: "Links",
         items: [
+          {
+            text: "Garden Labs",
+            link: "https://gardenlabs.com",
+          },
           {
             text: "Token Extensions",
             link: "https://solana.com/solutions/token-extensions",
@@ -74,7 +78,7 @@ export default defineConfig({
     socialLinks: [
       {
         icon: "github",
-        link: "https://github.com/garden-labs/holder-metadata",
+        link: "https://github.com/garden-labs",
       },
     ],
 
