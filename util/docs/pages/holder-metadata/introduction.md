@@ -1,6 +1,6 @@
 # What is Holder Metadata?
 
-Holder Metadata is an <a href="https://github.com/garden-labs/holder-metadata" target="blank">open source</a> Solana program enabled by <a href="/pages/background">Token-2022</a> which allows NFT creators to designate metadata fields that **only token holders can edit**. Holder-editable fields enable endless opportunities for **NFT utility**. Here are a few examples:
+Holder Metadata is an <a href="https://github.com/garden-labs/garden-labs-program-library" target="_blank">open source</a> Solana program enabled by <a href="https://solana.com/solutions/token-extensions" target="_blank">Token Extensions</a> and the <a href="/pages/holder-metadata/token-metadata-interface">Token Metadata Interface</a> that allows NFT creators to designate metadata fields that **only token holders can edit**. Holder-editable fields enable endless opportunities for **NFT utility**. Here are a few examples:
 
 1. <a href="https://www.ai-aliens.xyz/" target="blank">AI Aliens</a> is an AI-generated PFP collection where holders can give their little friends nicknames. _We'll take you through the code for this project!_
 
@@ -23,4 +23,4 @@ Holder Metadata is an <a href="https://github.com/garden-labs/holder-metadata" t
 
 4. <a href="https://www.gardenbrowser.com/" target="blank">Garden</a> (_in development_) is an AR metaverse. The owner of each land NFT can change its name, description, and iFrame URL, which can serve 3D content.
 
-Next, we'll take you through Token-2022 and the new Token Metadata Interface, the cutting-edge of Solana NFT technology which makes this all possible.
+Next, we'll take you through Token Extensions and the new Token Metadata Interface, the cutting-edge of Solana infrastructure which makes this all possible.

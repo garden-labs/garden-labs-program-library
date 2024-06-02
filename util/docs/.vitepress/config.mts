@@ -2,8 +2,8 @@ import { defineConfig } from "vitepress";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: "Garden Labs Docs",
-  description: "Documentation for Garden Labs",
+  title: "Developer Hub",
+  description: "Documentation for Garden Labs programs",
   head: [["link", { rel: "icon", type: "image/png", href: "/icon.png" }]],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
@@ -38,8 +38,8 @@ export default defineConfig({
             link: "/pages/holder-metadata/introduction",
           },
           {
-            text: "Background",
-            link: "/pages/holder-metadata/background",
+            text: "Token Metadata Interface",
+            link: "/pages/holder-metadata/token-metadata-interface",
           },
           {
             text: "Field Authority Interface",
@@ -58,7 +58,10 @@ export default defineConfig({
       {
         text: "Links",
         items: [
-          { text: "Token2022", link: "https://spl.solana.com/token-2022" },
+          {
+            text: "Token Extensions",
+            link: "https://solana.com/solutions/token-extensions",
+          },
           {
             text: "sRFC 17",
             link: "https://forum.solana.com/t/srfc-00017-token-metadata-interface/283",

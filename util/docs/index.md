@@ -1,1 +1,1 @@
-# Garden Labs Docs
+# Developer Hub

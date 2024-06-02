@@ -1,14 +1,14 @@
-# Background
+# Token Metadata Interface
 
-### Token-2022
+### Background
 
-<a href="https://spl.solana.com/token-2022" target="blank">Token-2022</a> is the next generation of Solana's SPL token (similar to Ethereum's ERC-20 token). Notably, it natively supports a vast array of new functionality due to its **Extensions** framework, such as confidential transfers, soulbound tokens, and **new NFT programs** including the <a href="https://forum.solana.com/t/srfc-00017-token-metadata-interface/283" target="blank">Token Metadata Interface</a>.
+In 2024, the Solana Foundation shipped <a href="https://solana.com/solutions/token-extensions" target="_blank">Token Extensions</a>, the next generation of Solana's SPL token (similar to Ethereum's ERC-20 token). Notably, it natively supports a vast array of new functionality due to its **Extensions** framework, such as confidential transfers, soulbound tokens, and **new NFT programs**. These programs can be anything, but they are expected to implement the Token Metadata Interface, A.K.A. <a href="https://forum.solana.com/t/srfc-00017-token-metadata-interface/283" target="_blank">sRFC 00017</a>.
 
-### Token Metadata Interface
+### Token Metadata Interface (sRFC 00017)
 
 <img src="/freedom.gif" width="400px" style="margin: 20px auto;"/>
 
-Previously, Solana NFTs only operated through Metaplex's on-chain programs. This allowed Solana's NFT ecosystem to blossom faster than anyone imagined. But in the long-run, the key primative of web3 cannot exist in a single program. NFTs will underpin domain names, user profiles, social graphs, digital real estate, and more. NFT projects will have different needs, and developers need to be able to **permissionlessly innovate** on features.
+Previously, Solana NFTs only operated through Metaplex's on-chain programs. This allowed Solana's NFT ecosystem to blossom rapidly. But in the long-run, the key primative of web3 cannot exist in a single program gate-kept by a single update authority. NFTs will underpin domain names, user profiles, social graphs, digital real estate, and more. NFT projects will have different needs, and developers need to be able to **permissionlessly innovate** on features.
 
 In CS101, you learn that when different programs need to operate together but maintain separate features and implementations, you build an _interface_. Enter the Token Metadata Interface – Solana's new interface for NFTs shipping with Token-2022. The interface describes a set of instructions for your metadata program to implement:
 

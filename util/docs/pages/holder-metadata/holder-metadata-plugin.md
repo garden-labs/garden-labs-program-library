@@ -58,7 +58,7 @@ pub struct UpdateHolderField<'info> {
 ```
 
 <div style="text-align: right">
-    <a href="https://github.com/garden-labs/holder-metadata/blob/main/programs/holder-metadata/src/processor.rs" target="blank">source code</a>
+    <a href="https://github.com/garden-labs/garden-labs-program-library/blob/main/holder-metadata-plugin/program/src/processor.rs" target="_blank">source code</a>
 </div>
 
 Other programs can plug into the Field Authority Interface and implement their own logic. A program could require an amount of fungible tokens, a combination of tokens, charge a fee per edit, not allow certain edits, and so on.
