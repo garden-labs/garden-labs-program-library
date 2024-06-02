@@ -12,6 +12,7 @@ import { Connection, Keypair } from "@solana/web3.js";
 
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 import { AiAliens } from "../../target/types/ai_aliens";
+import { VendingMachine } from "../../target/types/vending_machine";
 
 const commitmentLevel = "confirmed";
 
@@ -57,7 +58,7 @@ function setPayer<T extends Idl>(
 } {
   const provider = setProv(payer);
 
-  const program = new Program(prog.idl, prog.programId, provider);
+  const program = new Program(prog.idl, provider);
 
   return { provider, program };
 }
@@ -83,4 +84,11 @@ export function setAiAliensPayer(payer: Keypair): {
   program: Program<AiAliens>;
 } {
   return setPayer(payer, aliensProgram);
+}
+
+export function setVendingMachinePayer(payer: Keypair): {
+  provider: AnchorProvider;
+  program: Program<VendingMachine>;
+} {
+  return setPayer(payer, workspace.VendingMachine as Program<VendingMachine>);
 }

@@ -33,7 +33,11 @@ pub struct Init<'info> {
 
 #[derive(Accounts)]
 pub struct UpdateState<'info> {
-    #[account(address = ai_aliens_pda.admin)]
+    #[account(
+        // address = ai_aliens_pda.admin
+        // TEMP: https://github.com/coral-xyz/anchor/issues/2912 
+        constraint = admin.key() == ai_aliens_pda.admin
+    )]
     pub admin: Signer<'info>,
     #[account(
         mut,
@@ -50,7 +54,7 @@ pub struct CreateMint<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
     /// CHECK: Account checked in constraints
-    #[account(mut, address = ai_aliens_pda.treasury)]
+    #[account(mut, constraint = treasury.key() == ai_aliens_pda.treasury)]
     pub treasury: UncheckedAccount<'info>,
     /// CHECK: Account checked in CPI
     #[account(
@@ -87,7 +91,10 @@ pub struct CreateMint<'info> {
     #[account(mut)]
     pub field_pda: UncheckedAccount<'info>,
     /// CHECK: Account checked in constraints
-    #[account(executable, address = get_metadata_program_id()?)]
+    #[account(
+        executable, 
+        constraint = metadata_program.key() == get_metadata_program_id()?
+    )]
     pub metadata_program: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token2022>,
     pub system_program: Program<'info, System>,
@@ -119,7 +126,11 @@ pub struct CreateToken<'info> {
 #[derive(Accounts)]
 #[instruction(field: AnchorField, val: String)]
 pub struct UpdateField<'info> {
-    #[account(address = ai_aliens_pda.admin)]
+    #[account(
+        // address = ai_aliens_pda.admin
+        // TEMP: https://github.com/coral-xyz/anchor/issues/2912
+        constraint = admin.key() == ai_aliens_pda.admin
+    )]
     pub admin: Signer<'info>,
     /// CHECK: Account checked in CPI
     #[account(mut)]
@@ -127,7 +138,10 @@ pub struct UpdateField<'info> {
     #[account(seeds = [AI_ALIENS_PDA_SEED.as_bytes()], bump)]
     pub ai_aliens_pda: Account<'info, AiAliensPda>,
     /// CHECK: Account checked in constraints
-    #[account(executable, address = get_metadata_program_id()?)]
+    #[account(
+        executable, 
+        constraint = metadata_program.key() == get_metadata_program_id()?
+    )]
     pub metadata_program: UncheckedAccount<'info>,
 }
 
@@ -135,7 +149,7 @@ pub struct UpdateField<'info> {
 #[derive(Accounts)]
 #[instruction(index: u16)]
 pub struct NullifyMintAuthority<'info> {
-    #[account(mut, address = nft_minted_pda.mint)]
+    #[account(mut, constraint = mint.key() == nft_minted_pda.mint)]
     pub mint: InterfaceAccount<'info, Mint>,
     // We'll add this to be a little careful
     #[account(

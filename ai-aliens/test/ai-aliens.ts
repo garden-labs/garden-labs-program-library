@@ -99,9 +99,6 @@ describe("AI Aliens Program", () => {
         tempMaxSupply,
         new BN(tempMintPriceLamports.toString())
       )
-      .accounts({
-        aiAliensPda,
-      })
       .rpc();
 
     // Check state
@@ -124,9 +121,6 @@ describe("AI Aliens Program", () => {
         maxSupply,
         new BN(mintPriceLamports.toString())
       )
-      .accounts({
-        aiAliensPda,
-      })
       .rpc();
 
     // Check state
@@ -169,11 +163,8 @@ describe("AI Aliens Program", () => {
         treasury,
         mint: mintKeypair.publicKey,
         metadata: metadataKeypair.publicKey,
-        nftMintedPda,
-        aiAliensPda,
         fieldPda,
         metadataProgram: ATM_PROGRAM_ID,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
       })
       .signers([mintKeypair, metadataKeypair])
       .rpc();
@@ -244,8 +235,6 @@ describe("AI Aliens Program", () => {
         mint,
         dest: ANCHOR_WALLET_KEYPAIR.publicKey,
         destAta: anchorWalletAta,
-        aiAliensPda,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
       })
       .rpc();
 
@@ -370,7 +359,6 @@ describe("AI Aliens Program", () => {
         mint,
         metadata,
         holderTokenAccount: anchorWalletAta,
-        holderMetadataPda,
         fieldPda,
         fieldAuthorityProgram: ATM_PROGRAM_ID,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
@@ -409,7 +397,6 @@ describe("AI Aliens Program", () => {
       .updateField(fieldParam, uri)
       .accounts({
         metadata,
-        aiAliensPda,
         metadataProgram: ATM_PROGRAM_ID,
       })
       .rpc();
@@ -444,9 +431,6 @@ describe("AI Aliens Program", () => {
       .nullifyMintAuthority(index)
       .accounts({
         mint,
-        nftMintedPda,
-        aiAliensPda,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
       })
       .rpc();
 
