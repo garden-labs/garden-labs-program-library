@@ -22,8 +22,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@coral-xyz/anchor": "^0.30.0",
-    "@coral-xyz/borsh": "^0.30.0",
+    "@coral-xyz/anchor": "^0.30.1",
+    "@coral-xyz/borsh": "^0.30.1",
     "@solana/codecs": "2.0.0-preview.2",
     "@solana/spl-token": "0.4.3",
     "@solana/spl-token-metadata": "0.1.3",
