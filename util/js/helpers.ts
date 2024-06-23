@@ -98,17 +98,6 @@ export async function getEmittedMetadata(
   return unpack(data);
 }
 
-// TODO: Deploy via Anchor config? Perhaps we need this method for local validator
-let atmProgramDeployed = process.env.TEST_ENV !== "localnet";
-export function ensureAtmProgramDeployed(): void {
-  if (!atmProgramDeployed) {
-    // eslint-disable-next-line no-console
-    console.log("Deploying advanced token metadata program...");
-    execSync(DEPLOY_ATM_SCRIPT_PATH);
-    atmProgramDeployed = true;
-  }
-}
-
 export async function createMetadataAccount(
   metadataKeypair: Keypair,
   metadataVals: TokenMetadata,
@@ -183,8 +172,6 @@ export async function setupMintMetadataToken(
     1,
     undefined
   );
-
-  ensureAtmProgramDeployed();
 
   await createMetadataAccount(
     metadataKeypair,
