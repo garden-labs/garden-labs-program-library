@@ -8,7 +8,7 @@ use {
     field_authority_interface::instruction::FieldAuthorityInstruction,
     solana_program::{
         account_info::{next_account_info, AccountInfo},
-        borsh0_10::get_instance_packed_len,
+        borsh1::get_instance_packed_len,
         entrypoint::ProgramResult,
         msg,
         program::set_return_data,

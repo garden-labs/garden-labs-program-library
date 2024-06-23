@@ -17,7 +17,7 @@ cluster = "Localnet"
 wallet = "/Users/jackson/.config/solana/id.json"
 
 [scripts]
-test = "yarn run mocha"
+test = "yarn run vitest run"
 
 [workspace]
 members = [

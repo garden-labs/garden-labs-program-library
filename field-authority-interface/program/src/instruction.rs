@@ -65,15 +65,15 @@ impl FieldAuthorityInstruction {
         match self {
             Self::AddFieldAuthority(data) => {
                 buf.extend_from_slice(AddFieldAuthority::SPL_DISCRIMINATOR_SLICE);
-                buf.append(&mut data.try_to_vec().unwrap());
+                buf.append(&mut borsh::to_vec(data).unwrap());
             }
             Self::UpdateFieldWithFieldAuthority(data) => {
                 buf.extend_from_slice(UpdateFieldWithFieldAuthority::SPL_DISCRIMINATOR_SLICE);
-                buf.append(&mut data.try_to_vec().unwrap());
+                buf.append(&mut borsh::to_vec(data).unwrap());
             }
             Self::RemoveFieldAuthority(data) => {
                 buf.extend_from_slice(RemoveFieldAuthority::SPL_DISCRIMINATOR_SLICE);
-                buf.append(&mut data.try_to_vec().unwrap());
+                buf.append(&mut borsh::to_vec(data).unwrap());
             }
         };
         buf

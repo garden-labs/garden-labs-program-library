@@ -9,14 +9,35 @@ import {
   getFieldConfig,
 } from "@solana/spl-token-metadata";
 // NOTE: This must match the version of @solana/spl-token-metadata
+// Configure by looking at the release commit
+import { splDiscriminate } from "@solana/spl-type-length-value";
 import {
-  StructToEncoderTuple,
+  getBytesEncoder,
+  getStringEncoder,
   getStructEncoder,
   getDataEnumCodec,
-  getBytesEncoder,
-} from "@solana/codecs-data-structures";
-import { splDiscriminate } from "@solana/spl-type-length-value";
-import { getStringEncoder } from "@solana/codecs-strings";
+  mapEncoder,
+  getTupleEncoder,
+} from "@solana/codecs";
+import type { Encoder } from "@solana/codecs";
+
+// The following functions are from: https://github.com/solana-labs/solana-program-library/blob/8c8e7de68b96f8853fdc555ce0af3cfdc717bf55/token-metadata/js/src/instruction.ts
+
+function getInstructionEncoder<T extends object>(
+  discriminator: Uint8Array,
+  dataEncoder: Encoder<T>
+): Encoder<T> {
+  return mapEncoder(
+    getTupleEncoder([getBytesEncoder(), dataEncoder]),
+    (data: T): [Uint8Array, T] => [discriminator, data]
+  );
+}
+
+function getPublicKeyEncoder(): Encoder<PublicKey> {
+  return mapEncoder(getBytesEncoder({ size: 32 }), (publicKey: PublicKey) =>
+    publicKey.toBytes()
+  );
+}
 
 export const FIELD_AUTHORITY_PDA_SEED = "field-authority-pda";
 
@@ -33,16 +54,6 @@ export function fieldToSeedStr(field: Field | string): string {
   }
 }
 
-function packInstruction<T extends object>(
-  layout: StructToEncoderTuple<T>,
-  discriminator: Uint8Array,
-  values: T
-): Buffer {
-  const encoder = getStructEncoder(layout);
-  const data = encoder.encode(values);
-  return Buffer.concat([discriminator, data]);
-}
-
 export function createAddFieldAuthorityIx(
   payer: PublicKey,
   metadata: PublicKey,
@@ -51,20 +62,17 @@ export function createAddFieldAuthorityIx(
   field: Field | string,
   programId: PublicKey
 ): TransactionInstruction {
-  const fieldAuthorityBuffer = Buffer.alloc(32);
-  if (fieldAuthority) {
-    fieldAuthorityBuffer.set(fieldAuthority.toBuffer());
-  } else {
-    fieldAuthorityBuffer.fill(0);
-  }
-
-  const data = packInstruction(
-    [
-      ["field", getDataEnumCodec(getFieldCodec())],
-      ["authority", getBytesEncoder({ size: 32 })],
-    ],
-    splDiscriminate("field_interface_interface:add_field_authority"),
-    { field: getFieldConfig(field), authority: fieldAuthorityBuffer }
+  const data = Buffer.from(
+    getInstructionEncoder(
+      splDiscriminate("field_interface_interface:add_field_authority"),
+      getStructEncoder([
+        ["field", getDataEnumCodec(getFieldCodec())],
+        ["authority", getPublicKeyEncoder()],
+      ])
+    ).encode({
+      field: getFieldConfig(field),
+      authority: fieldAuthority,
+    })
   );
 
   const [fieldPda] = PublicKey.findProgramAddressSync(
@@ -118,15 +126,16 @@ export function createUpdateFieldWithFieldAuthorityIx(
   value: string,
   programId: PublicKey
 ): TransactionInstruction {
-  const data = packInstruction(
-    [
-      ["field", getDataEnumCodec(getFieldCodec())],
-      ["value", getStringEncoder()],
-    ],
-    splDiscriminate(
-      "field_interface_interface:update_field_with_field_authority"
-    ),
-    { field: getFieldConfig(field), value }
+  const data = Buffer.from(
+    getInstructionEncoder(
+      splDiscriminate(
+        "field_interface_interface:update_field_with_field_authority"
+      ),
+      getStructEncoder([
+        ["field", getDataEnumCodec(getFieldCodec())],
+        ["value", getStringEncoder()],
+      ])
+    ).encode({ field: getFieldConfig(field), value })
   );
 
   const [pda] = PublicKey.findProgramAddressSync(
@@ -165,10 +174,11 @@ export function createRemoveFieldAuthorityIx(
   field: Field | string,
   programId: PublicKey
 ): TransactionInstruction {
-  const data = packInstruction(
-    [["field", getDataEnumCodec(getFieldCodec())]],
-    splDiscriminate("field_interface_interface:remove_field_authority"),
-    { field: getFieldConfig(field) }
+  const data = Buffer.from(
+    getInstructionEncoder(
+      splDiscriminate("field_interface_interface:remove_field_authority"),
+      getStructEncoder([["field", getDataEnumCodec(getFieldCodec())]])
+    ).encode({ field: getFieldConfig(field) })
   );
 
   const [pda] = PublicKey.findProgramAddressSync(

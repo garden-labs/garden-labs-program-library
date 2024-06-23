@@ -21,11 +21,7 @@ import {
 } from "@solana/spl-token";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 
-import {
-  ensureAtmProgramDeployed,
-  getEmittedMetadata,
-  randomStr,
-} from "../../util/js/helpers";
+import { getEmittedMetadata, randomStr } from "../../util/js/helpers";
 import {
   CONNECTION,
   setAiAliensPayer,
@@ -80,10 +76,6 @@ describe("AI Aliens Program", () => {
     };
     return metadataVals;
   }
-
-  before(async () => {
-    ensureAtmProgramDeployed();
-  });
 
   it("Handle init", async () => {
     const { program } = setAiAliensPayer(ANCHOR_WALLET_KEYPAIR);

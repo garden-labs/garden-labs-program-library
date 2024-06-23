@@ -1,4 +1,5 @@
 #![cfg(feature = "test-sbf")]
+#![allow(clippy::items_after_test_module)]
 
 mod program_test;
 use {
@@ -9,17 +10,23 @@ use {
         pubkey::Pubkey,
         signature::Signer,
         signer::keypair::Keypair,
+        system_instruction,
         transaction::{Transaction, TransactionError},
     },
-    spl_pod::optional_keys::OptionalNonZeroPubkey,
     spl_token_metadata_interface::{
-        error::TokenMetadataError, instruction::update_authority, state::TokenMetadata,
+        error::TokenMetadataError,
+        instruction::update_field,
+        state::{Field, TokenMetadata},
     },
     spl_type_length_value::state::{TlvState, TlvStateBorrowed},
+    test_case::test_case,
 };
 
+#[test_case(Field::Name, "This is my larger name".to_string() ; "larger name")]
+#[test_case(Field::Name, "Smaller".to_string() ; "smaller name")]
+#[test_case(Field::Key("my new field".to_string()), "Some data for the new field!".to_string() ; "new field")]
 #[tokio::test]
-async fn success_update() {
+async fn success_update(field: Field, value: String) {
     let program_id = Pubkey::new_unique();
     let (context, client, payer) = setup(&program_id).await;
 
@@ -38,7 +45,7 @@ async fn success_update() {
     .await;
     let mut context = context.lock().await;
 
-    let authority = Keypair::new();
+    let update_authority = Keypair::new();
     let name = "MySuperCoolToken".to_string();
     let symbol = "MINE".to_string();
     let uri = "my.super.cool.token".to_string();
@@ -46,7 +53,7 @@ async fn success_update() {
         name,
         symbol,
         uri,
-        update_authority: Some(authority.pubkey()).try_into().unwrap(),
+        update_authority: Some(update_authority.pubkey()).try_into().unwrap(),
         mint: *token.get_address(),
         ..Default::default()
     };
@@ -64,20 +71,59 @@ async fn success_update() {
     )
     .await;
 
-    let new_update_authority = Keypair::new();
-    let new_update_authority_pubkey =
-        OptionalNonZeroPubkey::try_from(Some(new_update_authority.pubkey())).unwrap();
-    token_metadata.update_authority = new_update_authority_pubkey;
+    let rent = context.banks_client.get_rent().await.unwrap();
+    let old_space = token_metadata.tlv_size_of().unwrap();
+    let old_rent_lamports = rent.minimum_balance(old_space);
 
+    token_metadata.update(field.clone(), value.clone());
+
+    let new_space = token_metadata.tlv_size_of().unwrap();
+
+    if new_space > old_space {
+        // fails without more lamports
+        let transaction = Transaction::new_signed_with_payer(
+            &[update_field(
+                &program_id,
+                &metadata_pubkey,
+                &update_authority.pubkey(),
+                field.clone(),
+                value.clone(),
+            )],
+            Some(&payer.pubkey()),
+            &[&payer, &update_authority],
+            context.last_blockhash,
+        );
+        let error = context
+            .banks_client
+            .process_transaction(transaction)
+            .await
+            .unwrap_err()
+            .unwrap();
+        assert_eq!(
+            error,
+            TransactionError::InsufficientFundsForRent { account_index: 2 }
+        );
+    }
+
+    // transfer required lamports
+    let new_rent_lamports = rent.minimum_balance(new_space);
     let transaction = Transaction::new_signed_with_payer(
-        &[update_authority(
-            &program_id,
-            &metadata_pubkey,
-            &authority.pubkey(),
-            new_update_authority_pubkey,
-        )],
+        &[
+            system_instruction::transfer(
+                &payer.pubkey(),
+                &metadata_pubkey,
+                new_rent_lamports.saturating_sub(old_rent_lamports),
+            ),
+            update_field(
+                &program_id,
+                &metadata_pubkey,
+                &update_authority.pubkey(),
+                field.clone(),
+                value.clone(),
+            ),
+        ],
         Some(&payer.pubkey()),
-        &[&payer, &authority],
+        &[&payer, &update_authority],
         context.last_blockhash,
     );
     context
@@ -102,67 +148,6 @@ async fn success_update() {
         .get_first_variable_len_value::<TokenMetadata>()
         .unwrap();
     assert_eq!(fetched_metadata, token_metadata);
-
-    // unset
-    token_metadata.update_authority = None.try_into().unwrap();
-    let transaction = Transaction::new_signed_with_payer(
-        &[update_authority(
-            &program_id,
-            &metadata_pubkey,
-            &new_update_authority.pubkey(),
-            None.try_into().unwrap(),
-        )],
-        Some(&payer.pubkey()),
-        &[&payer, &new_update_authority],
-        context.last_blockhash,
-    );
-    context
-        .banks_client
-        .process_transaction(transaction)
-        .await
-        .unwrap();
-
-    let fetched_metadata_account = context
-        .banks_client
-        .get_account(metadata_pubkey)
-        .await
-        .unwrap()
-        .unwrap();
-    assert_eq!(
-        fetched_metadata_account.data.len(),
-        token_metadata.tlv_size_of().unwrap()
-    );
-    let fetched_metadata_state = TlvStateBorrowed::unpack(&fetched_metadata_account.data).unwrap();
-    let fetched_metadata = fetched_metadata_state
-        .get_first_variable_len_value::<TokenMetadata>()
-        .unwrap();
-    assert_eq!(fetched_metadata, token_metadata);
-
-    // fail to update
-    let transaction = Transaction::new_signed_with_payer(
-        &[update_authority(
-            &program_id,
-            &metadata_pubkey,
-            &new_update_authority.pubkey(),
-            Some(new_update_authority.pubkey()).try_into().unwrap(),
-        )],
-        Some(&payer.pubkey()),
-        &[&payer, &new_update_authority],
-        context.last_blockhash,
-    );
-    let error = context
-        .banks_client
-        .process_transaction(transaction)
-        .await
-        .unwrap_err()
-        .unwrap();
-    assert_eq!(
-        error,
-        TransactionError::InstructionError(
-            0,
-            InstructionError::Custom(TokenMetadataError::ImmutableMetadata as u32)
-        )
-    );
 }
 
 #[tokio::test]
@@ -185,7 +170,7 @@ async fn fail_authority_checks() {
     .await;
     let mut context = context.lock().await;
 
-    let authority = Keypair::new();
+    let update_authority = Keypair::new();
     let name = "MySuperCoolToken".to_string();
     let symbol = "MINE".to_string();
     let uri = "my.super.cool.token".to_string();
@@ -193,7 +178,7 @@ async fn fail_authority_checks() {
         name,
         symbol,
         uri,
-        update_authority: Some(authority.pubkey()).try_into().unwrap(),
+        update_authority: Some(update_authority.pubkey()).try_into().unwrap(),
         mint: *token.get_address(),
         ..Default::default()
     };
@@ -212,11 +197,12 @@ async fn fail_authority_checks() {
     .await;
 
     // no signature
-    let mut instruction = update_authority(
+    let mut instruction = update_field(
         &program_id,
         &metadata_pubkey,
-        &authority.pubkey(),
-        None.try_into().unwrap(),
+        &update_authority.pubkey(),
+        Field::Name,
+        "new_name".to_string(),
     );
     instruction.accounts[1].is_signer = false;
     let transaction = Transaction::new_signed_with_payer(
@@ -238,11 +224,12 @@ async fn fail_authority_checks() {
 
     // wrong authority
     let transaction = Transaction::new_signed_with_payer(
-        &[update_authority(
+        &[update_field(
             &program_id,
             &metadata_pubkey,
             &payer.pubkey(),
-            None.try_into().unwrap(),
+            Field::Name,
+            "new_name".to_string(),
         )],
         Some(&payer.pubkey()),
         &[payer.as_ref()],

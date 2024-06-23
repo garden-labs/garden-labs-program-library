@@ -2,7 +2,7 @@
 
 use {
     crate::processor::check_update_authority,
-    borsh::BorshSerialize,
+    borsh::BorshSerialize, // Needed for .serialize() method below to be in scope
     field_authority_interface::{
         error::FieldAuthorityError,
         field_to_seed_str,
@@ -12,7 +12,7 @@ use {
     },
     solana_program::{
         account_info::{next_account_info, AccountInfo},
-        borsh0_10::try_from_slice_unchecked,
+        borsh1::try_from_slice_unchecked,
         entrypoint::ProgramResult,
         program::invoke_signed,
         program_error::ProgramError,
@@ -95,7 +95,7 @@ pub fn process_add_field_authority(
     invoke_signed(&create_account_ix, &account_infos, &signer_seeds)?;
 
     // Write data
-    let mut field_pda_data =
+    let mut field_pda_data: FieldAuthorityAccount =
         try_from_slice_unchecked::<FieldAuthorityAccount>(&field_pda_info.data.borrow()).unwrap();
     field_pda_data.authority = data.authority;
     field_pda_data.serialize(&mut &mut field_pda_info.data.borrow_mut()[..])?;
