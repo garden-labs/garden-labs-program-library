@@ -20,7 +20,7 @@
     "restart:localnet": "solana-test-validator -r",
     "test:localnet": "yarn set-network:localnet && util/bash/build/advanced-token-metadata.sh && TEST_ENV=localnet anchor test",
     "test:localnet:keep-open": "yarn test:localnet -- --skip-local-validator",
-    "test:devnet": "TEST_ENV=devnet yarn run vitest run",
+    "test:devnet": "yarn set-network:devnet && TEST_ENV=devnet yarn run vitest run",
     "test:devnet:redeploy": "yarn build && yarn deploy:devnet && yarn test:devnet",
     "lint": "eslint ."
   },

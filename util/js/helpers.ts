@@ -169,8 +169,7 @@ export async function setupMintMetadataToken(
     mintKeypair.publicKey,
     tokenAddress,
     ANCHOR_WALLET_KEYPAIR,
-    1,
-    undefined
+    1
   );
 
   await createMetadataAccount(
