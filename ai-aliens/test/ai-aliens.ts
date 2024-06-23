@@ -81,7 +81,7 @@ describe("AI Aliens Program", () => {
     return metadataVals;
   }
 
-  before(async () => {
+  beforeAll(async () => {
     ensureAtmProgramDeployed();
   });
 
