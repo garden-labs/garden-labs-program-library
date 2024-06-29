@@ -3,8 +3,6 @@ use anchor_lang::prelude::*;
 use crate::state::VendingMachineData;
 
 pub fn handle_init(ctx: Context<Init>, data: VendingMachineData) -> Result<()> {
-    // Copy data to account, better to do it this way than manual by field
-
     // Copy data to account
     let vending_machine_data_account = &mut ctx.accounts.vending_machine_data;
     **vending_machine_data_account = data;
