@@ -4,7 +4,7 @@ Open source Solana smart contracts developed and maintained by Garden Labs.
 
 Full docs: <a href="https://developers.gardenlabs.com/">developers.gardenlabs.com</a>
 
-### Programs
+### Crates
 
 - `field-authority-interface`
   - *Description*: Interface that works in concert with the <a href="https://forum.solana.com/t/srfc-00017-token-metadata-interface/283">Token Metadata Interface</a> which allows field-based update authority.
@@ -20,6 +20,8 @@ Full docs: <a href="https://developers.gardenlabs.com/">developers.gardenlabs.co
   - *Description*: Example PFP NFT collection which uses the programs above to enable token holders to give their NFTs' nicknames.
   - *Program ID*: `48MKwUN9uxxGrFCzXAV4kF5RPMVUyruLyYnapNynNtd4`
   - *Solana Verify Hash*: `81294793bddaeafbff5dd22af361eeb6ece5870caedd32877e82c0c8f2657ead`
+- `vending-machine`
+  - In development.
 
 ### Getting Started
 
