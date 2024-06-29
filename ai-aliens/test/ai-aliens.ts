@@ -9,7 +9,7 @@ import {
   sendAndConfirmTransaction,
   Transaction,
 } from "@solana/web3.js";
-import { BN } from "@coral-xyz/anchor";
+import { BN, workspace } from "@coral-xyz/anchor";
 import {
   getAssociatedTokenAddress,
   TOKEN_2022_PROGRAM_ID,
@@ -22,11 +22,7 @@ import {
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 
 import { getEmittedMetadata, randomStr } from "../../util/js/helpers";
-import {
-  CONNECTION,
-  setAiAliensPayer,
-  setHolderMetadataPayer,
-} from "../../util/js/config";
+import { CONNECTION, setPayer } from "../../util/js/config";
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
 import {
   FIELD_AUTHORITY_PDA_SEED,
@@ -38,11 +34,10 @@ import {
   NICKNAME_FIELD_KEY,
   indexToSeed,
 } from "../js/ai-aliens";
-import {
-  HOLDER_METADATA_PDA_SEED,
-  toAnchorParam,
-} from "../../holder-metadata-plugin/js/holder-metadata-plugin";
+import { toAnchorParam } from "../../holder-metadata-plugin/js/holder-metadata-plugin";
 import { interpretTxErr, InterpretedTxErrType } from "../../util/js/tx";
+import { AiAliens } from "../../target/types/ai_aliens";
+import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 
 describe("AI Aliens Program", () => {
   const mintPriceLamports = 0.1 * LAMPORTS_PER_SOL;
@@ -55,12 +50,8 @@ describe("AI Aliens Program", () => {
 
   const [aiAliensPda] = PublicKey.findProgramAddressSync(
     [Buffer.from(AI_ALIENS_AUTHORITY_PDA_SEED)],
-    setAiAliensPayer(ANCHOR_WALLET_KEYPAIR).program.programId
-  );
-
-  const [holderMetadataPda] = PublicKey.findProgramAddressSync(
-    [Buffer.from(HOLDER_METADATA_PDA_SEED)],
-    setHolderMetadataPayer(ANCHOR_WALLET_KEYPAIR).program.programId
+    setPayer<AiAliens>(ANCHOR_WALLET_KEYPAIR, workspace.AiAliens).program
+      .programId
   );
 
   function getMetadataVals(index: number): TokenMetadata {
@@ -78,7 +69,10 @@ describe("AI Aliens Program", () => {
   }
 
   it("Handle init", async () => {
-    const { program } = setAiAliensPayer(ANCHOR_WALLET_KEYPAIR);
+    const { program } = setPayer<AiAliens>(
+      ANCHOR_WALLET_KEYPAIR,
+      workspace.AiAliens
+    );
 
     const tempTreasury = Keypair.generate().publicKey;
     const tempMaxSupply = 0;
@@ -104,7 +98,10 @@ describe("AI Aliens Program", () => {
   });
 
   it("Update state", async () => {
-    const { program } = setAiAliensPayer(ANCHOR_WALLET_KEYPAIR);
+    const { program } = setPayer<AiAliens>(
+      ANCHOR_WALLET_KEYPAIR,
+      workspace.AiAliens
+    );
 
     await program.methods
       .updateState(
@@ -131,11 +128,11 @@ describe("AI Aliens Program", () => {
     const mintKeypair = Keypair.generate();
     const metadataKeypair = Keypair.generate();
 
-    const { program } = setAiAliensPayer(payer);
+    const { program } = setPayer<AiAliens>(payer, workspace.AiAliens);
 
     const [nftMintedPda] = PublicKey.findProgramAddressSync(
       [Buffer.from(NFT_MINTED_PDA_SEED), indexToSeed(index)],
-      setAiAliensPayer(payer).program.programId
+      setPayer<AiAliens>(payer, workspace.AiAliens).program.programId
     );
 
     const [fieldPda] = PublicKey.findProgramAddressSync(
@@ -182,7 +179,7 @@ describe("AI Aliens Program", () => {
       undefined,
       TOKEN_2022_PROGRAM_ID
     );
-    const metadataPointerState = await getMetadataPointerState(mintInfo);
+    const metadataPointerState = getMetadataPointerState(mintInfo);
     assert(metadataPointerState);
     assert(metadataPointerState.metadataAddress);
     assert(
@@ -190,18 +187,18 @@ describe("AI Aliens Program", () => {
     );
 
     // Check permanent delegate
-    const permanentDelegate = await getPermanentDelegate(mintInfo);
+    const permanentDelegate = getPermanentDelegate(mintInfo);
     assert(permanentDelegate);
     assert(permanentDelegate.delegate.equals(aiAliensPda));
 
     // Check transfer hook
-    const transferHook = await getTransferHook(mintInfo);
+    const transferHook = getTransferHook(mintInfo);
     assert(transferHook);
     assert(transferHook.authority.equals(aiAliensPda));
     assert(transferHook.programId.equals(PublicKey.default));
 
     // Check group member pointer
-    const groupMemberPointerState = await getGroupMemberPointerState(mintInfo);
+    const groupMemberPointerState = getGroupMemberPointerState(mintInfo);
     assert(groupMemberPointerState);
     assert(groupMemberPointerState.authority);
     assert(groupMemberPointerState.authority.equals(aiAliensPda));
@@ -212,7 +209,10 @@ describe("AI Aliens Program", () => {
   }
 
   async function createToken(mint: PublicKey): Promise<void> {
-    const { program } = setAiAliensPayer(ANCHOR_WALLET_KEYPAIR);
+    const { program } = setPayer<AiAliens>(
+      ANCHOR_WALLET_KEYPAIR,
+      workspace.AiAliens
+    );
 
     const anchorWalletAta = await getAssociatedTokenAddress(
       mint,
@@ -223,7 +223,9 @@ describe("AI Aliens Program", () => {
 
     await program.methods
       .createToken()
-      .accounts({
+      // TODO: Fix destAta error when using `accounts()`. Leaving in causes
+      // TypeScript errors, leaving out causes simulation errors.
+      .accountsPartial({
         mint,
         dest: ANCHOR_WALLET_KEYPAIR.publicKey,
         destAta: anchorWalletAta,
@@ -321,7 +323,10 @@ describe("AI Aliens Program", () => {
   });
 
   async function updateNickname(index: number, val: string): Promise<void> {
-    const { program } = setHolderMetadataPayer(ANCHOR_WALLET_KEYPAIR);
+    const { program } = setPayer<HolderMetadataPlugin>(
+      ANCHOR_WALLET_KEYPAIR,
+      workspace.HolderMetadataPlugin
+    );
 
     const field = NICKNAME_FIELD_KEY;
     const param = toAnchorParam(field);
@@ -338,19 +343,11 @@ describe("AI Aliens Program", () => {
       ATM_PROGRAM_ID
     );
 
-    const anchorWalletAta = await getAssociatedTokenAddress(
-      mint,
-      ANCHOR_WALLET_KEYPAIR.publicKey,
-      undefined,
-      TOKEN_2022_PROGRAM_ID
-    );
-
     await program.methods
       .updateHolderField(param, val)
       .accounts({
         mint,
         metadata,
-        holderTokenAccount: anchorWalletAta,
         fieldPda,
         fieldAuthorityProgram: ATM_PROGRAM_ID,
         tokenProgram: TOKEN_2022_PROGRAM_ID,
@@ -380,7 +377,10 @@ describe("AI Aliens Program", () => {
   });
 
   async function updateUriWithAdmin(index: number, uri: string): Promise<void> {
-    const { program } = setAiAliensPayer(ANCHOR_WALLET_KEYPAIR);
+    const { program } = setPayer<AiAliens>(
+      ANCHOR_WALLET_KEYPAIR,
+      workspace.AiAliens
+    );
 
     const fieldParam = toAnchorParam(Field.Uri);
     const metadata = metadatas[index - 1];
@@ -410,14 +410,13 @@ describe("AI Aliens Program", () => {
   });
 
   it("Nullify mint authority", async () => {
-    const { program } = setAiAliensPayer(ANCHOR_WALLET_KEYPAIR);
+    const { program } = setPayer<AiAliens>(
+      ANCHOR_WALLET_KEYPAIR,
+      workspace.AiAliens
+    );
 
     const index = 1;
     const mint = mints[index - 1];
-    const [nftMintedPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from(NFT_MINTED_PDA_SEED), indexToSeed(index)],
-      setAiAliensPayer(ANCHOR_WALLET_KEYPAIR).program.programId
-    );
 
     await program.methods
       .nullifyMintAuthority(index)

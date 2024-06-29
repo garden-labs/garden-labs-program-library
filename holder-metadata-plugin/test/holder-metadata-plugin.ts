@@ -11,6 +11,7 @@ import {
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 import * as borsh from "@coral-xyz/borsh";
+import { workspace } from "@coral-xyz/anchor";
 
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
 import {
@@ -27,7 +28,8 @@ import {
   randomStr,
   setupMintMetadataToken,
 } from "../../util/js/helpers";
-import { CONNECTION, setHolderMetadataPayer } from "../../util/js/config";
+import { CONNECTION, setPayer } from "../../util/js/config";
+import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 
 describe("Holder Metadata Plugin", () => {
   const mints: PublicKey[] = [];
@@ -37,7 +39,10 @@ describe("Holder Metadata Plugin", () => {
 
   const [holderMetadataPda] = PublicKey.findProgramAddressSync(
     [Buffer.from(HOLDER_METADATA_PDA_SEED)],
-    setHolderMetadataPayer(ANCHOR_WALLET_KEYPAIR).program.programId
+    setPayer<HolderMetadataPlugin>(
+      ANCHOR_WALLET_KEYPAIR,
+      workspace.HolderMetadataPlugin
+    ).program.programId
   );
 
   function getMetadataVals(mint: PublicKey): TokenMetadata {
@@ -107,8 +112,10 @@ describe("Holder Metadata Plugin", () => {
     token: PublicKey,
     payer: Keypair
   ): Promise<void> {
-    const { program } = setHolderMetadataPayer(payer);
-
+    const { program } = setPayer<HolderMetadataPlugin>(
+      payer,
+      workspace.HolderMetadataPlugin
+    );
     const val = randomStr(10);
 
     const param = toAnchorParam(Field.Name);
@@ -124,9 +131,11 @@ describe("Holder Metadata Plugin", () => {
 
     await program.methods
       .updateHolderField(param, val)
-      .accounts({
+      // TODO: Fix holderTokenAccount error when using `accounts()`
+      .accountsPartial({
         mint,
         metadata,
+        // TODO: Remove this? Replace with ATA?
         holderTokenAccount: token,
         fieldPda,
         fieldAuthorityProgram: ATM_PROGRAM_ID,

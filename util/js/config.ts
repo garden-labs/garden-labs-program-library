@@ -6,13 +6,8 @@ import {
   Wallet,
   Program,
   Idl,
-  workspace,
 } from "@coral-xyz/anchor";
 import { Connection, Keypair } from "@solana/web3.js";
-
-import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
-import { AiAliens } from "../../target/types/ai_aliens";
-import { VendingMachine } from "../../target/types/vending_machine";
 
 const commitmentLevel = "confirmed";
 
@@ -49,7 +44,7 @@ function setProv(payer: Keypair): AnchorProvider {
   return provider;
 }
 
-function setPayer<T extends Idl>(
+export function setPayer<T extends Idl>(
   payer: Keypair,
   prog: Program<T>
 ): {
@@ -61,34 +56,4 @@ function setPayer<T extends Idl>(
   const program = new Program(prog.idl, provider);
 
   return { provider, program };
-}
-
-// TODO: Move these to test files
-// TEMP to get values below
-if (process.env.TEST_ENV !== "localnet") {
-  setProv(Keypair.generate());
-}
-const aliensProgram = workspace.AiAliens as Program<AiAliens>;
-const holderMetadataPluginProgram =
-  workspace.HolderMetadataPlugin as Program<HolderMetadataPlugin>;
-
-export function setHolderMetadataPayer(payer: Keypair): {
-  provider: AnchorProvider;
-  program: Program<HolderMetadataPlugin>;
-} {
-  return setPayer(payer, holderMetadataPluginProgram);
-}
-
-export function setAiAliensPayer(payer: Keypair): {
-  provider: AnchorProvider;
-  program: Program<AiAliens>;
-} {
-  return setPayer(payer, aliensProgram);
-}
-
-export function setVendingMachinePayer(payer: Keypair): {
-  provider: AnchorProvider;
-  program: Program<VendingMachine>;
-} {
-  return setPayer(payer, workspace.VendingMachine as Program<VendingMachine>);
 }
