@@ -29,3 +29,7 @@ Full docs: <a href="https://developers.gardenlabs.com/">developers.gardenlabs.co
 - Replace `METADATA_PROGRAM_ID_STR` in `ai-aliens/program/src/constant` with the generated program ID
 - Test on local validator with `yarn scripts/test:localnet`
 - Test on Devnet with `yarn scripts/test:devnet:redeploy`
+
+### Licensing
+
+This project contains multiple licenses. Refer to the innermost LICENSE file for each file. The top-level license is an open source Apache License.
