@@ -3,7 +3,6 @@
     "build": "anchor build && util/bash/build/advanced-token-metadata.sh",
     "set-network:localnet": "solana config set --url http://localhost:8899",
     "set-network:devnet": "solana config set --url https://api.devnet.solana.com",
-    "set-network:mainnet": "solana config set --url https://api.mainnet-beta.solana.com",
     "deploy:devnet": "yarn set-network:devnet && util/bash/deploy/devnet/all.sh",
     "write-buffer:prio-fees:staked-rpc": "solana program write-buffer --url https://deploy-qos.mainnet.rpcpool.com --with-compute-unit-price 200000 --max-sign-attempts 10000 --",
     "recover-buffer": "solana-keygen recover -o buffer.json",
