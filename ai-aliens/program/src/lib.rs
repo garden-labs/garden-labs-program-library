@@ -1,6 +1,6 @@
-pub mod constant;
-pub mod error;
-pub mod helper;
+pub mod constants;
+pub mod errors;
+pub mod helpers;
 pub mod instructions;
 pub mod processor;
 pub mod state;

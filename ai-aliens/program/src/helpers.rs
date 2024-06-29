@@ -1,5 +1,5 @@
-use crate::constant::{DUMMY_PUBKEY_STR, METADATA_PROGRAM_ID_STR};
-use crate::error::AiAliensError;
+use crate::constants::{DUMMY_PUBKEY_STR, METADATA_PROGRAM_ID_STR};
+use crate::errors::AiAliensError;
 use spl_token_metadata_interface::state::TokenMetadata;
 
 use anchor_lang::prelude::*;
@@ -52,7 +52,7 @@ pub fn get_token_metadata_max_space(index: u16) -> Result<usize> {
     // Add nickname additional field with max string length
     let dummy_max_str = std::iter::repeat('a').take(30).collect();
     dummy_token_metadata.additional_metadata.push((
-        crate::constant::NICKNAME_FIELD_KEY.to_string(),
+        crate::constants::NICKNAME_FIELD_KEY.to_string(),
         dummy_max_str,
     ));
 

@@ -14,3 +14,23 @@ pub struct VendingMachineData {
     #[max_len(200)]
     pub uri_prefix: String, // 200
 }
+
+// impl VendingMachineData {
+//     pub fn validate(&self) -> Result<()> {
+//         require!(
+//             self.name_prefix.len() <= 32,
+//             VendingMachineError::NamePrefixTooLong
+//         );
+//         require!(self.symbol.len() <= 32, VendingMachineError::SymbolTooLong);
+//         require!(
+//             self.uri_prefix.len() <= 200,
+//             VendingMachineError::UriPrefixTooLong
+//         );
+//         require!(self.max_supply > 0, VendingMachineError::InvalidMaxSupply);
+//         require!(
+//             self.mint_price_lamports > 0,
+//             VendingMachineError::InvalidMintPrice
+//         );
+//         Ok(())
+//     }
+// }

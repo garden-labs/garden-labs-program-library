@@ -1,6 +1,6 @@
-use crate::constant::{AI_ALIENS_PDA_SEED, NICKNAME_FIELD_KEY};
-use crate::error::AiAliensError;
-use crate::helper::{get_token_metadata_init_vals, get_token_metadata_max_space};
+use crate::constants::{AI_ALIENS_PDA_SEED, NICKNAME_FIELD_KEY};
+use crate::errors::AiAliensError;
+use crate::helpers::{get_token_metadata_init_vals, get_token_metadata_max_space};
 use crate::instructions::*;
 
 use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
@@ -174,7 +174,7 @@ fn add_nickname_as_holder_meta(ctx: &Context<CreateMint>) -> Result<()> {
     let (holder_metadata_pda, _bump) =
         Pubkey::find_program_address(&holder_metadata_pda_seeds, &holder_metadata_plugin::id());
 
-    let ix = field_authority_interface::instruction::add_field_authority(
+    let ix = field_authority_interface::instructions::add_field_authority(
         ctx.accounts.metadata_program.key,
         &ctx.accounts.payer.key(),
         &ctx.accounts.metadata.key(),

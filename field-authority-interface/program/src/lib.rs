@@ -1,10 +1,10 @@
 //! Crate defining the field authority interface
 
-pub mod constant;
-pub mod error;
-pub mod helper;
-pub mod instruction;
+pub mod constants;
+pub mod errors;
+pub mod helpers;
+pub mod instructions;
 pub mod state;
 
-pub use constant::*;
-pub use helper::*;
+pub use constants::*;
+pub use helpers::*;

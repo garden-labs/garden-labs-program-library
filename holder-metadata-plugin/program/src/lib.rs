@@ -1,9 +1,9 @@
-pub mod constant;
+pub mod constants;
 pub mod instructions;
 pub mod processor;
 pub mod state;
 
-pub use constant::HOLDER_METADATA_PDA_SEED;
+pub use constants::HOLDER_METADATA_PDA_SEED;
 
 use instructions::*;
 use processor::*;

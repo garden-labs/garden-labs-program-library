@@ -1,4 +1,4 @@
-use crate::constant::HOLDER_METADATA_PDA_SEED;
+use crate::constants::HOLDER_METADATA_PDA_SEED;
 use crate::state::AnchorField;
 
 use anchor_lang::prelude::*;

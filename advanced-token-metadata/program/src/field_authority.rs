@@ -4,9 +4,9 @@ use {
     crate::processor::check_update_authority,
     borsh::BorshSerialize, // Needed for .serialize() method below to be in scope
     field_authority_interface::{
-        error::FieldAuthorityError,
+        errors::FieldAuthorityError,
         field_to_seed_str,
-        instruction::{AddFieldAuthority, RemoveFieldAuthority, UpdateFieldWithFieldAuthority},
+        instructions::{AddFieldAuthority, RemoveFieldAuthority, UpdateFieldWithFieldAuthority},
         state::FieldAuthorityAccount,
         FIELD_AUTHORITY_PDA_SEED,
     },

@@ -1,5 +1,5 @@
-use crate::constant::{AI_ALIENS_PDA_SEED, NFT_MINTED_PDA_SEED};
-use crate::helper::{get_metadata_program_id, get_token_metadata_init_space};
+use crate::constants::{AI_ALIENS_PDA_SEED, NFT_MINTED_PDA_SEED};
+use crate::helpers::{get_metadata_program_id, get_token_metadata_init_space};
 use crate::state::{AiAliensPda, NftMintedPda};
 
 use anchor_lang::{prelude::*, solana_program::rent::Rent};

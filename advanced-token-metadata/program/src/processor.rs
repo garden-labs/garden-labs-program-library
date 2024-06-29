@@ -5,7 +5,7 @@ use {
         process_add_field_authority, process_remove_field_authority,
         process_update_field_with_field_authority,
     },
-    field_authority_interface::instruction::FieldAuthorityInstruction,
+    field_authority_interface::instructions::FieldAuthorityInstruction,
     solana_program::{
         account_info::{next_account_info, AccountInfo},
         borsh1::get_instance_packed_len,
