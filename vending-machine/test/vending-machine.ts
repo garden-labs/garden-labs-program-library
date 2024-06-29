@@ -18,7 +18,7 @@ describe("Vending Machine", () => {
   const symbol = randomStr(10);
   const uriPrefix = randomStr(200);
 
-  it("Initialize fails with invalid name prefix", async () => {
+  it("Init fails with invalid name prefix", async () => {
     const { program } = setPayer<VendingMachine>(
       ANCHOR_WALLET_KEYPAIR,
       workspace.VendingMachine
@@ -52,7 +52,75 @@ describe("Vending Machine", () => {
     }
   });
 
-  it("Initialize", async () => {
+  it("Init fails with invalid symbol prefix", async () => {
+    const { program } = setPayer<VendingMachine>(
+      ANCHOR_WALLET_KEYPAIR,
+      workspace.VendingMachine
+    );
+
+    try {
+      await program.methods
+        .init({
+          admin: admin.publicKey,
+          treasury: treasury.publicKey,
+          maxSupply,
+          mintPriceLamports: new BN(mintPriceLamports.toString()),
+          namePrefix,
+          symbol: randomStr(11),
+          uriPrefix,
+        })
+        .accountsPartial({
+          vendingMachineData: vendingMachineData.publicKey,
+        })
+        .signers([vendingMachineData])
+        .rpc();
+    } catch (err) {
+      if (
+        !(
+          err instanceof AnchorError &&
+          err.error.errorCode.code === "SymbolTooLong"
+        )
+      ) {
+        throw err;
+      }
+    }
+  });
+
+  it("Init fails with invalid uri prefix", async () => {
+    const { program } = setPayer<VendingMachine>(
+      ANCHOR_WALLET_KEYPAIR,
+      workspace.VendingMachine
+    );
+
+    try {
+      await program.methods
+        .init({
+          admin: admin.publicKey,
+          treasury: treasury.publicKey,
+          maxSupply,
+          mintPriceLamports: new BN(mintPriceLamports.toString()),
+          namePrefix,
+          symbol,
+          uriPrefix: randomStr(201),
+        })
+        .accountsPartial({
+          vendingMachineData: vendingMachineData.publicKey,
+        })
+        .signers([vendingMachineData])
+        .rpc();
+    } catch (err) {
+      if (
+        !(
+          err instanceof AnchorError &&
+          err.error.errorCode.code === "UriPrefixTooLong"
+        )
+      ) {
+        throw err;
+      }
+    }
+  });
+
+  it("Init", async () => {
     const { program } = setPayer<VendingMachine>(
       ANCHOR_WALLET_KEYPAIR,
       workspace.VendingMachine
