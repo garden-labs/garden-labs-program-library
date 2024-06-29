@@ -34,4 +34,4 @@ Full docs: <a href="https://developers.gardenlabs.com/">developers.gardenlabs.co
 
 ### Licensing
 
-This project contains multiple licenses. Refer to the innermost LICENSE file for each file. The top-level license is an open source Apache License.
+This project contains multiple licenses. Refer to the innermost LICENSE document for each file. The top-level license is an open source Apache License.
