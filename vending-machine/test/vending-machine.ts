@@ -1,6 +1,6 @@
 import assert from "assert";
 
-import { workspace, BN } from "@coral-xyz/anchor";
+import { workspace, BN, AnchorError } from "@coral-xyz/anchor";
 import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 import { setPayer } from "../../util/js/config";
@@ -14,34 +14,43 @@ describe("Vending Machine", () => {
   const treasury = Keypair.generate();
   const maxSupply = 10000;
   const mintPriceLamports = 0.1 * LAMPORTS_PER_SOL;
-  const namePrefix = "My Test Collection";
-  const symbol = "TEST";
-  const uriPrefix = "https://arweave.net";
+  const namePrefix = randomStr(32);
+  const symbol = randomStr(10);
+  const uriPrefix = randomStr(200);
 
-  // it("Initialize fails with invalid name prefix", async () => {
-  //   const { program } = setPayer<VendingMachine>(
-  //     ANCHOR_WALLET_KEYPAIR,
-  //     workspace.VendingMachine
-  //   );
+  it("Initialize fails with invalid name prefix", async () => {
+    const { program } = setPayer<VendingMachine>(
+      ANCHOR_WALLET_KEYPAIR,
+      workspace.VendingMachine
+    );
 
-  //   assert.rejects(async () => {
-  //     await program.methods
-  //       .init({
-  //         admin: admin.publicKey,
-  //         treasury: treasury.publicKey,
-  //         maxSupply,
-  //         mintPriceLamports: new BN(mintPriceLamports.toString()),
-  //         namePrefix: randomStr(33),
-  //         symbol,
-  //         uriPrefix,
-  //       })
-  //       .accountsPartial({
-  //         vendingMachineData: vendingMachineData.publicKey,
-  //       })
-  //       .signers([vendingMachineData])
-  //       .rpc();
-  //   });
-  // });
+    try {
+      await program.methods
+        .init({
+          admin: admin.publicKey,
+          treasury: treasury.publicKey,
+          maxSupply,
+          mintPriceLamports: new BN(mintPriceLamports.toString()),
+          namePrefix: randomStr(33),
+          symbol,
+          uriPrefix,
+        })
+        .accountsPartial({
+          vendingMachineData: vendingMachineData.publicKey,
+        })
+        .signers([vendingMachineData])
+        .rpc();
+    } catch (err) {
+      if (
+        !(
+          err instanceof AnchorError &&
+          err.error.errorCode.code === "NamePrefixTooLong"
+        )
+      ) {
+        throw err;
+      }
+    }
+  });
 
   it("Initialize", async () => {
     const { program } = setPayer<VendingMachine>(

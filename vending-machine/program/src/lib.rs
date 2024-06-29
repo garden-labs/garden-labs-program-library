@@ -1,4 +1,5 @@
 pub mod constants;
+pub mod errors;
 pub mod instructions;
 pub mod state;
 
@@ -14,6 +15,8 @@ pub mod vending_machine {
     use super::*;
 
     pub fn init(ctx: Context<Init>, data: VendingMachineData) -> Result<()> {
+        data.validate()?;
+
         return handle_init(ctx, data);
     }
 }
