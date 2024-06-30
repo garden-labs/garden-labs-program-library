@@ -154,4 +154,15 @@ describe("Vending Machine", () => {
     assert.equal(v.symbol, symbol);
     assert.equal(v.uriPrefix, uriPrefix);
   });
+
+  it("Create mint", async () => {
+    const { program } = setPayer<VendingMachine>(
+      ANCHOR_WALLET_KEYPAIR,
+      workspace.VendingMachine
+    );
+
+    const mint = Keypair.generate();
+
+    await program.methods.createMint().rpc();
+  });
 });

@@ -15,8 +15,10 @@ pub mod vending_machine {
     use super::*;
 
     pub fn init(ctx: Context<Init>, data: VendingMachineData) -> Result<()> {
-        data.validate()?;
-
         return handle_init(ctx, data);
+    }
+
+    pub fn create_mint(ctx: Context<CreateMint>) -> Result<()> {
+        return handle_create_mint(ctx);
     }
 }
