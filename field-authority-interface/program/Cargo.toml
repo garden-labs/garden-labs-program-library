@@ -4,8 +4,8 @@ version = "0.3.3"
 edition = "2021"
 
 [dependencies]
-solana-program = ">=1.18.11,<=2"
-spl-token-metadata-interface =  "0.3.3"
-borsh = "1.5.0"
-thiserror = "1.0"
-spl-discriminator = "0.2.2"
+solana-program = { workspace = true}
+spl-token-metadata-interface =  { workspace = true}
+borsh = { workspace = true}
+thiserror = { workspace = true}
+spl-discriminator = { workspace = true}

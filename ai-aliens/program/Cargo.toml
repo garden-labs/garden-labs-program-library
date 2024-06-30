@@ -17,10 +17,10 @@ default = []
 idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build", "holder-metadata-plugin/idl-build"]
 
 [dependencies]
-anchor-lang = {version = "0.30.1", features = ["init-if-needed"]}
-anchor-spl = "0.30.1"
-spl-token-metadata-interface = "0.3.3"
-spl-token-2022 = { version = "3.0.2", features = ["no-entrypoint"] }
+anchor-lang = { workspace = true }
+anchor-spl = { workspace = true }
+spl-token-metadata-interface = { workspace = true }
+spl-token-2022 = { workspace = true }
 holder-metadata-plugin = { version = "0.3.0", path = "../../holder-metadata-plugin/program", features = ["cpi"]}
-spl-pod = "0.2.2"
+spl-pod = { workspace = true }
 field-authority-interface = { version = "0.3.3", path = "../../field-authority-interface/program" }

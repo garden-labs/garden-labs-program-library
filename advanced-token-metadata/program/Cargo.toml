@@ -12,12 +12,12 @@ no-entrypoint = []
 test-sbf = []
 
 [dependencies]
-solana-program = ">=1.18.11,<=2"
-spl-token-2022 = { version = "3.0.2", features = ["no-entrypoint"] }
-spl-token-metadata-interface =  "0.3.3"
-spl-type-length-value = "0.4.3"
-spl-pod = "0.2.2"
-borsh = "1.5.0"
+solana-program = { workspace = true }
+spl-token-2022 = { workspace = true }
+spl-token-metadata-interface =  { workspace = true }
+spl-type-length-value = { workspace = true }
+spl-pod = { workspace = true }
+borsh = { workspace = true }
 field-authority-interface = { version = "0.3.3", path = "../../field-authority-interface/program" }
 
 [dev-dependencies]
