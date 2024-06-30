@@ -1,12 +1,13 @@
 import assert from "assert";
 
 import { workspace, BN, AnchorError } from "@coral-xyz/anchor";
-import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 import { setPayer } from "../../util/js/config";
 import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
 import { VendingMachine } from "../../target/types/vending_machine";
 import { randomStr } from "../../util/js/helpers";
+import { VENDING_MACHINE_PDA_SEED } from "vending-machine/js/vending-machine";
 
 describe("Vending Machine", () => {
   const vendingMachineData = Keypair.generate();
@@ -17,6 +18,12 @@ describe("Vending Machine", () => {
   const namePrefix = randomStr(32);
   const symbol = randomStr(10);
   const uriPrefix = randomStr(200);
+
+  const [vendingMachinePda] = PublicKey.findProgramAddressSync(
+    [Buffer.from(VENDING_MACHINE_PDA_SEED)],
+    setPayer<VendingMachine>(ANCHOR_WALLET_KEYPAIR, workspace.VendingMachine)
+      .program.programId
+  );
 
   it("Init fails with invalid name prefix", async () => {
     const { program } = setPayer<VendingMachine>(
@@ -163,6 +170,12 @@ describe("Vending Machine", () => {
 
     const mint = Keypair.generate();
 
-    await program.methods.createMint().rpc();
+    await program.methods
+      .mintNft()
+      .accounts({
+        treasury: treasury.publicKey,
+        vendingMachineData: vendingMachineData.publicKey,
+      })
+      .rpc();
   });
 });

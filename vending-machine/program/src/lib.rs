@@ -8,7 +8,7 @@ use state::*;
 
 use anchor_lang::prelude::*;
 
-declare_id!("DMdzKuw3G1PmPkb1GdxMAWHkAyDAwW72SiM11BFW3cib");
+declare_id!("Uvwz29jANqCpX5F2zMHo5NMZc5MdC23ss8gTUnsEJAY");
 
 #[program]
 pub mod vending_machine {
@@ -18,7 +18,7 @@ pub mod vending_machine {
         return handle_init(ctx, data);
     }
 
-    pub fn create_mint(ctx: Context<CreateMint>) -> Result<()> {
-        return handle_create_mint(ctx);
+    pub fn mint_nft(ctx: Context<MintNft>) -> Result<()> {
+        return handle_mint_nft(ctx);
     }
 }
