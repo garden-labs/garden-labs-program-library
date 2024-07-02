@@ -4,7 +4,7 @@ use crate::errors::VendingMachineError;
 use anchor_lang::prelude::*;
 
 #[account]
-#[derive(Default, Debug, InitSpace)]
+#[derive(Debug, InitSpace)]
 pub struct VendingMachineData {
     pub admin: Pubkey,            // 32
     pub treasury: Pubkey,         // 32

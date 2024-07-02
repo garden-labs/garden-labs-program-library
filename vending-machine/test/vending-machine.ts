@@ -4,10 +4,10 @@ import { workspace, BN, AnchorError } from "@coral-xyz/anchor";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 
 import { setPayer } from "../../util/js/config";
-import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
+import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
 import { VendingMachine } from "../../target/types/vending_machine";
 import { randomStr } from "../../util/js/helpers";
-import { VENDING_MACHINE_PDA_SEED } from "vending-machine/js/vending-machine";
+import { VENDING_MACHINE_PDA_SEED } from "../js/vending-machine";
 
 describe("Vending Machine", () => {
   const vendingMachineData = Keypair.generate();
@@ -169,13 +169,18 @@ describe("Vending Machine", () => {
     );
 
     const mint = Keypair.generate();
+    const metadata = Keypair.generate();
 
     await program.methods
-      .mintNft()
+      .mintNft(new BN("1"))
       .accounts({
         treasury: treasury.publicKey,
+        mint: mint.publicKey,
+        metadata: metadata.publicKey,
+        metadataProgram: ATM_PROGRAM_ID,
         vendingMachineData: vendingMachineData.publicKey,
       })
+      .signers([mint, metadata])
       .rpc();
   });
 });

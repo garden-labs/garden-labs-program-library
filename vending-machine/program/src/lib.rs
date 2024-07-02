@@ -1,5 +1,6 @@
 pub mod constants;
 pub mod errors;
+pub mod helpers;
 pub mod instructions;
 pub mod state;
 
@@ -18,7 +19,7 @@ pub mod vending_machine {
         return handle_init(ctx, data);
     }
 
-    pub fn mint_nft(ctx: Context<MintNft>) -> Result<()> {
-        return handle_mint_nft(ctx);
+    pub fn mint_nft(ctx: Context<MintNft>, index: u64) -> Result<()> {
+        return handle_mint_nft(ctx, index);
     }
 }

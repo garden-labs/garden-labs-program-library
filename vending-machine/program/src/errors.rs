@@ -8,4 +8,6 @@ pub enum VendingMachineError {
     SymbolTooLong,
     #[msg("The URI prefix is too long")]
     UriPrefixTooLong,
+    #[msg("The public key is invalid")]
+    InvalidPublicKey,
 }
