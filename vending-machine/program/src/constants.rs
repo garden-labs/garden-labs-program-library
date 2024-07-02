@@ -9,3 +9,7 @@ pub const ADVANCED_TOKEN_METADATA_PROGRAM_ID_STR: &str =
     "2GkHVZ2y5wP4nw4uA2GWFnc7jphfjKbbcEKwqMCV42a6";
 
 pub const DUMMY_PUBKEY_STR: &str = "EiH1P1VKhRm9DSMQikddHPs96Zm4cHKiQ87C3DBU7mrv";
+
+pub const PROTOCOL_FEE_LAMPORTS: u64 = 1_000_000;
+
+pub const TREASURY_PUBKEY_STR: &str = "JCXiqb3oL3xPrs9VWbDPcotEN8mEiNNba7E5fWhz6k8R";

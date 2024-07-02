@@ -1,5 +1,6 @@
 use crate::constants::{
-    ADVANCED_TOKEN_METADATA_PROGRAM_ID_STR, DUMMY_PUBKEY_STR, VENDING_MACHINE_PDA_SEED,
+    ADVANCED_TOKEN_METADATA_PROGRAM_ID_STR, DUMMY_PUBKEY_STR, TREASURY_PUBKEY_STR,
+    VENDING_MACHINE_PDA_SEED,
 };
 use crate::errors::VendingMachineError;
 use crate::state::VendingMachineData;
@@ -48,4 +49,8 @@ pub fn get_token_metadata_init_space(index: u64, data: VendingMachineData) -> us
 // TODO: Export this out of crate
 pub fn get_advanced_token_metadata_program_id() -> Result<Pubkey> {
     return get_pubkey(ADVANCED_TOKEN_METADATA_PROGRAM_ID_STR);
+}
+
+pub fn get_treasury_pubkey() -> Pubkey {
+    return get_pubkey(TREASURY_PUBKEY_STR).unwrap();
 }

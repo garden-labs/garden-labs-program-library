@@ -2,6 +2,15 @@ use anchor_lang::prelude::*;
 
 use crate::state::VendingMachineData;
 
+#[derive(Accounts)]
+pub struct Init<'info> {
+    #[account(mut)]
+    pub payer: Signer<'info>,
+    #[account(init, payer = payer, space = 8 + VendingMachineData::INIT_SPACE)]
+    pub vending_machine_data: Account<'info, VendingMachineData>,
+    pub system_program: Program<'info, System>,
+}
+
 pub fn handle_init(ctx: Context<Init>, data: VendingMachineData) -> Result<()> {
     // Validate fields
     data.validate()?;
@@ -11,13 +20,4 @@ pub fn handle_init(ctx: Context<Init>, data: VendingMachineData) -> Result<()> {
     **vending_machine_data_account = data;
 
     Ok(())
-}
-
-#[derive(Accounts)]
-pub struct Init<'info> {
-    #[account(mut)]
-    pub payer: Signer<'info>,
-    #[account(init, payer = payer, space = 8 + VendingMachineData::INIT_SPACE)]
-    pub vending_machine_data: Account<'info, VendingMachineData>,
-    pub system_program: Program<'info, System>,
 }

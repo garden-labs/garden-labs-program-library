@@ -7,7 +7,7 @@ use anchor_lang::prelude::*;
 #[derive(Debug, InitSpace)]
 pub struct VendingMachineData {
     pub admin: Pubkey,            // 32
-    pub treasury: Pubkey,         // 32
+    pub creator: Pubkey,          // 32
     pub max_supply: u16,          // 2
     pub mint_price_lamports: u64, // 8
     #[max_len(MAX_NAME_PREFIX_LEN)]
@@ -16,6 +16,7 @@ pub struct VendingMachineData {
     pub symbol: String, // 32
     #[max_len(MAX_URI_PREFIX_LEN)]
     pub uri_prefix: String, // 200
+                                  // TODO: Royalties
 }
 
 impl VendingMachineData {
