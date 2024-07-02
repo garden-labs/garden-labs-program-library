@@ -223,12 +223,9 @@ describe("AI Aliens Program", () => {
 
     await program.methods
       .createToken()
-      // TODO: Fix destAta error when using `accounts()`. Leaving in causes
-      // TypeScript errors, leaving out causes simulation errors.
-      .accountsPartial({
+      .accounts({
         mint,
         dest: ANCHOR_WALLET_KEYPAIR.publicKey,
-        destAta: anchorWalletAta,
       })
       .rpc();
 

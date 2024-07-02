@@ -9,6 +9,7 @@ import {
   getPermanentDelegate,
   getTransferHook,
   getGroupMemberPointerState,
+  getAssociatedTokenAddress,
 } from "@solana/spl-token";
 
 import { setPayer, CONNECTION } from "../../util/js/config";
@@ -50,7 +51,7 @@ describe("Vending Machine", () => {
           symbol,
           uriPrefix,
         })
-        .accountsPartial({
+        .accounts({
           vendingMachineData: vendingMachineData.publicKey,
         })
         .signers([vendingMachineData])
@@ -84,7 +85,7 @@ describe("Vending Machine", () => {
           symbol: randomStr(11),
           uriPrefix,
         })
-        .accountsPartial({
+        .accounts({
           vendingMachineData: vendingMachineData.publicKey,
         })
         .signers([vendingMachineData])
@@ -118,7 +119,7 @@ describe("Vending Machine", () => {
           symbol,
           uriPrefix: randomStr(201),
         })
-        .accountsPartial({
+        .accounts({
           vendingMachineData: vendingMachineData.publicKey,
         })
         .signers([vendingMachineData])
@@ -151,7 +152,7 @@ describe("Vending Machine", () => {
         symbol,
         uriPrefix,
       })
-      .accountsPartial({
+      .accounts({
         vendingMachineData: vendingMachineData.publicKey,
       })
       .signers([vendingMachineData])
@@ -185,6 +186,7 @@ describe("Vending Machine", () => {
         treasury: treasury.publicKey,
         mint: mint.publicKey,
         metadata: metadata.publicKey,
+        receiver: ANCHOR_WALLET_KEYPAIR.publicKey,
         metadataProgram: ATM_PROGRAM_ID,
         vendingMachineData: vendingMachineData.publicKey,
       })
@@ -223,5 +225,13 @@ describe("Vending Machine", () => {
     const permanentDelegate = getPermanentDelegate(mintInfo);
     assert(permanentDelegate);
     assert(permanentDelegate.delegate.equals(vendingMachinePda));
+
+    // TODO: Check token balance
+    const anchorWalletAta = await getAssociatedTokenAddress(
+      mint.publicKey,
+      ANCHOR_WALLET_KEYPAIR.publicKey,
+      undefined,
+      TOKEN_2022_PROGRAM_ID
+    );
   });
 });

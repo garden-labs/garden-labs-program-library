@@ -114,6 +114,7 @@ pub struct CreateToken<'info> {
         payer = payer,
         associated_token::mint = mint,
         associated_token::authority = dest,
+        associated_token::token_program = token_program,
     )]
     pub dest_ata: InterfaceAccount<'info, TokenAccount>,
     #[account(seeds = [AI_ALIENS_PDA_SEED.as_bytes()], bump)]

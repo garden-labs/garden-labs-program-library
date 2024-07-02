@@ -24,18 +24,17 @@ pub struct MintNft<'info> {
     /// CHECK: Account checked in constraints
     #[account(mut, constraint = treasury.key() == vending_machine_data.treasury)]
     pub treasury: UncheckedAccount<'info>,
+    /// CHECK: We're just giving them a token
+    #[account()]
+    pub receiver: UncheckedAccount<'info>,
     #[account(
         init,
         signer,
         payer = payer,
         mint::token_program = token_program,
         mint::decimals = 0,
-        
-        // TODO: Change these to None, in the constraint if possible, otherwise
-        // in the instruction
-        mint::authority = vending_machine_pda,
-        mint::freeze_authority = vending_machine_pda,
-
+        mint::authority = vending_machine_pda, // Set to None in instruction
+        mint::freeze_authority = vending_machine_pda, // Set to None in instruction
         extensions::metadata_pointer::authority = vending_machine_pda,
         extensions::metadata_pointer::metadata_address = metadata,
         extensions::group_member_pointer::authority = vending_machine_pda,
@@ -45,6 +44,15 @@ pub struct MintNft<'info> {
         extensions::permanent_delegate::delegate = vending_machine_pda,
     )]
     pub mint: Box<InterfaceAccount<'info, Mint>>,
+    // NOTE: ImmutableOwner initialized by default in Token2022
+    #[account(
+        init,
+        payer = payer,
+        associated_token::mint = mint,
+        associated_token::authority = receiver,
+        associated_token::token_program = token_program,
+    )]
+    pub receiver_ata: InterfaceAccount<'info, TokenAccount>,
     // Use Token Metadata struct here?
     /// CHECK: Account checked in constraints
     #[account(
@@ -75,7 +83,11 @@ pub struct MintNft<'info> {
 }
 
 pub fn handle_mint_nft(ctx: Context<MintNft>, index: u64) -> Result<()> {
-    // TODO: Use collection pointer to determine if mint exists
+    // Protocol Fee: 0.001 SOL
+
+    // Mint To
+
+    // Set mint and freeze authorities to None
 
     Ok(())
 }

@@ -135,7 +135,8 @@ describe("Holder Metadata Plugin", () => {
       .accountsPartial({
         mint,
         metadata,
-        // TODO: Remove this? Replace with ATA?
+        // TODO: Figure out what is needed to remove this
+        // Perhaps an Anchor bug
         holderTokenAccount: token,
         fieldPda,
         fieldAuthorityProgram: ATM_PROGRAM_ID,
