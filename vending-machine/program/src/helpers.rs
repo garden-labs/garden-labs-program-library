@@ -3,14 +3,14 @@ use crate::constants::{
 };
 use crate::errors::VendingMachineError;
 use crate::state::VendingMachineData;
-use crate::ID;
 
 use anchor_lang::prelude::*;
 use spl_token_metadata_interface::state::TokenMetadata;
 use std::str::FromStr;
 
 fn get_vending_machine_pda() -> Pubkey {
-    let (pda, _bump) = Pubkey::find_program_address(&[VENDING_MACHINE_PDA_SEED.as_bytes()], &ID);
+    let (pda, _bump) =
+        Pubkey::find_program_address(&[VENDING_MACHINE_PDA_SEED.as_bytes()], &crate::ID);
     return pda;
 }
 

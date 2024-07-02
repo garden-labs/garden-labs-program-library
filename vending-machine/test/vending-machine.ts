@@ -2,8 +2,16 @@ import assert from "assert";
 
 import { workspace, BN, AnchorError } from "@coral-xyz/anchor";
 import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import {
+  getMint,
+  TOKEN_2022_PROGRAM_ID,
+  getMetadataPointerState,
+  getPermanentDelegate,
+  getTransferHook,
+  getGroupMemberPointerState,
+} from "@solana/spl-token";
 
-import { setPayer } from "../../util/js/config";
+import { setPayer, CONNECTION } from "../../util/js/config";
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
 import { VendingMachine } from "../../target/types/vending_machine";
 import { randomStr } from "../../util/js/helpers";
@@ -149,7 +157,7 @@ describe("Vending Machine", () => {
       .signers([vendingMachineData])
       .rpc();
 
-    // Check state
+    // Check vending machine data
     const v = await program.account.vendingMachineData.fetch(
       vendingMachineData.publicKey
     );
@@ -162,7 +170,7 @@ describe("Vending Machine", () => {
     assert.equal(v.uriPrefix, uriPrefix);
   });
 
-  it("Create mint", async () => {
+  it("Create NFT", async () => {
     const { program } = setPayer<VendingMachine>(
       ANCHOR_WALLET_KEYPAIR,
       workspace.VendingMachine
@@ -182,5 +190,38 @@ describe("Vending Machine", () => {
       })
       .signers([mint, metadata])
       .rpc();
+
+    // TODO: Check mint
+
+    // Check metadata pointer
+    const mintInfo = await getMint(
+      CONNECTION,
+      mint.publicKey,
+      undefined,
+      TOKEN_2022_PROGRAM_ID
+    );
+    const metadataPointerState = getMetadataPointerState(mintInfo);
+    assert(metadataPointerState);
+    assert(metadataPointerState.metadataAddress);
+    assert(metadataPointerState.metadataAddress.equals(metadata.publicKey));
+
+    // Check group member pointer
+    const groupMemberPointerState = getGroupMemberPointerState(mintInfo);
+    assert(groupMemberPointerState);
+    assert(groupMemberPointerState.authority);
+    assert(groupMemberPointerState.authority.equals(vendingMachinePda));
+    assert(groupMemberPointerState.memberAddress);
+    assert(groupMemberPointerState.memberAddress.equals(mint.publicKey));
+
+    // Check transfer hook
+    const transferHook = getTransferHook(mintInfo);
+    assert(transferHook);
+    assert(transferHook.authority.equals(vendingMachinePda));
+    assert(transferHook.programId.equals(program.programId));
+
+    // Check permanent delegate
+    const permanentDelegate = getPermanentDelegate(mintInfo);
+    assert(permanentDelegate);
+    assert(permanentDelegate.delegate.equals(vendingMachinePda));
   });
 });

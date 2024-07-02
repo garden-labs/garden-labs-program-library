@@ -38,7 +38,11 @@ pub struct MintNft<'info> {
 
         extensions::metadata_pointer::authority = vending_machine_pda,
         extensions::metadata_pointer::metadata_address = metadata,
-        // TODO: Additional extensions
+        extensions::group_member_pointer::authority = vending_machine_pda,
+        extensions::group_member_pointer::member_address = mint,
+        extensions::transfer_hook::authority = vending_machine_pda,
+        extensions::transfer_hook::program_id = crate::ID,
+        extensions::permanent_delegate::delegate = vending_machine_pda,
     )]
     pub mint: Box<InterfaceAccount<'info, Mint>>,
     // Use Token Metadata struct here?
