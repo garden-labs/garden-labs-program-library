@@ -11,7 +11,7 @@ use anchor_spl::{
         transfer_hook::TransferHook,
     },
     token_interface::{
-        spl_token_metadata_interface::state::TokenMetadata, token_metadata_initialize, Mint,
+        mint_to, MintTo, spl_token_metadata_interface::state::TokenMetadata, token_metadata_initialize, Mint,
         Token2022, TokenAccount, TokenMetadataInitialize,
     },
 };
@@ -82,12 +82,28 @@ pub struct MintNft<'info> {
     pub system_program: Program<'info, System>,
 }
 
+fn create_token(ctx: &Context<MintNft>) -> Result<()> {
+    let mint_to_ctx = MintTo {
+        mint: ctx.accounts.mint.to_account_info(),
+        to: ctx.accounts.receiver_ata.to_account_info(),
+        authority: ctx.accounts.vending_machine_pda.to_account_info(),
+    };
+    let vending_machine_pda_seeds: &[&[u8]; 2] = &[VENDING_MACHINE_PDA_SEED.as_bytes(), &[ctx.bumps.vending_machine_pda]];
+    let signer_seeds = &[&vending_machine_pda_seeds[..]];
+    let mint_to_accounts = CpiContext::new_with_signer(ctx.accounts.token_program.to_account_info(), mint_to_ctx, signer_seeds);
+    mint_to(mint_to_accounts, 1)?;
+
+    Ok(())
+}
+
 pub fn handle_mint_nft(ctx: Context<MintNft>, index: u64) -> Result<()> {
-    // Protocol Fee: 0.001 SOL
+    // TODO: Check Nft has been minted (via group member pointer)
 
-    // Mint To
+    // TODO: Protocol Fee: 0.001 SOL
 
-    // Set mint and freeze authorities to None
+    create_token(&ctx)?;
+
+    // TODO: Set mint and freeze authorities to None
 
     Ok(())
 }

@@ -193,8 +193,6 @@ describe("Vending Machine", () => {
       .signers([mint, metadata])
       .rpc();
 
-    // TODO: Check mint
-
     // Check metadata pointer
     const mintInfo = await getMint(
       CONNECTION,
@@ -226,12 +224,20 @@ describe("Vending Machine", () => {
     assert(permanentDelegate);
     assert(permanentDelegate.delegate.equals(vendingMachinePda));
 
-    // TODO: Check token balance
+    // Check token balance
     const anchorWalletAta = await getAssociatedTokenAddress(
       mint.publicKey,
       ANCHOR_WALLET_KEYPAIR.publicKey,
       undefined,
       TOKEN_2022_PROGRAM_ID
     );
+    const anchorWalletAtaBalance = await CONNECTION.getTokenAccountBalance(
+      anchorWalletAta
+    );
+    assert.equal(anchorWalletAtaBalance.value.amount, 1);
+
+    // TODO: Check mint authority and freeze authority
+
+    // TODO: Check protocol fees
   });
 });
