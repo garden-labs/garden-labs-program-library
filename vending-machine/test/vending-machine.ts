@@ -23,6 +23,7 @@ import {
 
 describe("Vending Machine", () => {
   const vendingMachineData = Keypair.generate();
+  const creator = Keypair.generate();
   const maxSupply = 10000;
   const mintPriceLamports = 0.1 * LAMPORTS_PER_SOL;
   const namePrefix = randomStr(32);
@@ -45,7 +46,7 @@ describe("Vending Machine", () => {
       await program.methods
         .init({
           admin: ANCHOR_WALLET_KEYPAIR.publicKey,
-          creator: ANCHOR_WALLET_KEYPAIR.publicKey,
+          creator: creator.publicKey,
           maxSupply,
           mintPriceLamports: new BN(mintPriceLamports.toString()),
           namePrefix: randomStr(33),
@@ -79,7 +80,7 @@ describe("Vending Machine", () => {
       await program.methods
         .init({
           admin: ANCHOR_WALLET_KEYPAIR.publicKey,
-          creator: ANCHOR_WALLET_KEYPAIR.publicKey,
+          creator: creator.publicKey,
           maxSupply,
           mintPriceLamports: new BN(mintPriceLamports.toString()),
           namePrefix,
@@ -113,7 +114,7 @@ describe("Vending Machine", () => {
       await program.methods
         .init({
           admin: ANCHOR_WALLET_KEYPAIR.publicKey,
-          creator: ANCHOR_WALLET_KEYPAIR.publicKey,
+          creator: creator.publicKey,
           maxSupply,
           mintPriceLamports: new BN(mintPriceLamports.toString()),
           namePrefix,
@@ -146,7 +147,7 @@ describe("Vending Machine", () => {
     await program.methods
       .init({
         admin: ANCHOR_WALLET_KEYPAIR.publicKey,
-        creator: ANCHOR_WALLET_KEYPAIR.publicKey,
+        creator: creator.publicKey,
         maxSupply,
         mintPriceLamports: new BN(mintPriceLamports.toString()),
         namePrefix,
@@ -164,7 +165,7 @@ describe("Vending Machine", () => {
       vendingMachineData.publicKey
     );
     assert(v.admin.equals(ANCHOR_WALLET_KEYPAIR.publicKey));
-    assert(v.creator.equals(ANCHOR_WALLET_KEYPAIR.publicKey));
+    assert(v.creator.equals(creator.publicKey));
     assert.equal(v.maxSupply, maxSupply);
     assert.equal(v.mintPriceLamports, mintPriceLamports);
     assert.equal(v.namePrefix, namePrefix);
@@ -182,11 +183,13 @@ describe("Vending Machine", () => {
     const metadata = Keypair.generate();
 
     const preTreasuryBalance = await CONNECTION.getBalance(TREASURY_PUBLIC_KEY);
+    const preCreatorBalance = await CONNECTION.getBalance(creator.publicKey);
 
     await program.methods
       .mintNft(new BN("1"))
       .accounts({
         treasury: TREASURY_PUBLIC_KEY,
+        creator: creator.publicKey,
         mint: mint.publicKey,
         metadata: metadata.publicKey,
         receiver: ANCHOR_WALLET_KEYPAIR.publicKey,
@@ -244,6 +247,10 @@ describe("Vending Machine", () => {
       TREASURY_PUBLIC_KEY
     );
     assert.equal(postTreasuryBalance - preTreasuryBalance, 1_000_000);
+
+    // Check mint price
+    const postCreatorBalance = await CONNECTION.getBalance(creator.publicKey);
+    assert.equal(postCreatorBalance - preCreatorBalance, mintPriceLamports);
 
     // TODO: Check mint authority and freeze authority
   });

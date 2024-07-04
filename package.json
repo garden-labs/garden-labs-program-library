@@ -18,6 +18,7 @@
     "start:localnet": "solana-test-validator",
     "restart:localnet": "solana-test-validator -r",
     "test:localnet": "yarn set-network:localnet && util/bash/build/advanced-token-metadata.sh && TEST_ENV=localnet anchor test",
+    "test:localnet:vending-machine": "TEST_INCLUDE_PATH=vending-machine/test/**/*.ts yarn run test:localnet",
     "test:localnet:keep-open": "yarn test:localnet -- --skip-local-validator",
     "test:devnet": "yarn set-network:devnet && TEST_ENV=devnet yarn run vitest run",
     "test:devnet:redeploy": "yarn build && yarn deploy:devnet && yarn test:devnet",

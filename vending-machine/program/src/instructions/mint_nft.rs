@@ -27,6 +27,9 @@ pub struct MintNft<'info> {
     /// CHECK: We're just giving them a token
     #[account()]
     pub receiver: UncheckedAccount<'info>,
+    /// CHECK: Account checked in constraints
+    #[account(mut, constraint = creator.key() == vending_machine_data.creator)]
+    pub creator: UncheckedAccount<'info>,
     #[account(
         init,
         signer,
@@ -52,7 +55,7 @@ pub struct MintNft<'info> {
         associated_token::authority = receiver,
         associated_token::token_program = token_program,
     )]
-    pub receiver_ata: InterfaceAccount<'info, TokenAccount>,
+    pub receiver_ata: Box<InterfaceAccount<'info, TokenAccount>>,
     // Use Token Metadata struct here?
     /// CHECK: Account checked in constraints
     #[account(
@@ -96,6 +99,21 @@ fn pay_protocol_fee(ctx: &Context<MintNft>) -> Result<()> {
     Ok(())
 }
 
+fn pay_mint_fee(ctx: &Context<MintNft>) -> Result<()> {
+    let ix = &anchor_lang::solana_program::system_instruction::transfer(
+        ctx.accounts.payer.key,
+        &ctx.accounts.creator.key,
+        ctx.accounts.vending_machine_data.mint_price_lamports,
+    );
+    let accounts = &[
+        ctx.accounts.payer.to_account_info(),
+        ctx.accounts.creator.to_account_info(),
+    ];
+    anchor_lang::solana_program::program::invoke(ix, accounts)?;
+
+    Ok(())
+}
+
 fn create_token(ctx: &Context<MintNft>) -> Result<()> {
     let mint_to_ctx = MintTo {
         mint: ctx.accounts.mint.to_account_info(),
@@ -114,7 +132,7 @@ pub fn handle_mint_nft(ctx: Context<MintNft>, index: u64) -> Result<()> {
     // TODO: Check Nft has been minted (via group member pointer)
 
     pay_protocol_fee(&ctx)?;
-    // TODO: Mint fee
+    pay_mint_fee(&ctx)?;
 
     // TODO: Initialize metadata
 
