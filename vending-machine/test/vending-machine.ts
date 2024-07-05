@@ -219,13 +219,15 @@ describe("Vending Machine", () => {
     // Add to mints array for future tests
     mints.push(mint.publicKey);
 
-    // Check metadata pointer
+    // Get mint info
     const mintInfo = await getMint(
       CONNECTION,
       mint.publicKey,
       undefined,
       TOKEN_2022_PROGRAM_ID
     );
+
+    // Check metadata pointer
     const metadataPointerState = getMetadataPointerState(mintInfo);
     assert(metadataPointerState);
     assert(metadataPointerState.metadataAddress);
@@ -280,6 +282,7 @@ describe("Vending Machine", () => {
     const metadataVals = getMetadataVals(1);
     assert.deepStrictEqual(emittedMetadata, metadataVals);
 
-    // TODO: Check mint authority and freeze authority
+    // Check mint authority is None
+    assert.equal(mintInfo.mintAuthority, null);
   });
 });

@@ -5,14 +5,15 @@ use crate::helpers::{get_advanced_token_metadata_program_id, get_token_metadata_
 use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token_2022::spl_token_2022::extension::{
+    token_2022::spl_token_2022::{instruction::AuthorityType, extension::{
+        // Needed for contraints
         group_member_pointer::GroupMemberPointer, metadata_pointer::MetadataPointer,
         mint_close_authority::MintCloseAuthority, permanent_delegate::PermanentDelegate,
         transfer_hook::TransferHook,
-    },
+    }},
     token_interface::{
         mint_to, MintTo, spl_token_metadata_interface::state::TokenMetadata, token_metadata_initialize, Mint,
-        Token2022, TokenAccount, TokenMetadataInitialize,
+        Token2022, TokenAccount, TokenMetadataInitialize, set_authority, SetAuthority
     },
 };
 
@@ -36,8 +37,8 @@ pub struct MintNft<'info> {
         payer = payer,
         mint::token_program = token_program,
         mint::decimals = 0,
-        mint::authority = vending_machine_pda, // Set to None in instruction
-        mint::freeze_authority = vending_machine_pda, // Set to None in instruction
+        mint::authority = vending_machine_pda, // Set to None in ix after mint token
+        mint::freeze_authority = vending_machine_pda,
         extensions::metadata_pointer::authority = vending_machine_pda,
         extensions::metadata_pointer::metadata_address = metadata,
         extensions::group_member_pointer::authority = vending_machine_pda,
@@ -157,6 +158,19 @@ fn create_token(ctx: &Context<MintNft>) -> Result<()> {
     Ok(())
 }
 
+pub fn nullify_mint_authority(ctx: &Context<MintNft>) -> Result<()> {
+    let accounts = SetAuthority {
+        current_authority: ctx.accounts.vending_machine_pda.to_account_info(),
+        account_or_mint: ctx.accounts.mint.to_account_info(),
+    };
+    let vending_machine_pda_seeds: &[&[u8]; 2] = &[VENDING_MACHINE_PDA_SEED.as_bytes(), &[ctx.bumps.vending_machine_pda]];
+    let signer_seeds = &[&vending_machine_pda_seeds[..]];
+    let set_authority_ctx = CpiContext::new_with_signer(ctx.accounts.token_program.to_account_info(), accounts, signer_seeds);
+    set_authority(set_authority_ctx, AuthorityType::MintTokens, None)?;
+
+    Ok(())
+}
+
 pub fn handle_mint_nft(ctx: Context<MintNft>, index: u64) -> Result<()> {
     // TODO: Check Nft has been minted (via group member pointer)
 
@@ -167,7 +181,7 @@ pub fn handle_mint_nft(ctx: Context<MintNft>, index: u64) -> Result<()> {
 
     create_token(&ctx)?;
 
-    // TODO: Set mint and freeze authorities to None
+    nullify_mint_authority(&ctx)?;
 
     Ok(())
 }
