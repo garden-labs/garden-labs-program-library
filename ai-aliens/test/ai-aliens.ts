@@ -351,7 +351,7 @@ describe("AI Aliens Program", () => {
       })
       .rpc();
 
-    // Check emmitted metadata
+    // Check metadata
     const metadataVals = getMetadataVals(index);
     metadataVals.additionalMetadata.push([field, val]);
     const emittedMetadata = await getEmittedMetadata(ATM_PROGRAM_ID, metadata);

@@ -2,7 +2,6 @@ import "dotenv/config";
 
 import crypto from "crypto";
 import assert from "assert";
-import { execSync } from "child_process";
 
 import {
   ParsedTransactionWithMeta,
@@ -11,6 +10,8 @@ import {
   PublicKey,
   SystemProgram,
   Keypair,
+  TransactionMessage,
+  VersionedTransaction,
 } from "@solana/web3.js";
 import {
   createMint,
@@ -26,11 +27,7 @@ import {
   createInitializeInstruction,
 } from "@solana/spl-token-metadata";
 
-import {
-  ANCHOR_WALLET_KEYPAIR,
-  DEPLOY_ATM_SCRIPT_PATH,
-  ATM_PROGRAM_ID,
-} from "./constants";
+import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "./constants";
 import { CONNECTION } from "./config";
 
 export function randomStr(numChars: number): string {
@@ -56,45 +53,24 @@ export async function getEmittedMetadata(
   programId: PublicKey,
   metadataPubkey: PublicKey
 ): Promise<TokenMetadata> {
-  // Retries necessary due to "Unable to obtain a new blockhash" error
-  async function attemptEmit(retries: number): Promise<string> {
-    try {
-      const emitIx = createEmitInstruction({
-        programId,
-        metadata: metadataPubkey,
-      });
-      const emitTx = new Transaction().add(emitIx);
-      return await sendAndConfirmTransaction(CONNECTION, emitTx, [
-        ANCHOR_WALLET_KEYPAIR,
-      ]);
-    } catch (err) {
-      if (retries === 0) {
-        // eslint-disable-next-line no-console
-        console.error(err);
-        throw new Error("Max retries reached");
-      }
-      return attemptEmit(retries - 1);
-    }
+  const emitIx = createEmitInstruction({
+    programId,
+    metadata: metadataPubkey,
+  });
+  const latestBlockhash = await CONNECTION.getLatestBlockhash();
+  const txMsg = new TransactionMessage({
+    payerKey: ANCHOR_WALLET_KEYPAIR.publicKey,
+    recentBlockhash: latestBlockhash.blockhash,
+    instructions: [emitIx],
+  }).compileToV0Message();
+  const v0Tx = new VersionedTransaction(txMsg);
+  const res = (await CONNECTION.simulateTransaction(v0Tx)).value;
+
+  if (!res.returnData?.data) {
+    throw new Error("Return data is null");
   }
 
-  const sig = await attemptEmit(10);
-
-  // Get emitted metadata
-  const tx = await CONNECTION.getParsedTransaction(sig);
-  if (!tx || !tx.meta) {
-    throw new Error("Transaction or metadata is null");
-  }
-  // TODO: Remove once web3.js typings are updated
-  interface TxWithData extends ParsedTransactionWithMeta {
-    meta: ParsedTransactionWithMeta["meta"] & {
-      returnData: {
-        data: string[];
-      };
-    };
-  }
-  const txWithData = tx as TxWithData;
-  const data = Buffer.from(txWithData.meta.returnData.data[0], "base64");
-
+  const data = Buffer.from(res.returnData.data[0], "base64");
   return unpack(data);
 }
 

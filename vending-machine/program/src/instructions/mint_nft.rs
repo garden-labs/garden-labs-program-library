@@ -1,8 +1,8 @@
 use crate::constants::{VENDING_MACHINE_PDA_SEED, PROTOCOL_FEE_LAMPORTS};
 use crate::VendingMachineData;
-use crate::helpers::{get_advanced_token_metadata_program_id, get_token_metadata_init_space, get_treasury_pubkey};
+use crate::helpers::{get_advanced_token_metadata_program_id, get_token_metadata_init_space, get_token_metadata_init_vals, get_treasury_pubkey};
 
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
 use anchor_spl::{
     associated_token::AssociatedToken,
     token_2022::spl_token_2022::extension::{
@@ -114,16 +114,45 @@ fn pay_mint_fee(ctx: &Context<MintNft>) -> Result<()> {
     Ok(())
 }
 
+fn set_metadata(ctx: &Context<MintNft>, index: u64) -> Result<()> {
+    let token_metadata = get_token_metadata_init_vals(
+        index,
+        ctx.accounts.mint.key(),
+        (*ctx.accounts.vending_machine_data).clone(),
+    );
+
+    let ix = spl_token_metadata_interface::instruction::initialize(
+        ctx.accounts.metadata_program.key,
+        &ctx.accounts.metadata.key(),
+        &Option::<Pubkey>::from(token_metadata.update_authority).unwrap(),
+        &ctx.accounts.mint.key(),
+        &ctx.accounts.vending_machine_pda.key(),
+        token_metadata.name,
+        token_metadata.symbol,
+        token_metadata.uri,
+    );
+    let accounts = [
+        ctx.accounts.metadata.to_account_info(),
+        ctx.accounts.vending_machine_pda.to_account_info(),
+        ctx.accounts.mint.to_account_info(),
+    ];
+    let vending_machine_pda_seeds: &[&[u8]; 2] = &[VENDING_MACHINE_PDA_SEED.as_bytes(), &[ctx.bumps.vending_machine_pda]];
+    let signer_seeds = &[&vending_machine_pda_seeds[..]];
+    invoke_signed(&ix, &accounts, signer_seeds)?;
+
+    Ok(())
+}
+
 fn create_token(ctx: &Context<MintNft>) -> Result<()> {
-    let mint_to_ctx = MintTo {
+    let accounts = MintTo {
         mint: ctx.accounts.mint.to_account_info(),
         to: ctx.accounts.receiver_ata.to_account_info(),
         authority: ctx.accounts.vending_machine_pda.to_account_info(),
     };
     let vending_machine_pda_seeds: &[&[u8]; 2] = &[VENDING_MACHINE_PDA_SEED.as_bytes(), &[ctx.bumps.vending_machine_pda]];
     let signer_seeds = &[&vending_machine_pda_seeds[..]];
-    let accounts = CpiContext::new_with_signer(ctx.accounts.token_program.to_account_info(), mint_to_ctx, signer_seeds);
-    mint_to(accounts, 1)?;
+    let mint_to_ctx = CpiContext::new_with_signer(ctx.accounts.token_program.to_account_info(), accounts, signer_seeds);
+    mint_to(mint_to_ctx, 1)?;
 
     Ok(())
 }
@@ -134,7 +163,7 @@ pub fn handle_mint_nft(ctx: Context<MintNft>, index: u64) -> Result<()> {
     pay_protocol_fee(&ctx)?;
     pay_mint_fee(&ctx)?;
 
-    // TODO: Initialize metadata
+    set_metadata(&ctx, index)?;
 
     create_token(&ctx)?;
 

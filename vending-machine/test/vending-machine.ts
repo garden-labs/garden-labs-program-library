@@ -11,11 +11,12 @@ import {
   getGroupMemberPointerState,
   getAssociatedTokenAddress,
 } from "@solana/spl-token";
+import { TokenMetadata } from "@solana/spl-token-metadata";
 
 import { setPayer, CONNECTION } from "../../util/js/config";
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
 import { VendingMachine } from "../../target/types/vending_machine";
-import { randomStr } from "../../util/js/helpers";
+import { randomStr, getEmittedMetadata } from "../../util/js/helpers";
 import {
   VENDING_MACHINE_PDA_SEED,
   TREASURY_PUBLIC_KEY,
@@ -30,11 +31,27 @@ describe("Vending Machine", () => {
   const symbol = randomStr(10);
   const uriPrefix = randomStr(200);
 
+  const mints: PublicKey[] = [];
+
   const [vendingMachinePda] = PublicKey.findProgramAddressSync(
     [Buffer.from(VENDING_MACHINE_PDA_SEED)],
     setPayer<VendingMachine>(ANCHOR_WALLET_KEYPAIR, workspace.VendingMachine)
       .program.programId
   );
+
+  function getMetadataVals(index: number): TokenMetadata {
+    const mint = mints[index - 1];
+
+    const metadataVals: TokenMetadata = {
+      name: `${namePrefix} #${index}`,
+      symbol,
+      uri: `${uriPrefix}${index}.json`,
+      updateAuthority: vendingMachinePda,
+      mint,
+      additionalMetadata: [],
+    };
+    return metadataVals;
+  }
 
   it("Init fails with invalid name prefix", async () => {
     const { program } = setPayer<VendingMachine>(
@@ -199,6 +216,9 @@ describe("Vending Machine", () => {
       .signers([mint, metadata])
       .rpc();
 
+    // Add to mints array for future tests
+    mints.push(mint.publicKey);
+
     // Check metadata pointer
     const mintInfo = await getMint(
       CONNECTION,
@@ -251,6 +271,14 @@ describe("Vending Machine", () => {
     // Check mint price
     const postCreatorBalance = await CONNECTION.getBalance(creator.publicKey);
     assert.equal(postCreatorBalance - preCreatorBalance, mintPriceLamports);
+
+    // Check metadata
+    const emittedMetadata = await getEmittedMetadata(
+      ATM_PROGRAM_ID,
+      metadata.publicKey
+    );
+    const metadataVals = getMetadataVals(1);
+    assert.deepStrictEqual(emittedMetadata, metadataVals);
 
     // TODO: Check mint authority and freeze authority
   });
