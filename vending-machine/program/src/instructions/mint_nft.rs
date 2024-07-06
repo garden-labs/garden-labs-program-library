@@ -1,6 +1,6 @@
 use crate::constants::{VENDING_MACHINE_PDA_SEED, PROTOCOL_FEE_LAMPORTS};
 use crate::VendingMachineData;
-use crate::helpers::{get_advanced_token_metadata_program_id, get_token_metadata_init_space, get_token_metadata_init_vals, get_treasury_pubkey};
+use crate::helpers::{get_advanced_token_metadata_program_id, get_member_metadata_init_space, get_member_metadata_init_vals, get_treasury_pubkey};
 
 use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
 use anchor_spl::{
@@ -12,11 +12,12 @@ use anchor_spl::{
         transfer_hook::TransferHook,
     }},
     token_interface::{
-        mint_to, MintTo, spl_token_metadata_interface::state::TokenMetadata, token_metadata_initialize, Mint,
-        Token2022, TokenAccount, TokenMetadataInitialize, set_authority, SetAuthority
+        mint_to, MintTo, Mint,
+        Token2022, TokenAccount, set_authority, SetAuthority
     },
 };
 
+// TODO: Store / use name, symbol, uri, in collection mint only
 #[derive(Accounts)]
 #[instruction(index: u64)]
 pub struct MintNft<'info> {
@@ -57,13 +58,13 @@ pub struct MintNft<'info> {
         associated_token::token_program = token_program,
     )]
     pub receiver_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    // Use Token Metadata struct here?
+    // TODO: Use Token Metadata struct here?
     /// CHECK: Account checked in constraints
     #[account(
         init,
         signer,
         payer = payer,
-        space = get_token_metadata_init_space(index, (*vending_machine_data).clone()),
+        space = get_member_metadata_init_space(index, (*vending_machine_data).clone()),
         owner = metadata_program.key(),
     )]
     pub metadata: UncheckedAccount<'info>,
@@ -115,12 +116,14 @@ fn pay_mint_fee(ctx: &Context<MintNft>) -> Result<()> {
     Ok(())
 }
 
-fn set_metadata(ctx: &Context<MintNft>, index: u64) -> Result<()> {
-    let token_metadata = get_token_metadata_init_vals(
+fn init_metadata(ctx: &Context<MintNft>, index: u64) -> Result<()> {
+    let token_metadata = get_member_metadata_init_vals(
         index,
         ctx.accounts.mint.key(),
         (*ctx.accounts.vending_machine_data).clone(),
     );
+
+    // TODO: Use Anchor CPI instead (see Init)
 
     let ix = spl_token_metadata_interface::instruction::initialize(
         ctx.accounts.metadata_program.key,
@@ -158,7 +161,7 @@ fn create_token(ctx: &Context<MintNft>) -> Result<()> {
     Ok(())
 }
 
-pub fn nullify_mint_authority(ctx: &Context<MintNft>) -> Result<()> {
+fn nullify_mint_authority(ctx: &Context<MintNft>) -> Result<()> {
     let accounts = SetAuthority {
         current_authority: ctx.accounts.vending_machine_pda.to_account_info(),
         account_or_mint: ctx.accounts.mint.to_account_info(),
@@ -172,16 +175,18 @@ pub fn nullify_mint_authority(ctx: &Context<MintNft>) -> Result<()> {
 }
 
 pub fn handle_mint_nft(ctx: Context<MintNft>, index: u64) -> Result<()> {
-    // TODO: Check Nft has been minted (via group member pointer)
+    // TODO: Check NFT has been minted (via group ?)
 
     pay_protocol_fee(&ctx)?;
     pay_mint_fee(&ctx)?;
 
-    set_metadata(&ctx, index)?;
+    init_metadata(&ctx, index)?;
 
     create_token(&ctx)?;
 
     nullify_mint_authority(&ctx)?;
+
+    // TODO: Setup member
 
     Ok(())
 }

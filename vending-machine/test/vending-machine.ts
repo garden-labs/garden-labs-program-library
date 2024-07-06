@@ -25,11 +25,12 @@ import {
 describe("Vending Machine", () => {
   const vendingMachineData = Keypair.generate();
   const creator = Keypair.generate();
+  const colMint = Keypair.generate();
   const maxSupply = 10000;
   const mintPriceLamports = 0.1 * LAMPORTS_PER_SOL;
-  const namePrefix = randomStr(32);
+  const name = randomStr(32);
   const symbol = randomStr(10);
-  const uriPrefix = randomStr(200);
+  const uri = randomStr(200);
 
   const mints: PublicKey[] = [];
 
@@ -43,9 +44,9 @@ describe("Vending Machine", () => {
     const mint = mints[index - 1];
 
     const metadataVals: TokenMetadata = {
-      name: `${namePrefix} #${index}`,
+      name: `${name} #${index}`,
       symbol,
-      uri: `${uriPrefix}${index}.json`,
+      uri: `${uri}${index}.json`,
       updateAuthority: vendingMachinePda,
       mint,
       additionalMetadata: [],
@@ -53,7 +54,7 @@ describe("Vending Machine", () => {
     return metadataVals;
   }
 
-  it("Init fails with invalid name prefix", async () => {
+  it("Init fails with invalid name", async () => {
     const { program } = setPayer<VendingMachine>(
       ANCHOR_WALLET_KEYPAIR,
       workspace.VendingMachine
@@ -66,20 +67,21 @@ describe("Vending Machine", () => {
           creator: creator.publicKey,
           maxSupply,
           mintPriceLamports: new BN(mintPriceLamports.toString()),
-          namePrefix: randomStr(33),
+          name: randomStr(33),
           symbol,
-          uriPrefix,
+          uri,
         })
         .accounts({
+          colMint: colMint.publicKey,
           vendingMachineData: vendingMachineData.publicKey,
         })
-        .signers([vendingMachineData])
+        .signers([vendingMachineData, colMint])
         .rpc();
     } catch (err) {
       if (
         !(
           err instanceof AnchorError &&
-          err.error.errorCode.code === "NamePrefixTooLong"
+          err.error.errorCode.code === "NameTooLong"
         )
       ) {
         throw err;
@@ -87,7 +89,7 @@ describe("Vending Machine", () => {
     }
   });
 
-  it("Init fails with invalid symbol prefix", async () => {
+  it("Init fails with invalid symbol", async () => {
     const { program } = setPayer<VendingMachine>(
       ANCHOR_WALLET_KEYPAIR,
       workspace.VendingMachine
@@ -100,14 +102,15 @@ describe("Vending Machine", () => {
           creator: creator.publicKey,
           maxSupply,
           mintPriceLamports: new BN(mintPriceLamports.toString()),
-          namePrefix,
+          name,
           symbol: randomStr(11),
-          uriPrefix,
+          uri,
         })
         .accounts({
+          colMint: colMint.publicKey,
           vendingMachineData: vendingMachineData.publicKey,
         })
-        .signers([vendingMachineData])
+        .signers([vendingMachineData, colMint])
         .rpc();
     } catch (err) {
       if (
@@ -121,7 +124,7 @@ describe("Vending Machine", () => {
     }
   });
 
-  it("Init fails with invalid uri prefix", async () => {
+  it("Init fails with invalid uri", async () => {
     const { program } = setPayer<VendingMachine>(
       ANCHOR_WALLET_KEYPAIR,
       workspace.VendingMachine
@@ -134,20 +137,21 @@ describe("Vending Machine", () => {
           creator: creator.publicKey,
           maxSupply,
           mintPriceLamports: new BN(mintPriceLamports.toString()),
-          namePrefix,
+          name,
           symbol,
-          uriPrefix: randomStr(201),
+          uri: randomStr(201),
         })
         .accounts({
+          colMint: colMint.publicKey,
           vendingMachineData: vendingMachineData.publicKey,
         })
-        .signers([vendingMachineData])
+        .signers([vendingMachineData, colMint])
         .rpc();
     } catch (err) {
       if (
         !(
           err instanceof AnchorError &&
-          err.error.errorCode.code === "UriPrefixTooLong"
+          err.error.errorCode.code === "UriTooLong"
         )
       ) {
         throw err;
@@ -167,14 +171,15 @@ describe("Vending Machine", () => {
         creator: creator.publicKey,
         maxSupply,
         mintPriceLamports: new BN(mintPriceLamports.toString()),
-        namePrefix,
+        name,
         symbol,
-        uriPrefix,
+        uri,
       })
       .accounts({
+        colMint: colMint.publicKey,
         vendingMachineData: vendingMachineData.publicKey,
       })
-      .signers([vendingMachineData])
+      .signers([vendingMachineData, colMint])
       .rpc();
 
     // Check vending machine data
@@ -185,9 +190,13 @@ describe("Vending Machine", () => {
     assert(v.creator.equals(creator.publicKey));
     assert.equal(v.maxSupply, maxSupply);
     assert.equal(v.mintPriceLamports, mintPriceLamports);
-    assert.equal(v.namePrefix, namePrefix);
+    assert.equal(v.name, name);
     assert.equal(v.symbol, symbol);
-    assert.equal(v.uriPrefix, uriPrefix);
+    assert.equal(v.uri, uri);
+
+    // TODO: Check collection mint / metadata
+
+    // TODO: Check group setup
   });
 
   it("Create NFT", async () => {
@@ -284,5 +293,7 @@ describe("Vending Machine", () => {
 
     // Check mint authority is None
     assert.equal(mintInfo.mintAuthority, null);
+
+    // TODO: Check member setup
   });
 });
