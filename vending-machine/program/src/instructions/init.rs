@@ -95,5 +95,7 @@ pub fn handle_init(ctx: Context<Init>, data: VendingMachineData) -> Result<()> {
 
     // TODO: Setup group
 
+    // TODO: Set mint authority to none (refactor)
+
     Ok(())
 }

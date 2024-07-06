@@ -9,6 +9,7 @@ import {
   getPermanentDelegate,
   getTransferHook,
   getGroupMemberPointerState,
+  getGroupPointerState,
   getAssociatedTokenAddress,
 } from "@solana/spl-token";
 import { TokenMetadata } from "@solana/spl-token-metadata";
@@ -40,7 +41,19 @@ describe("Vending Machine", () => {
       .program.programId
   );
 
-  function getMetadataVals(index: number): TokenMetadata {
+  function getColMetadataVals(): TokenMetadata {
+    const metadataVals: TokenMetadata = {
+      name,
+      symbol,
+      uri: `${uri}collection.json`,
+      updateAuthority: vendingMachinePda,
+      mint: colMint.publicKey,
+      additionalMetadata: [],
+    };
+    return metadataVals;
+  }
+
+  function getMemberMetadataVals(index: number): TokenMetadata {
     const mint = mints[index - 1];
 
     const metadataVals: TokenMetadata = {
@@ -194,7 +207,29 @@ describe("Vending Machine", () => {
     assert.equal(v.symbol, symbol);
     assert.equal(v.uri, uri);
 
-    // TODO: Check collection mint / metadata
+    // Get mint info
+    const mintInfo = await getMint(
+      CONNECTION,
+      colMint.publicKey,
+      undefined,
+      TOKEN_2022_PROGRAM_ID
+    );
+
+    // Check group pointer
+    const groupPointerState = getGroupPointerState(mintInfo);
+    assert(groupPointerState);
+    assert(groupPointerState.authority);
+    assert(groupPointerState.authority.equals(vendingMachinePda));
+    assert(groupPointerState.groupAddress);
+    assert(groupPointerState.groupAddress.equals(colMint.publicKey));
+
+    // Check collection metadata
+    const emittedMetadata = await getEmittedMetadata(
+      TOKEN_2022_PROGRAM_ID,
+      colMint.publicKey
+    );
+    const metadataVals = getColMetadataVals();
+    assert.deepStrictEqual(emittedMetadata, metadataVals);
 
     // TODO: Check group setup
   });
@@ -288,7 +323,7 @@ describe("Vending Machine", () => {
       ATM_PROGRAM_ID,
       metadata.publicKey
     );
-    const metadataVals = getMetadataVals(1);
+    const metadataVals = getMemberMetadataVals(1);
     assert.deepStrictEqual(emittedMetadata, metadataVals);
 
     // Check mint authority is None
