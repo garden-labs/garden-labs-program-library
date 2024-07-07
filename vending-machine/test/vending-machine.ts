@@ -231,7 +231,7 @@ describe("Vending Machine", () => {
     const metadataVals = getColMetadataVals();
     assert.deepStrictEqual(emittedMetadata, metadataVals);
 
-    // TODO: Check group setup
+    // TODO: Check group once group is enabled in token-2022
   });
 
   it("Create NFT", async () => {
@@ -324,6 +324,6 @@ describe("Vending Machine", () => {
     // Check mint authority is None
     assert.equal(mintInfo.mintAuthority, null);
 
-    // TODO: Check member setup
+    // TODO: Check member once group is enabled in token-2022
   });
 });

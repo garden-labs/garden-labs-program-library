@@ -177,6 +177,12 @@ fn nullify_mint_authority(ctx: &Context<MintNft>) -> Result<()> {
     Ok(())
 }
 
+fn init_member(ctx: &Context<MintNft>) -> Result<()> {
+    // TODO: Implement
+
+    Ok(())
+}
+
 pub fn handle_mint_nft(ctx: Context<MintNft>, index: u64) -> Result<()> {
     // TODO: Check NFT has been minted (via group ?)
 
@@ -189,7 +195,9 @@ pub fn handle_mint_nft(ctx: Context<MintNft>, index: u64) -> Result<()> {
 
     nullify_mint_authority(&ctx)?;
 
-    // TODO: Setup member
+    // TODO: Initial member
+    // Group not enabled on Token2022 yet: https://github.com/solana-developers/program-examples/blob/main/tokens/token-2022/group/anchor/programs/group/src/lib.rs
+    // init_member(&ctx)?;
 
     Ok(())
 }

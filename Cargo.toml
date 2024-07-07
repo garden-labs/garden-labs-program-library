@@ -10,7 +10,7 @@ resolver = "2"
 
 [workspace.dependencies]
 anchor-lang = { version = "0.30.1", features = ["init-if-needed"] }
-anchor-spl = "0.30.1"
+anchor-spl = { version = "0.30.1" }
 solana-program = ">=1.18.11,<=2"
 spl-token-metadata-interface = "0.3.3"
 spl-token-2022 = { version = "3.0.2", features = ["no-entrypoint"] }

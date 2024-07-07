@@ -31,6 +31,7 @@ pub struct Init<'info> {
         extensions::metadata_pointer::authority = vending_machine_pda,
         extensions::metadata_pointer::metadata_address = col_mint,
         extensions::group_pointer::authority = vending_machine_pda,
+        // Group not enabled on Token2022 yet: https://github.com/solana-developers/program-examples/blob/main/tokens/token-2022/group/anchor/programs/group/src/lib.rs
         extensions::group_pointer::group_address = col_mint,
     )]
     pub col_mint: Box<InterfaceAccount<'info, Mint>>,
@@ -124,8 +125,8 @@ pub fn handle_init(ctx: Context<Init>, data: VendingMachineData) -> Result<()> {
     // Initialize collection metadata
     init_metadata(&ctx)?;
 
-    // Initialize group
-    // TODO: Is this not implemented yet?
+    // TODO: Initialize group
+    // Group not enabled on Token2022 yet: https://github.com/solana-developers/program-examples/blob/main/tokens/token-2022/group/anchor/programs/group/src/lib.rs
     // init_group(&ctx)?;
 
     Ok(())
