@@ -5,12 +5,18 @@ use crate::util::reach_minimum_balance;
 
 use anchor_lang::prelude::*;
 use anchor_spl::{
-    token_2022::spl_token_2022::extension::{
-        // Needed for contraints
-        group_pointer::GroupPointer,
-        metadata_pointer::MetadataPointer,
+    token_2022::spl_token_2022::{
+        extension::{
+            // Needed for contraints
+            group_pointer::GroupPointer,
+            metadata_pointer::MetadataPointer,
+        },
+        instruction::AuthorityType,
     },
-    token_interface::{token_metadata_initialize, Mint, Token2022, TokenMetadataInitialize},
+    token_interface::{
+        set_authority, token_metadata_initialize, Mint, SetAuthority, Token2022,
+        TokenMetadataInitialize,
+    },
 };
 
 #[derive(Accounts)]
@@ -76,8 +82,28 @@ fn init_metadata(ctx: &Context<Init>) -> Result<()> {
     // Add additional lamports to cover rent
     reach_minimum_balance(
         ctx.accounts.col_mint.to_account_info(),
-        ctx.accounts.payer.to_account_info(),
+        ctx.accounts.payer.clone(),
     )?;
+
+    Ok(())
+}
+
+fn nullify_mint_authority(ctx: &Context<Init>) -> Result<()> {
+    let accounts: SetAuthority = SetAuthority {
+        current_authority: ctx.accounts.vending_machine_pda.to_account_info(),
+        account_or_mint: ctx.accounts.col_mint.to_account_info(),
+    };
+    let vending_machine_pda_seeds: &[&[u8]; 2] = &[
+        VENDING_MACHINE_PDA_SEED.as_bytes(),
+        &[ctx.bumps.vending_machine_pda],
+    ];
+    let signer_seeds = &[&vending_machine_pda_seeds[..]];
+    let set_authority_ctx = CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        accounts,
+        signer_seeds,
+    );
+    set_authority(set_authority_ctx, AuthorityType::MintTokens, None)?;
 
     Ok(())
 }
@@ -95,7 +121,7 @@ pub fn handle_init(ctx: Context<Init>, data: VendingMachineData) -> Result<()> {
 
     // TODO: Setup group
 
-    // TODO: Set mint authority to none (refactor)
+    nullify_mint_authority(&ctx)?;
 
     Ok(())
 }

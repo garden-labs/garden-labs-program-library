@@ -231,6 +231,9 @@ describe("Vending Machine", () => {
     const metadataVals = getColMetadataVals();
     assert.deepStrictEqual(emittedMetadata, metadataVals);
 
+    // Check mint authority is None
+    assert.equal(mintInfo.mintAuthority, null);
+
     // TODO: Check group setup
   });
 

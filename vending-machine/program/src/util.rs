@@ -14,7 +14,7 @@ pub fn get_dummy_pubkey() -> Pubkey {
 
 pub fn reach_minimum_balance<'info>(
     account: AccountInfo<'info>,
-    payer: AccountInfo<'info>,
+    payer: Signer<'info>,
 ) -> Result<()> {
     let min_balance = Rent::get()?.minimum_balance(account.data_len());
     let delta = min_balance.saturating_sub(account.get_lamports());
@@ -24,7 +24,7 @@ pub fn reach_minimum_balance<'info>(
             account.key,
             delta,
         );
-        let accounts = &[account, payer];
+        let accounts = &[account, payer.to_account_info()];
         anchor_lang::solana_program::program::invoke(ix, accounts)?;
     }
 
