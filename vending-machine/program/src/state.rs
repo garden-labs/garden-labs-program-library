@@ -6,17 +6,17 @@ use anchor_lang::prelude::*;
 #[account]
 #[derive(Debug, InitSpace)]
 pub struct VendingMachineData {
-    pub admin: Pubkey,            // 32
-    pub creator: Pubkey,          // 32
-    pub max_supply: u16,          // 2
-    pub mint_price_lamports: u64, // 8
+    pub admin: Pubkey,
+    pub creator: Pubkey,
+    pub max_supply: u32,
+    pub mint_price_lamports: u64,
     #[max_len(MAX_NAME_LEN)]
-    pub name: String, // 32
+    pub name: String,
     #[max_len(MAX_SYMBOL_LEN)]
-    pub symbol: String, // 32
+    pub symbol: String,
     #[max_len(MAX_URI_LEN)]
-    pub uri: String, // 200
-                                  // TODO: Royalties
+    pub uri: String,
+    // TODO: Royalties
 }
 
 impl VendingMachineData {

@@ -215,13 +215,13 @@ describe("Vending Machine", () => {
       TOKEN_2022_PROGRAM_ID
     );
 
+    // Check mint authority is Vending Machine PDA
+    assert(mintInfo.mintAuthority?.equals(vendingMachinePda));
+
     // Check group pointer
     const groupPointerState = getGroupPointerState(mintInfo);
-    assert(groupPointerState);
-    assert(groupPointerState.authority);
-    assert(groupPointerState.authority.equals(vendingMachinePda));
-    assert(groupPointerState.groupAddress);
-    assert(groupPointerState.groupAddress.equals(colMint.publicKey));
+    assert(groupPointerState?.authority?.equals(vendingMachinePda));
+    assert(groupPointerState?.groupAddress?.equals(colMint.publicKey));
 
     // Check collection metadata
     const emittedMetadata = await getEmittedMetadata(
@@ -230,9 +230,6 @@ describe("Vending Machine", () => {
     );
     const metadataVals = getColMetadataVals();
     assert.deepStrictEqual(emittedMetadata, metadataVals);
-
-    // Check mint authority is None
-    assert.equal(mintInfo.mintAuthority, null);
 
     // TODO: Check group setup
   });
@@ -282,22 +279,17 @@ describe("Vending Machine", () => {
 
     // Check group member pointer
     const groupMemberPointerState = getGroupMemberPointerState(mintInfo);
-    assert(groupMemberPointerState);
-    assert(groupMemberPointerState.authority);
-    assert(groupMemberPointerState.authority.equals(vendingMachinePda));
-    assert(groupMemberPointerState.memberAddress);
-    assert(groupMemberPointerState.memberAddress.equals(mint.publicKey));
+    assert(groupMemberPointerState?.authority?.equals(vendingMachinePda));
+    assert(groupMemberPointerState?.memberAddress?.equals(mint.publicKey));
 
     // Check transfer hook
     const transferHook = getTransferHook(mintInfo);
-    assert(transferHook);
-    assert(transferHook.authority.equals(vendingMachinePda));
-    assert(transferHook.programId.equals(program.programId));
+    assert(transferHook?.authority?.equals(vendingMachinePda));
+    assert(transferHook?.programId?.equals(program.programId));
 
     // Check permanent delegate
     const permanentDelegate = getPermanentDelegate(mintInfo);
-    assert(permanentDelegate);
-    assert(permanentDelegate.delegate.equals(vendingMachinePda));
+    assert(permanentDelegate?.delegate?.equals(vendingMachinePda));
 
     // Check token balance
     const anchorWalletAta = await getAssociatedTokenAddress(

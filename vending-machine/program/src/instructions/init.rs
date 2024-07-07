@@ -5,16 +5,13 @@ use crate::util::reach_minimum_balance;
 
 use anchor_lang::prelude::*;
 use anchor_spl::{
-    token_2022::spl_token_2022::{
-        extension::{
-            // Needed for contraints
-            group_pointer::GroupPointer,
-            metadata_pointer::MetadataPointer,
-        },
-        instruction::AuthorityType,
+    token_2022::spl_token_2022::extension::{
+        // Needed for contraints
+        group_pointer::GroupPointer,
+        metadata_pointer::MetadataPointer,
     },
     token_interface::{
-        set_authority, token_metadata_initialize, Mint, SetAuthority, Token2022,
+        token_group_initialize, token_metadata_initialize, Mint, Token2022, TokenGroupInitialize,
         TokenMetadataInitialize,
     },
 };
@@ -29,7 +26,8 @@ pub struct Init<'info> {
         payer = payer,
         mint::token_program = token_program,
         mint::decimals = 0,
-        mint::authority = vending_machine_pda, // Set to None in ix after mint token
+        // No tokens ever minted but we must set this
+        mint::authority = vending_machine_pda,
         extensions::metadata_pointer::authority = vending_machine_pda,
         extensions::metadata_pointer::metadata_address = col_mint,
         extensions::group_pointer::authority = vending_machine_pda,
@@ -55,7 +53,7 @@ fn init_metadata(ctx: &Context<Init>) -> Result<()> {
         (*ctx.accounts.vending_machine_data).clone(),
     );
 
-    let cpi_accounts = TokenMetadataInitialize {
+    let accounts = TokenMetadataInitialize {
         token_program_id: ctx.accounts.token_program.to_account_info(),
         mint: ctx.accounts.col_mint.to_account_info(),
         metadata: ctx.accounts.col_mint.to_account_info(),
@@ -69,7 +67,7 @@ fn init_metadata(ctx: &Context<Init>) -> Result<()> {
     let signer_seeds = &[&vending_machine_pda_seeds[..]];
     let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
-        cpi_accounts,
+        accounts,
         signer_seeds,
     );
     token_metadata_initialize(
@@ -88,22 +86,29 @@ fn init_metadata(ctx: &Context<Init>) -> Result<()> {
     Ok(())
 }
 
-fn nullify_mint_authority(ctx: &Context<Init>) -> Result<()> {
-    let accounts: SetAuthority = SetAuthority {
-        current_authority: ctx.accounts.vending_machine_pda.to_account_info(),
-        account_or_mint: ctx.accounts.col_mint.to_account_info(),
+fn init_group(ctx: &Context<Init>) -> Result<()> {
+    let accounts = TokenGroupInitialize {
+        token_program_id: ctx.accounts.token_program.to_account_info(),
+        group: ctx.accounts.col_mint.to_account_info(),
+        mint: ctx.accounts.col_mint.to_account_info(),
+        mint_authority: ctx.accounts.vending_machine_pda.to_account_info(),
     };
     let vending_machine_pda_seeds: &[&[u8]; 2] = &[
         VENDING_MACHINE_PDA_SEED.as_bytes(),
         &[ctx.bumps.vending_machine_pda],
     ];
     let signer_seeds = &[&vending_machine_pda_seeds[..]];
-    let set_authority_ctx = CpiContext::new_with_signer(
+    let cpi_ctx = CpiContext::new_with_signer(
         ctx.accounts.token_program.to_account_info(),
         accounts,
         signer_seeds,
     );
-    set_authority(set_authority_ctx, AuthorityType::MintTokens, None)?;
+
+    token_group_initialize(
+        cpi_ctx,
+        Some(ctx.accounts.vending_machine_pda.key()),
+        ctx.accounts.vending_machine_data.max_supply,
+    )?;
 
     Ok(())
 }
@@ -119,9 +124,9 @@ pub fn handle_init(ctx: Context<Init>, data: VendingMachineData) -> Result<()> {
     // Initialize collection metadata
     init_metadata(&ctx)?;
 
-    // TODO: Setup group
-
-    nullify_mint_authority(&ctx)?;
+    // Initialize group
+    // TODO: Is this not implemented yet?
+    // init_group(&ctx)?;
 
     Ok(())
 }

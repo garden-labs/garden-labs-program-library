@@ -2,7 +2,7 @@ use crate::constants::{VENDING_MACHINE_PDA_SEED, PROTOCOL_FEE_LAMPORTS};
 use crate::VendingMachineData;
 use crate::helpers::{get_advanced_token_metadata_program_id, get_member_metadata_init_space, get_member_metadata_init_vals, get_treasury_pubkey};
 
-use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
+use anchor_lang::prelude::*;
 use anchor_spl::{
     associated_token::AssociatedToken,
     token_2022::spl_token_2022::{instruction::AuthorityType, extension::{
@@ -13,7 +13,7 @@ use anchor_spl::{
     }},
     token_interface::{
         mint_to, MintTo, Mint,
-        Token2022, TokenAccount, set_authority, SetAuthority
+        Token2022, TokenAccount, set_authority, SetAuthority, TokenMetadataInitialize, token_metadata_initialize,
     },
 };
 
@@ -123,26 +123,29 @@ fn init_metadata(ctx: &Context<MintNft>, index: u64) -> Result<()> {
         (*ctx.accounts.vending_machine_data).clone(),
     );
 
-    // TODO: Use Anchor CPI instead (see Init)
-
-    let ix = spl_token_metadata_interface::instruction::initialize(
-        ctx.accounts.metadata_program.key,
-        &ctx.accounts.metadata.key(),
-        &Option::<Pubkey>::from(token_metadata.update_authority).unwrap(),
-        &ctx.accounts.mint.key(),
-        &ctx.accounts.vending_machine_pda.key(),
+    let accounts = TokenMetadataInitialize {
+        token_program_id: ctx.accounts.metadata_program.to_account_info(),
+        mint: ctx.accounts.mint.to_account_info(),
+        metadata: ctx.accounts.metadata.to_account_info(),
+        mint_authority: ctx.accounts.vending_machine_pda.to_account_info(),
+        update_authority: ctx.accounts.vending_machine_pda.to_account_info(),
+    };
+    let vending_machine_pda_seeds: &[&[u8]; 2] = &[
+        VENDING_MACHINE_PDA_SEED.as_bytes(),
+        &[ctx.bumps.vending_machine_pda],
+    ];
+    let signer_seeds = &[&vending_machine_pda_seeds[..]];
+    let cpi_ctx = CpiContext::new_with_signer(
+        ctx.accounts.metadata_program.to_account_info(),
+        accounts,
+        signer_seeds,
+    );
+    token_metadata_initialize(
+        cpi_ctx,
         token_metadata.name,
         token_metadata.symbol,
         token_metadata.uri,
-    );
-    let accounts = [
-        ctx.accounts.metadata.to_account_info(),
-        ctx.accounts.vending_machine_pda.to_account_info(),
-        ctx.accounts.mint.to_account_info(),
-    ];
-    let vending_machine_pda_seeds: &[&[u8]; 2] = &[VENDING_MACHINE_PDA_SEED.as_bytes(), &[ctx.bumps.vending_machine_pda]];
-    let signer_seeds = &[&vending_machine_pda_seeds[..]];
-    invoke_signed(&ix, &accounts, signer_seeds)?;
+    )?;
 
     Ok(())
 }
