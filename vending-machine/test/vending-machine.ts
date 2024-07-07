@@ -285,7 +285,7 @@ describe("Vending Machine", () => {
     // Check transfer hook
     const transferHook = getTransferHook(mintInfo);
     assert(transferHook?.authority?.equals(vendingMachinePda));
-    assert(transferHook?.programId?.equals(program.programId));
+    assert(transferHook?.programId.equals(PublicKey.default));
 
     // Check permanent delegate
     const permanentDelegate = getPermanentDelegate(mintInfo);
@@ -326,4 +326,6 @@ describe("Vending Machine", () => {
 
     // TODO: Check member once group is enabled in token-2022
   });
+
+  // TODO: Test royalties on transfer once implemented
 });

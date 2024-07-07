@@ -45,7 +45,8 @@ pub struct MintNft<'info> {
         extensions::group_member_pointer::authority = vending_machine_pda,
         extensions::group_member_pointer::member_address = mint,
         extensions::transfer_hook::authority = vending_machine_pda,
-        extensions::transfer_hook::program_id = crate::ID,
+        // TODO: Implement royalties with transfer hook
+        // extensions::transfer_hook::program_id = crate::ID,
         extensions::permanent_delegate::delegate = vending_machine_pda,
     )]
     pub mint: Box<InterfaceAccount<'info, Mint>>,
@@ -58,7 +59,6 @@ pub struct MintNft<'info> {
         associated_token::token_program = token_program,
     )]
     pub receiver_ata: Box<InterfaceAccount<'info, TokenAccount>>,
-    // TODO: Use Token Metadata struct here?
     /// CHECK: Account checked in constraints
     #[account(
         init,
