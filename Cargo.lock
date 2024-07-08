@@ -1842,6 +1842,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "gpl-util"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+]
+
+[[package]]
 name = "h2"
 version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6150,6 +6157,9 @@ version = "0.1.0"
 dependencies = [
  "anchor-lang",
  "anchor-spl",
+ "field-authority-interface",
+ "gpl-util",
+ "holder-metadata-plugin",
  "spl-token-metadata-interface 0.3.3",
 ]
 

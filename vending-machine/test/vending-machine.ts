@@ -22,6 +22,10 @@ import {
   VENDING_MACHINE_PDA_SEED,
   TREASURY_PUBLIC_KEY,
 } from "../js/vending-machine";
+import {
+  FIELD_AUTHORITY_PDA_SEED,
+  fieldToSeedStr,
+} from "../../field-authority-interface/js/field-authority-interface";
 
 describe("Vending Machine", () => {
   const vendingMachineData = Keypair.generate();
@@ -32,6 +36,8 @@ describe("Vending Machine", () => {
   const name = randomStr(32);
   const symbol = randomStr(10);
   const uri = randomStr(200);
+  const holderField = randomStr(20);
+  const holderFieldDefaultVal = randomStr(200);
 
   const mints: PublicKey[] = [];
 
@@ -83,6 +89,8 @@ describe("Vending Machine", () => {
           name: randomStr(33),
           symbol,
           uri,
+          holderField,
+          holderFieldDefaultVal,
         })
         .accounts({
           colMint: colMint.publicKey,
@@ -118,6 +126,8 @@ describe("Vending Machine", () => {
           name,
           symbol: randomStr(11),
           uri,
+          holderField,
+          holderFieldDefaultVal,
         })
         .accounts({
           colMint: colMint.publicKey,
@@ -153,6 +163,8 @@ describe("Vending Machine", () => {
           name,
           symbol,
           uri: randomStr(201),
+          holderField,
+          holderFieldDefaultVal,
         })
         .accounts({
           colMint: colMint.publicKey,
@@ -172,6 +184,8 @@ describe("Vending Machine", () => {
     }
   });
 
+  // TODO: Test holder field empty
+
   it("Init", async () => {
     const { program } = setPayer<VendingMachine>(
       ANCHOR_WALLET_KEYPAIR,
@@ -187,6 +201,8 @@ describe("Vending Machine", () => {
         name,
         symbol,
         uri,
+        holderField,
+        holderFieldDefaultVal,
       })
       .accounts({
         colMint: colMint.publicKey,
@@ -243,6 +259,15 @@ describe("Vending Machine", () => {
     const mint = Keypair.generate();
     const metadata = Keypair.generate();
 
+    const [fieldPda] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from(FIELD_AUTHORITY_PDA_SEED),
+        Buffer.from(fieldToSeedStr(holderField)),
+        metadata.publicKey.toBuffer(),
+      ],
+      ATM_PROGRAM_ID
+    );
+
     const preTreasuryBalance = await CONNECTION.getBalance(TREASURY_PUBLIC_KEY);
     const preCreatorBalance = await CONNECTION.getBalance(creator.publicKey);
 
@@ -255,6 +280,7 @@ describe("Vending Machine", () => {
         metadata: metadata.publicKey,
         receiver: ANCHOR_WALLET_KEYPAIR.publicKey,
         metadataProgram: ATM_PROGRAM_ID,
+        fieldPda,
         vendingMachineData: vendingMachineData.publicKey,
       })
       .signers([mint, metadata])
@@ -326,6 +352,8 @@ describe("Vending Machine", () => {
 
     // TODO: Check member once group is enabled in token-2022
   });
+
+  // TODO: Check max holder field length, no holder field (optional)
 
   // TODO: Test royalties on transfer once implemented
 });

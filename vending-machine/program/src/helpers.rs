@@ -2,9 +2,9 @@ use crate::constants::{
     ADVANCED_TOKEN_METADATA_PROGRAM_ID_STR, TREASURY_PUBKEY_STR, VENDING_MACHINE_PDA_SEED,
 };
 use crate::state::VendingMachineData;
-use crate::util::{get_dummy_pubkey, get_pubkey};
 
 use anchor_lang::prelude::*;
+use gpl_util::{get_dummy_pubkey, get_pubkey};
 use spl_token_metadata_interface::state::TokenMetadata;
 
 fn get_vending_machine_pda() -> Pubkey {

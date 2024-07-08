@@ -10,4 +10,12 @@ pub enum VendingMachineError {
     UriTooLong,
     #[msg("The public key is invalid")]
     InvalidPublicKey,
+    #[msg("There are too many holder fields")]
+    HolderFieldsTooMany,
+    #[msg("Holder field isn't an array of size two for key-value pair")]
+    HolderFieldWrongStructure,
+    #[msg("Holder field is too long")]
+    HolderFieldTooLong,
+    #[msg("Holder field default value is too long")]
+    HolderFieldDefaultValTooLong,
 }

@@ -1,10 +1,11 @@
 [workspace]
 members = [
-    "field-authority-interface/program",
+    "util/rust",
+    "field-authority-interface/interface",
     "advanced-token-metadata/program",
     "holder-metadata-plugin/program",
     "ai-aliens/program",
-    "vending-machine/program"
+    "vending-machine/program",
 ]
 resolver = "2"
 

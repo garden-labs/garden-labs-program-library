@@ -1,14 +1,17 @@
 pub const MAX_NAME_LEN: usize = 32;
 pub const MAX_SYMBOL_LEN: usize = 10;
 pub const MAX_URI_LEN: usize = 200;
+// TODO: Move to Vec once field authority interface is switched from
+// PDA model to single tlv account
+// pub const MAX_HOLDER_FIELDS: usize = 10;
+pub const MAX_HOLDER_FIELD_LEN: usize = 32;
+pub const MAX_HOLDER_FIELD_VAL_LEN: usize = 200;
 
 pub const VENDING_MACHINE_PDA_SEED: &str = "vending-machine-pda";
 
 // TODO: Export this out of crate
 pub const ADVANCED_TOKEN_METADATA_PROGRAM_ID_STR: &str =
     "2GkHVZ2y5wP4nw4uA2GWFnc7jphfjKbbcEKwqMCV42a6";
-
-pub const DUMMY_PUBKEY_STR: &str = "EiH1P1VKhRm9DSMQikddHPs96Zm4cHKiQ87C3DBU7mrv";
 
 pub const PROTOCOL_FEE_LAMPORTS: u64 = 1_000_000;
 

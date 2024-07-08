@@ -1,7 +1,6 @@
 use crate::constants::VENDING_MACHINE_PDA_SEED;
 use crate::helpers::get_col_metadata_init_vals;
 use crate::state::VendingMachineData;
-use crate::util::reach_minimum_balance;
 
 use anchor_lang::prelude::*;
 use anchor_spl::{
@@ -15,6 +14,7 @@ use anchor_spl::{
         TokenMetadataInitialize,
     },
 };
+use gpl_util::reach_minimum_rent;
 
 #[derive(Accounts)]
 pub struct Init<'info> {
@@ -79,9 +79,9 @@ fn init_metadata(ctx: &Context<Init>) -> Result<()> {
     )?;
 
     // Add additional lamports to cover rent
-    reach_minimum_balance(
-        ctx.accounts.col_mint.to_account_info(),
+    reach_minimum_rent(
         ctx.accounts.payer.clone(),
+        ctx.accounts.col_mint.to_account_info(),
     )?;
 
     Ok(())
