@@ -353,7 +353,9 @@ describe("Vending Machine", () => {
     // TODO: Check member once group is enabled in token-2022
   });
 
-  // TODO: Check max holder field length, no holder field (optional)
+  // TODO: Check max holder field length
+
+  // TODO: Test no holder field
 
   // TODO: Test royalties on transfer once implemented
 });
