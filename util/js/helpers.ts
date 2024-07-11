@@ -34,7 +34,7 @@ import {
 import { CONNECTION } from "./config";
 
 export function randomStr(numChars: number): string {
-  return crypto.randomBytes(numChars).toString("hex").slice(0, numChars);
+  return crypto.randomBytes(numChars).toString("hex");
 }
 
 // Alternative Method
