@@ -36,7 +36,7 @@ describe("Vending Machine", () => {
   const name = randomStr(32);
   const symbol = randomStr(10);
   const uri = randomStr(200);
-  const holderField = randomStr(20);
+  const holderFieldKey = randomStr(28);
   const holderFieldDefaultVal = randomStr(200);
 
   const mints: PublicKey[] = [];
@@ -89,7 +89,7 @@ describe("Vending Machine", () => {
           name: randomStr(33),
           symbol,
           uri,
-          holderField,
+          holderFieldKey,
           holderFieldDefaultVal,
         })
         .accounts({
@@ -126,7 +126,7 @@ describe("Vending Machine", () => {
           name,
           symbol: randomStr(11),
           uri,
-          holderField,
+          holderFieldKey,
           holderFieldDefaultVal,
         })
         .accounts({
@@ -163,7 +163,7 @@ describe("Vending Machine", () => {
           name,
           symbol,
           uri: randomStr(201),
-          holderField,
+          holderFieldKey,
           holderFieldDefaultVal,
         })
         .accounts({
@@ -201,7 +201,7 @@ describe("Vending Machine", () => {
         name,
         symbol,
         uri,
-        holderField,
+        holderFieldKey,
         holderFieldDefaultVal,
       })
       .accounts({
@@ -250,7 +250,7 @@ describe("Vending Machine", () => {
     // TODO: Check group once group is enabled in token-2022
   });
 
-  it("Create NFT", async () => {
+  it("Mint NFT", async () => {
     const { program } = setPayer<VendingMachine>(
       ANCHOR_WALLET_KEYPAIR,
       workspace.VendingMachine
@@ -262,7 +262,7 @@ describe("Vending Machine", () => {
     const [fieldPda] = PublicKey.findProgramAddressSync(
       [
         Buffer.from(FIELD_AUTHORITY_PDA_SEED),
-        Buffer.from(fieldToSeedStr(holderField)),
+        Buffer.from(fieldToSeedStr(holderFieldKey)),
         metadata.publicKey.toBuffer(),
       ],
       ATM_PROGRAM_ID

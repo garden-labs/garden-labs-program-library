@@ -1,23 +1,31 @@
-use crate::constants::{VENDING_MACHINE_PDA_SEED, PROTOCOL_FEE_LAMPORTS};
+use crate::constants::{PROTOCOL_FEE_LAMPORTS, VENDING_MACHINE_PDA_SEED};
+use crate::helpers::{
+    get_advanced_token_metadata_program_id, get_member_metadata_init_space,
+    get_member_metadata_init_vals, get_treasury_pubkey,
+};
 use crate::VendingMachineData;
-use crate::helpers::{get_advanced_token_metadata_program_id, get_member_metadata_init_space, get_member_metadata_init_vals, get_treasury_pubkey};
 
 use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
 use anchor_spl::{
     associated_token::AssociatedToken,
-    token_2022::spl_token_2022::{instruction::AuthorityType, extension::{
-        // Needed for contraints
-        group_member_pointer::GroupMemberPointer, metadata_pointer::MetadataPointer,
-        mint_close_authority::MintCloseAuthority, permanent_delegate::PermanentDelegate,
-        transfer_hook::TransferHook,
-    }},
+    token_2022::spl_token_2022::{
+        extension::{
+            // Needed for contraints
+            group_member_pointer::GroupMemberPointer,
+            metadata_pointer::MetadataPointer,
+            mint_close_authority::MintCloseAuthority,
+            permanent_delegate::PermanentDelegate,
+            transfer_hook::TransferHook,
+        },
+        instruction::AuthorityType,
+    },
     token_interface::{
-        mint_to, MintTo, Mint,
-        Token2022, TokenAccount, set_authority, SetAuthority, TokenMetadataInitialize, token_metadata_initialize,
+        mint_to, set_authority, token_metadata_initialize, Mint, MintTo, SetAuthority, Token2022,
+        TokenAccount, TokenMetadataInitialize,
     },
 };
-use holder_metadata_plugin::{state::AnchorField, HOLDER_METADATA_PDA_SEED};
 use gpl_util::reach_minimum_rent;
+use holder_metadata_plugin::{state::AnchorField, HOLDER_METADATA_PDA_SEED};
 
 // TODO: Store / use name, symbol, uri, in collection mint only
 #[derive(Accounts)]
@@ -81,10 +89,10 @@ pub struct MintNft<'info> {
     /// CHECK: Account checked in CPI
     #[account(mut)]
     pub field_pda: UncheckedAccount<'info>,
+    // Need to keep on one line to not break rust-analyzer formatting
     /// CHECK: Account checked in constraints
     #[account(
-        executable, 
-        constraint = metadata_program.key() == get_advanced_token_metadata_program_id()?
+        executable, constraint = metadata_program.key() == get_advanced_token_metadata_program_id()?
     )]
     pub metadata_program: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token2022>,
@@ -162,9 +170,16 @@ fn create_token(ctx: &Context<MintNft>) -> Result<()> {
         to: ctx.accounts.receiver_ata.to_account_info(),
         authority: ctx.accounts.vending_machine_pda.to_account_info(),
     };
-    let vending_machine_pda_seeds: &[&[u8]; 2] = &[VENDING_MACHINE_PDA_SEED.as_bytes(), &[ctx.bumps.vending_machine_pda]];
+    let vending_machine_pda_seeds: &[&[u8]; 2] = &[
+        VENDING_MACHINE_PDA_SEED.as_bytes(),
+        &[ctx.bumps.vending_machine_pda],
+    ];
     let signer_seeds = &[&vending_machine_pda_seeds[..]];
-    let mint_to_ctx = CpiContext::new_with_signer(ctx.accounts.token_program.to_account_info(), accounts, signer_seeds);
+    let mint_to_ctx = CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        accounts,
+        signer_seeds,
+    );
     mint_to(mint_to_ctx, 1)?;
 
     Ok(())
@@ -175,9 +190,16 @@ fn nullify_mint_authority(ctx: &Context<MintNft>) -> Result<()> {
         current_authority: ctx.accounts.vending_machine_pda.to_account_info(),
         account_or_mint: ctx.accounts.mint.to_account_info(),
     };
-    let vending_machine_pda_seeds: &[&[u8]; 2] = &[VENDING_MACHINE_PDA_SEED.as_bytes(), &[ctx.bumps.vending_machine_pda]];
+    let vending_machine_pda_seeds: &[&[u8]; 2] = &[
+        VENDING_MACHINE_PDA_SEED.as_bytes(),
+        &[ctx.bumps.vending_machine_pda],
+    ];
     let signer_seeds = &[&vending_machine_pda_seeds[..]];
-    let set_authority_ctx = CpiContext::new_with_signer(ctx.accounts.token_program.to_account_info(), accounts, signer_seeds);
+    let set_authority_ctx = CpiContext::new_with_signer(
+        ctx.accounts.token_program.to_account_info(),
+        accounts,
+        signer_seeds,
+    );
     set_authority(set_authority_ctx, AuthorityType::MintTokens, None)?;
 
     Ok(())
@@ -190,6 +212,17 @@ fn init_member(ctx: &Context<MintNft>) -> Result<()> {
 }
 
 fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
+    // Return if holder field empty
+    if ctx
+        .accounts
+        .vending_machine_data
+        .holder_field_key
+        .is_empty()
+    {
+        return Ok(());
+    }
+
+    // Grab holder metadata plugin PDA
     let holder_metadata_pda_seeds = [HOLDER_METADATA_PDA_SEED.as_bytes()];
     let (holder_metadata_pda, _bump) =
         Pubkey::find_program_address(&holder_metadata_pda_seeds, &holder_metadata_plugin::id());
@@ -200,7 +233,9 @@ fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
         &ctx.accounts.payer.key(),
         &ctx.accounts.metadata.key(),
         &ctx.accounts.vending_machine_pda.key(),
-        spl_token_metadata_interface::state::Field::Key(ctx.accounts.vending_machine_data.holder_field.clone()),
+        spl_token_metadata_interface::state::Field::Key(
+            ctx.accounts.vending_machine_data.holder_field_key.clone(),
+        ),
         &holder_metadata_pda,
     );
     let accounts = &[
@@ -210,14 +245,20 @@ fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
         ctx.accounts.field_pda.to_account_info(),
         ctx.accounts.system_program.to_account_info(),
     ];
-    let vending_machine_pda_seeds: &[&[u8]; 2] = &[VENDING_MACHINE_PDA_SEED.as_bytes(), &[ctx.bumps.vending_machine_pda]];
+    let vending_machine_pda_seeds: &[&[u8]; 2] = &[
+        VENDING_MACHINE_PDA_SEED.as_bytes(),
+        &[ctx.bumps.vending_machine_pda],
+    ];
     let signer_seeds = &[&vending_machine_pda_seeds[..]];
     invoke_signed(ix, accounts, signer_seeds)?;
 
     // TODO: Set default (create / use set function)
 
     // Add rent
-    gpl_util::reach_minimum_rent(ctx.accounts.payer.clone(), ctx.accounts.metadata.to_account_info())?;
+    gpl_util::reach_minimum_rent(
+        ctx.accounts.payer.clone(),
+        ctx.accounts.metadata.to_account_info(),
+    )?;
 
     Ok(())
 }
@@ -238,7 +279,7 @@ pub fn handle_mint_nft(ctx: Context<MintNft>, index: u64) -> Result<()> {
     // Group not enabled on Token2022 yet: https://github.com/solana-developers/program-examples/blob/main/tokens/token-2022/group/anchor/programs/group/src/lib.rs
     // init_member(&ctx)?;
 
-    // TODO: Add multiple holder fields once field authority interface is 
+    // TODO: Add multiple holder fields once field authority interface is
     // switched from PDA model to single tlv account
     add_holder_field(&ctx)?;
 

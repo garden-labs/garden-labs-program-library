@@ -15,7 +15,9 @@ pub enum VendingMachineError {
     #[msg("Holder field isn't an array of size two for key-value pair")]
     HolderFieldWrongStructure,
     #[msg("Holder field is too long")]
-    HolderFieldTooLong,
+    HolderFieldKeyTooLong,
     #[msg("Holder field default value is too long")]
     HolderFieldDefaultValTooLong,
+    #[msg("Holder field value is set without a holder field")]
+    HolderFieldKeyRequiredForDefaultVal,
 }

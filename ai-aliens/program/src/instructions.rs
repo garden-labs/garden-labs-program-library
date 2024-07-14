@@ -90,10 +90,10 @@ pub struct CreateMint<'info> {
     /// CHECK: Account checked in CPI
     #[account(mut)]
     pub field_pda: UncheckedAccount<'info>,
+    // Need to keep on one line to not break rust-analyzer formatting
     /// CHECK: Account checked in constraints
     #[account(
-        executable, 
-        constraint = metadata_program.key() == get_metadata_program_id()?
+        executable, constraint = metadata_program.key() == get_metadata_program_id()?
     )]
     pub metadata_program: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token2022>,
@@ -138,10 +138,10 @@ pub struct UpdateField<'info> {
     pub metadata: UncheckedAccount<'info>,
     #[account(seeds = [AI_ALIENS_PDA_SEED.as_bytes()], bump)]
     pub ai_aliens_pda: Account<'info, AiAliensPda>,
+    // Need to keep on one line to not break rust-analyzer formatting
     /// CHECK: Account checked in constraints
     #[account(
-        executable, 
-        constraint = metadata_program.key() == get_metadata_program_id()?
+        executable, constraint = metadata_program.key() == get_metadata_program_id()?
     )]
     pub metadata_program: UncheckedAccount<'info>,
 }

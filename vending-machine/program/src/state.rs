@@ -1,5 +1,5 @@
 use crate::constants::{
-    MAX_HOLDER_FIELD_LEN, MAX_HOLDER_FIELD_VAL_LEN, MAX_NAME_LEN, MAX_SYMBOL_LEN, MAX_URI_LEN,
+    MAX_HOLDER_FIELD_KEY_LEN, MAX_HOLDER_FIELD_VAL_LEN, MAX_NAME_LEN, MAX_SYMBOL_LEN, MAX_URI_LEN,
 };
 use crate::errors::VendingMachineError;
 
@@ -65,10 +65,10 @@ pub struct VendingMachineData {
     // We will only allow holder fields in additional fields
     // #[max_len(10, MAX_HOLDER_FIELD_LEN)]
     // pub holder_fields: Vec<String>>,
-    #[max_len(MAX_HOLDER_FIELD_LEN)]
-    pub holder_field: String, // Empty string = no holder field
+    #[max_len(MAX_HOLDER_FIELD_KEY_LEN)]
+    pub holder_field_key: String, // Empty string means no holder field
     #[max_len(MAX_HOLDER_FIELD_VAL_LEN)]
-    pub holder_field_default_val: String, // Empty string = no default value
+    pub holder_field_default_val: String, // Empty string means no default value
 }
 
 impl VendingMachineData {
@@ -85,14 +85,23 @@ impl VendingMachineData {
             self.uri.len() <= MAX_URI_LEN,
             VendingMachineError::UriTooLong
         );
+
         require!(
-            self.holder_field.len() <= MAX_HOLDER_FIELD_LEN,
-            VendingMachineError::HolderFieldTooLong
+            self.holder_field_key.len() <= MAX_HOLDER_FIELD_KEY_LEN,
+            VendingMachineError::HolderFieldKeyTooLong
         );
-        require!(
-            self.holder_field_default_val.len() <= MAX_HOLDER_FIELD_VAL_LEN,
-            VendingMachineError::HolderFieldDefaultValTooLong
-        );
+
+        if !self.holder_field_default_val.is_empty() {
+            require!(
+                !self.holder_field_key.is_empty(),
+                VendingMachineError::HolderFieldKeyRequiredForDefaultVal
+            );
+
+            require!(
+                self.holder_field_default_val.len() <= MAX_HOLDER_FIELD_VAL_LEN,
+                VendingMachineError::HolderFieldDefaultValTooLong
+            );
+        }
 
         // TODO: Move to Vec once field authority interface is switched from
         // PDA model to single tlv account
