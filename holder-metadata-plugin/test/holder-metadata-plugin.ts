@@ -110,13 +110,13 @@ describe("Holder Metadata Plugin", () => {
     mint: PublicKey,
     metadata: PublicKey,
     token: PublicKey,
-    payer: Keypair
+    payer: Keypair,
+    val: string = randomStr(10)
   ): Promise<void> {
     const { program } = setPayer<HolderMetadataPlugin>(
       payer,
       workspace.HolderMetadataPlugin
     );
-    const val = randomStr(10);
 
     const param = toAnchorParam(Field.Name);
 
@@ -158,6 +158,17 @@ describe("Holder Metadata Plugin", () => {
       metadatas[index],
       tokens[index],
       ANCHOR_WALLET_KEYPAIR
+    );
+  });
+
+  it("Update longer name with holder metadata succeeds", async () => {
+    const index = 0;
+    await updateNameWithHolder(
+      mints[index],
+      metadatas[index],
+      tokens[index],
+      ANCHOR_WALLET_KEYPAIR,
+      randomStr(100)
     );
   });
 

@@ -7,6 +7,7 @@ use anchor_lang::{
     solana_program::{program::invoke_signed, program_error::ProgramError, rent::Rent},
 };
 use field_authority_interface::instructions::update_field_with_field_authority;
+use gpl_util::reach_minimum_rent;
 
 pub fn handle_update_holder_field(
     ctx: Context<UpdateHolderField>,
@@ -32,12 +33,11 @@ pub fn handle_update_holder_field(
     ]];
     invoke_signed(ix, account_infos, signer_seeds)?;
 
-    // Solana runtime will currently panic if below rent exempt but we'll check anyways
-    let space = ctx.accounts.metadata.to_account_info().data.borrow().len();
-    let min_balance = Rent::get()?.minimum_balance(space);
-    if ctx.accounts.metadata.lamports() < min_balance {
-        return Err(ProgramError::AccountNotRentExempt.into());
-    }
+    // TODO: Add payer account to pay for this instead of holder
+    reach_minimum_rent(
+        ctx.accounts.holder.clone(),
+        ctx.accounts.metadata.to_account_info(),
+    )?;
 
     Ok(())
 }

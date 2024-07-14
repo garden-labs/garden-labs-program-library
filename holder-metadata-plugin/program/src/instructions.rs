@@ -7,6 +7,8 @@ use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 #[derive(Accounts)]
 #[instruction(field: AnchorField, val: String)]
 pub struct UpdateHolderField<'info> {
+    // TODO: Add payer account to pay for this instead of holder
+    #[account(mut)]
     pub holder: Signer<'info>,
     pub mint: InterfaceAccount<'info, Mint>,
     /// CHECK: Account checked in CPI

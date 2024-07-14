@@ -20,8 +20,9 @@ use anchor_spl::{
         instruction::AuthorityType,
     },
     token_interface::{
-        mint_to, set_authority, token_metadata_initialize, Mint, MintTo, SetAuthority, Token2022,
-        TokenAccount, TokenMetadataInitialize,
+        mint_to, set_authority, token_metadata_initialize, token_metadata_update_field, Mint,
+        MintTo, SetAuthority, Token2022, TokenAccount, TokenMetadataInitialize,
+        TokenMetadataUpdateField,
     },
 };
 use gpl_util::reach_minimum_rent;
@@ -33,12 +34,15 @@ use holder_metadata_plugin::{state::AnchorField, HOLDER_METADATA_PDA_SEED};
 pub struct MintNft<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+
     /// CHECK: Account checked in constraints
     #[account(mut, constraint = treasury.key() == get_treasury_pubkey())]
     pub treasury: UncheckedAccount<'info>,
+
     /// CHECK: We're just giving them a token
     #[account()]
     pub receiver: UncheckedAccount<'info>,
+
     /// CHECK: Account checked in constraints
     #[account(mut, constraint = creator.key() == vending_machine_data.creator)]
     pub creator: UncheckedAccount<'info>,
@@ -60,6 +64,7 @@ pub struct MintNft<'info> {
         extensions::permanent_delegate::delegate = vending_machine_pda,
     )]
     pub mint: Box<InterfaceAccount<'info, Mint>>,
+
     // NOTE: ImmutableOwner initialized by default in Token2022
     #[account(
         init,
@@ -69,6 +74,7 @@ pub struct MintNft<'info> {
         associated_token::token_program = token_program,
     )]
     pub receiver_ata: Box<InterfaceAccount<'info, TokenAccount>>,
+
     /// CHECK: Account checked in constraints
     #[account(
         init,
@@ -79,13 +85,16 @@ pub struct MintNft<'info> {
         owner = metadata_program.key(),
     )]
     pub metadata: UncheckedAccount<'info>,
+
     /// CHECK: Account checked in constraints
     #[account(
         seeds = [VENDING_MACHINE_PDA_SEED.as_bytes()],
         bump
     )]
     pub vending_machine_pda: UncheckedAccount<'info>,
+
     pub vending_machine_data: Box<Account<'info, VendingMachineData>>,
+
     /// CHECK: Account checked in CPI
     #[account(mut)]
     pub field_pda: UncheckedAccount<'info>,
@@ -95,8 +104,11 @@ pub struct MintNft<'info> {
         executable, constraint = metadata_program.key() == get_advanced_token_metadata_program_id()?
     )]
     pub metadata_program: UncheckedAccount<'info>,
+
     pub token_program: Program<'info, Token2022>,
+
     pub associated_token_program: Program<'info, AssociatedToken>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -229,7 +241,7 @@ fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
         &ctx.accounts.payer.key(),
         &ctx.accounts.metadata.key(),
         &ctx.accounts.vending_machine_pda.key(),
-        spl_token_metadata_interface::state::Field::Key(holder_field_key),
+        spl_token_metadata_interface::state::Field::Key(holder_field_key.clone()),
         &holder_metadata_pda,
     );
     let accounts = &[
@@ -246,7 +258,38 @@ fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
     let signer_seeds = &[&vending_machine_pda_seeds[..]];
     invoke_signed(ix, accounts, signer_seeds)?;
 
-    // TODO: Set default (create / use set function)
+    // TODO: Refactor setting values to its own method (or its own instruction)
+
+    // Grab default value if it exists
+    let holder_field_default_val = match &ctx.accounts.vending_machine_data.holder_field_default_val
+    {
+        Some(key) => key.clone(),
+        None => return Ok(()),
+    };
+
+    // Set default value if it exists
+    if !holder_field_default_val.is_empty() {
+        let accounts = TokenMetadataUpdateField {
+            token_program_id: ctx.accounts.metadata_program.to_account_info(),
+            metadata: ctx.accounts.metadata.to_account_info(),
+            update_authority: ctx.accounts.vending_machine_pda.to_account_info(),
+        };
+        let vending_machine_pda_seeds: &[&[u8]; 2] = &[
+            VENDING_MACHINE_PDA_SEED.as_bytes(),
+            &[ctx.bumps.vending_machine_pda],
+        ];
+        let signer_seeds = &[&vending_machine_pda_seeds[..]];
+        let cpi_ctx = CpiContext::new_with_signer(
+            ctx.accounts.metadata_program.to_account_info(),
+            accounts,
+            signer_seeds,
+        );
+        token_metadata_update_field(
+            cpi_ctx,
+            spl_token_metadata_interface::state::Field::Key(holder_field_key.clone()),
+            holder_field_default_val,
+        )?;
+    }
 
     // Add rent
     reach_minimum_rent(

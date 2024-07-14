@@ -345,6 +345,10 @@ describe("Vending Machine", () => {
       metadata.publicKey
     );
     const metadataVals = getMemberMetadataVals(1);
+    metadataVals.additionalMetadata.push([
+      holderFieldKey,
+      holderFieldDefaultVal,
+    ]);
     assert.deepStrictEqual(emittedMetadata, metadataVals);
 
     // Check mint authority is None

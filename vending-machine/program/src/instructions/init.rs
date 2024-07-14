@@ -20,6 +20,7 @@ use gpl_util::reach_minimum_rent;
 pub struct Init<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
+
     #[account(
         init,
         signer,
@@ -35,6 +36,7 @@ pub struct Init<'info> {
         extensions::group_pointer::group_address = col_mint,
     )]
     pub col_mint: Box<InterfaceAccount<'info, Mint>>,
+
     // TODO: Use Token Metadata struct here?
     /// CHECK: Account checked in constraints
     #[account(
@@ -42,9 +44,12 @@ pub struct Init<'info> {
         bump
     )]
     pub vending_machine_pda: UncheckedAccount<'info>,
+
     #[account(init, payer = payer, space = 8 + VendingMachineData::INIT_SPACE)]
     pub vending_machine_data: Account<'info, VendingMachineData>,
+
     pub token_program: Program<'info, Token2022>,
+
     pub system_program: Program<'info, System>,
 }
 

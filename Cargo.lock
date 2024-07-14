@@ -1982,6 +1982,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "field-authority-interface",
+ "gpl-util",
  "spl-pod 0.2.2",
  "spl-token-metadata-interface 0.3.3",
 ]
