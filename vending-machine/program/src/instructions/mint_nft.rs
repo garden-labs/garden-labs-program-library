@@ -212,15 +212,11 @@ fn init_member(ctx: &Context<MintNft>) -> Result<()> {
 }
 
 fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
-    // Return if holder field empty
-    if ctx
-        .accounts
-        .vending_machine_data
-        .holder_field_key
-        .is_empty()
-    {
-        return Ok(());
-    }
+    // Grab holder field if set, otherwise return
+    let holder_field_key = match &ctx.accounts.vending_machine_data.holder_field_key {
+        Some(key) => key.clone(),
+        None => return Ok(()),
+    };
 
     // Grab holder metadata plugin PDA
     let holder_metadata_pda_seeds = [HOLDER_METADATA_PDA_SEED.as_bytes()];
@@ -233,9 +229,7 @@ fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
         &ctx.accounts.payer.key(),
         &ctx.accounts.metadata.key(),
         &ctx.accounts.vending_machine_pda.key(),
-        spl_token_metadata_interface::state::Field::Key(
-            ctx.accounts.vending_machine_data.holder_field_key.clone(),
-        ),
+        spl_token_metadata_interface::state::Field::Key(holder_field_key),
         &holder_metadata_pda,
     );
     let accounts = &[
@@ -255,7 +249,7 @@ fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
     // TODO: Set default (create / use set function)
 
     // Add rent
-    gpl_util::reach_minimum_rent(
+    reach_minimum_rent(
         ctx.accounts.payer.clone(),
         ctx.accounts.metadata.to_account_info(),
     )?;

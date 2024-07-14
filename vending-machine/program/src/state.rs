@@ -66,9 +66,9 @@ pub struct VendingMachineData {
     // #[max_len(10, MAX_HOLDER_FIELD_LEN)]
     // pub holder_fields: Vec<String>>,
     #[max_len(MAX_HOLDER_FIELD_KEY_LEN)]
-    pub holder_field_key: String, // Empty string means no holder field
+    pub holder_field_key: Option<String>, // Empty string means no holder field
     #[max_len(MAX_HOLDER_FIELD_VAL_LEN)]
-    pub holder_field_default_val: String, // Empty string means no default value
+    pub holder_field_default_val: Option<String>, // Empty string means no default value
 }
 
 impl VendingMachineData {
@@ -86,19 +86,21 @@ impl VendingMachineData {
             VendingMachineError::UriTooLong
         );
 
-        require!(
-            self.holder_field_key.len() <= MAX_HOLDER_FIELD_KEY_LEN,
-            VendingMachineError::HolderFieldKeyTooLong
-        );
-
-        if !self.holder_field_default_val.is_empty() {
+        if let Some(holder_field_key) = &self.holder_field_key {
             require!(
-                !self.holder_field_key.is_empty(),
+                holder_field_key.len() <= MAX_HOLDER_FIELD_KEY_LEN,
+                VendingMachineError::HolderFieldKeyTooLong
+            );
+        }
+
+        if let Some(holder_field_default_val) = &self.holder_field_default_val {
+            require!(
+                self.holder_field_key.is_some(),
                 VendingMachineError::HolderFieldKeyRequiredForDefaultVal
             );
 
             require!(
-                self.holder_field_default_val.len() <= MAX_HOLDER_FIELD_VAL_LEN,
+                holder_field_default_val.len() <= MAX_HOLDER_FIELD_VAL_LEN,
                 VendingMachineError::HolderFieldDefaultValTooLong
             );
         }
