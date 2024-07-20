@@ -361,5 +361,7 @@ describe("Vending Machine", () => {
 
   // TODO: Test no holder field
 
+  // TODO: Test holder field / field PDA mismatch
+
   // TODO: Test royalties on transfer once implemented
 });
