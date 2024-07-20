@@ -20,4 +20,6 @@ pub enum VendingMachineError {
     HolderFieldDefaultValTooLong,
     #[msg("Holder field value is set without a holder field")]
     HolderFieldKeyRequiredForDefaultVal,
+    #[msg("Holder field and Field PDA mismatch")]
+    FieldPdaMismatch,
 }

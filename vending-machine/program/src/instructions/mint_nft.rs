@@ -1,4 +1,5 @@
 use crate::constants::{PROTOCOL_FEE_LAMPORTS, VENDING_MACHINE_PDA_SEED};
+use crate::errors::VendingMachineError;
 use crate::helpers::{
     get_advanced_token_metadata_program_id, get_member_metadata_init_space,
     get_member_metadata_init_vals, get_treasury_pubkey,
@@ -97,7 +98,8 @@ pub struct MintNft<'info> {
 
     /// CHECK: Account checked in CPI
     #[account(mut)]
-    pub field_pda: UncheckedAccount<'info>,
+    pub field_pda: Option<UncheckedAccount<'info>>,
+
     // Need to keep on one line to not break rust-analyzer formatting
     /// CHECK: Account checked in constraints
     #[account(
@@ -224,11 +226,16 @@ fn init_member(ctx: &Context<MintNft>) -> Result<()> {
 }
 
 fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
-    // Grab holder field if set, otherwise return
-    let holder_field_key = match &ctx.accounts.vending_machine_data.holder_field_key {
-        Some(key) => key.clone(),
-        None => return Ok(()),
-    };
+    // Return if holder field key and field PDA are not set, otherwise check that they are both set
+    let holder_field_key = &ctx.accounts.vending_machine_data.holder_field_key;
+    let field_pda = &ctx.accounts.field_pda;
+    match (holder_field_key, field_pda) {
+        (Some(_), Some(_)) => {}
+        (None, None) => return Ok(()),
+        _ => return Err(VendingMachineError::FieldPdaMismatch.into()),
+    }
+    let holder_field_key = holder_field_key.as_ref().unwrap();
+    let field_pda = field_pda.as_ref().unwrap();
 
     // Grab holder metadata plugin PDA
     let holder_metadata_pda_seeds = [HOLDER_METADATA_PDA_SEED.as_bytes()];
@@ -248,7 +255,7 @@ fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
         ctx.accounts.payer.to_account_info(),
         ctx.accounts.metadata.to_account_info(),
         ctx.accounts.vending_machine_pda.to_account_info(),
-        ctx.accounts.field_pda.to_account_info(),
+        field_pda.to_account_info(),
         ctx.accounts.system_program.to_account_info(),
     ];
     let vending_machine_pda_seeds: &[&[u8]; 2] = &[
