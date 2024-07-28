@@ -29,9 +29,12 @@ import {
   getEmittedMetadata,
   toAnchorParam,
 } from "../../util/js/helpers";
+import { interpretTxErr } from "../../util/js/tx";
 import {
   VENDING_MACHINE_PDA_SEED,
   TREASURY_PUBLIC_KEY,
+  MEMBER_PDA_SEED,
+  indexToSeed,
 } from "../js/vending-machine";
 import {
   FIELD_AUTHORITY_PDA_SEED,
@@ -116,6 +119,7 @@ describe("Vending Machine", () => {
           creator: creator.publicKey,
           maxSupply,
           mintPriceLamports: new BN(mintPriceLamports.toString()),
+          colMint: colMint.publicKey,
           name: randomStr(33),
           symbol,
           uri,
@@ -153,6 +157,7 @@ describe("Vending Machine", () => {
           creator: creator.publicKey,
           maxSupply,
           mintPriceLamports: new BN(mintPriceLamports.toString()),
+          colMint: colMint.publicKey,
           name,
           symbol: randomStr(11),
           uri,
@@ -190,6 +195,7 @@ describe("Vending Machine", () => {
           creator: creator.publicKey,
           maxSupply,
           mintPriceLamports: new BN(mintPriceLamports.toString()),
+          colMint: colMint.publicKey,
           name,
           symbol,
           uri: randomStr(201),
@@ -226,6 +232,7 @@ describe("Vending Machine", () => {
         creator: creator.publicKey,
         maxSupply,
         mintPriceLamports: new BN(mintPriceLamports.toString()),
+        colMint: colMint.publicKey,
         name,
         symbol,
         uri,
@@ -275,10 +282,12 @@ describe("Vending Machine", () => {
     const metadataVals = getColMetadataVals();
     assert.deepStrictEqual(emittedMetadata, metadataVals);
 
-    // TODO: Check group once group is enabled in token-2022
+    // TODO: Check group once enabled in token-2022
   });
 
   it("Mint NFT", async () => {
+    const index = 1;
+
     const { program } = setPayer<VendingMachine>(
       holder,
       workspace.VendingMachine
@@ -300,7 +309,7 @@ describe("Vending Machine", () => {
     const preCreatorBalance = await CONNECTION.getBalance(creator.publicKey);
 
     await program.methods
-      .mintNft(new BN("1"))
+      .mintNft(new BN(index.toString()))
       .accounts({
         treasury: TREASURY_PUBLIC_KEY,
         creator: creator.publicKey,
@@ -381,7 +390,60 @@ describe("Vending Machine", () => {
     // Check mint authority is None
     assert.equal(mintInfo.mintAuthority, null);
 
-    // TODO: Check member once group is enabled in token-2022
+    // Check member PDA data
+    const [memberPda] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from(MEMBER_PDA_SEED),
+        colMint.publicKey.toBuffer(),
+        indexToSeed(new BN(index.toString())),
+      ],
+      program.programId
+    );
+    const memberPdaData = await program.account.memberPda.fetch(memberPda);
+    assert(memberPdaData.mint.equals(mint.publicKey));
+
+    // TODO: Check actual member once group is enabled in token-2022
+  });
+
+  it("Mint same NFT index fails", async () => {
+    const index = 1;
+
+    const { program } = setPayer<VendingMachine>(
+      holder,
+      workspace.VendingMachine
+    );
+
+    const mint = Keypair.generate();
+    const metadata = Keypair.generate();
+
+    const [fieldPda] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from(FIELD_AUTHORITY_PDA_SEED),
+        Buffer.from(fieldToSeedStr(holderFieldKey)),
+        metadata.publicKey.toBuffer(),
+      ],
+      ATM_PROGRAM_ID
+    );
+
+    try {
+      await program.methods
+        .mintNft(new BN(index.toString()))
+        .accounts({
+          treasury: TREASURY_PUBLIC_KEY,
+          creator: creator.publicKey,
+          mint: mint.publicKey,
+          metadata: metadata.publicKey,
+          receiver: holder.publicKey,
+          metadataProgram: ATM_PROGRAM_ID,
+          fieldPda,
+          vendingMachineData: vendingMachineData.publicKey,
+        })
+        .signers([mint, metadata])
+        .rpc();
+    } catch (err) {
+      const interpretedTxErr = interpretTxErr(err);
+      assert.equal(interpretedTxErr.type, "AllocateAccountAlreadyInUse");
+    }
   });
 
   it("Update holder field with holder", async () => {

@@ -1,11 +1,11 @@
 use crate::{
-    constants::{PROTOCOL_FEE_LAMPORTS, VENDING_MACHINE_PDA_SEED},
+    constants::{MEMBER_PDA_SEED, PROTOCOL_FEE_LAMPORTS, VENDING_MACHINE_PDA_SEED},
     errors::VendingMachineError,
     helpers::{
         get_advanced_token_metadata_program_id, get_member_metadata_init_space,
         get_member_metadata_init_vals, get_treasury_pubkey,
     },
-    state::VendingMachineData,
+    state::{MemberPda, VendingMachineData},
 };
 
 use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
@@ -88,6 +88,15 @@ pub struct MintNft<'info> {
         owner = metadata_program.key(),
     )]
     pub metadata: UncheckedAccount<'info>,
+
+    #[account(
+        init,
+        payer = payer,
+        space = MemberPda::INIT_SPACE + 8,
+        seeds = [MEMBER_PDA_SEED.as_bytes(), vending_machine_data.col_mint.as_ref(), &index.to_le_bytes()],
+        bump,
+    )]
+    pub member_pda: Account<'info, MemberPda>,
 
     /// CHECK: Account checked in constraints
     #[account(
@@ -221,8 +230,12 @@ fn nullify_mint_authority(ctx: &Context<MintNft>) -> Result<()> {
     Ok(())
 }
 
-fn init_member(ctx: &Context<MintNft>) -> Result<()> {
-    // TODO: Implement
+fn init_member(ctx: &mut Context<MintNft>) -> Result<()> {
+    // TODO: Initialize member with actual Group Interface
+    // Group not enabled on Token2022 yet: https://github.com/solana-developers/program-examples/blob/main/tokens/token-2022/group/anchor/programs/group/src/lib.rs
+
+    // For now we'll use a custom Member PDA, which also marks the index as minted
+    ctx.accounts.member_pda.mint = ctx.accounts.mint.key();
 
     Ok(())
 }
@@ -307,9 +320,7 @@ fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
     Ok(())
 }
 
-pub fn handle_mint_nft(ctx: Context<MintNft>, index: u64) -> Result<()> {
-    // TODO: Check NFT has been minted (via group ?)
-
+pub fn handle_mint_nft(mut ctx: Context<MintNft>, index: u64) -> Result<()> {
     pay_protocol_fee(&ctx)?;
     pay_mint_fee(&ctx)?;
 
@@ -319,9 +330,7 @@ pub fn handle_mint_nft(ctx: Context<MintNft>, index: u64) -> Result<()> {
 
     nullify_mint_authority(&ctx)?;
 
-    // TODO: Initialize member
-    // Group not enabled on Token2022 yet: https://github.com/solana-developers/program-examples/blob/main/tokens/token-2022/group/anchor/programs/group/src/lib.rs
-    // init_member(&ctx)?;
+    init_member(&mut ctx)?;
 
     // TODO: Add multiple holder fields once field authority interface is
     // switched from PDA model to single tlv account

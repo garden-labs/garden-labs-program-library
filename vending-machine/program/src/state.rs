@@ -12,12 +12,16 @@ pub struct VendingMachineData {
     pub creator: Pubkey,
     pub max_supply: u32,
     pub mint_price_lamports: u64,
+    pub col_mint: Pubkey,
+
+    // These are used for the group NFTs and member NFTs (with name and uri as prefixes)
     #[max_len(MAX_NAME_LEN)]
     pub name: String,
     #[max_len(MAX_SYMBOL_LEN)]
     pub symbol: String,
     #[max_len(MAX_URI_LEN)]
     pub uri: String,
+
     // TODO: Move to Vec once field authority interface is switched from
     // PDA model to single tlv account
     // We will only allow holder fields in additional fields
@@ -84,4 +88,10 @@ impl VendingMachineData {
 
         Ok(())
     }
+}
+
+#[account]
+#[derive(Debug, InitSpace)]
+pub struct MemberPda {
+    pub mint: Pubkey,
 }

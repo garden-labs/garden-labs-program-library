@@ -1,6 +1,7 @@
 export enum InterpretedTxErrType {
   Unknown = "Unknown",
   InsufficientFunds = "InsufficientFunds",
+  AllocateAccountAlreadyInUse = "AllocateAccountAlreadyInUse",
 }
 
 export class InterpretedTxErr extends Error {
@@ -38,6 +39,15 @@ export function interpretTxErr(err: any): InterpretedTxErr {
       logStr.includes("insufficient funds")
     ) {
       return new InterpretedTxErr(InterpretedTxErrType.InsufficientFunds);
+    }
+
+    if (
+      logStr.includes("Allocate: account Address") &&
+      logStr.includes("already in use")
+    ) {
+      return new InterpretedTxErr(
+        InterpretedTxErrType.AllocateAccountAlreadyInUse
+      );
     }
   }
 

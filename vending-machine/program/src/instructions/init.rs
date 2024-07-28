@@ -17,12 +17,14 @@ use anchor_spl::{
 use gpl_util::reach_minimum_rent;
 
 #[derive(Accounts)]
+#[instruction(data: VendingMachineData)]
 pub struct Init<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
     #[account(
         init,
+        constraint = col_mint.key() == data.col_mint,
         signer,
         payer = payer,
         mint::token_program = token_program,
@@ -45,7 +47,7 @@ pub struct Init<'info> {
     )]
     pub vending_machine_pda: UncheckedAccount<'info>,
 
-    #[account(init, payer = payer, space = 8 + VendingMachineData::INIT_SPACE)]
+    #[account(init, payer = payer, space = VendingMachineData::INIT_SPACE + 8)]
     pub vending_machine_data: Account<'info, VendingMachineData>,
 
     pub token_program: Program<'info, Token2022>,

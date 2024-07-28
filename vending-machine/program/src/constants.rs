@@ -16,3 +16,5 @@ pub const ADVANCED_TOKEN_METADATA_PROGRAM_ID_STR: &str =
 pub const PROTOCOL_FEE_LAMPORTS: u64 = 1_000_000;
 
 pub const TREASURY_PUBKEY_STR: &str = "JCXiqb3oL3xPrs9VWbDPcotEN8mEiNNba7E5fWhz6k8R";
+
+pub const MEMBER_PDA_SEED: &str = "member-pda";
