@@ -1,7 +1,9 @@
-use crate::constants::{
-    ADVANCED_TOKEN_METADATA_PROGRAM_ID_STR, TREASURY_PUBKEY_STR, VENDING_MACHINE_PDA_SEED,
+use crate::{
+    constants::{
+        ADVANCED_TOKEN_METADATA_PROGRAM_ID_STR, TREASURY_PUBKEY_STR, VENDING_MACHINE_PDA_SEED,
+    },
+    state::VendingMachineData,
 };
-use crate::state::VendingMachineData;
 
 use anchor_lang::prelude::*;
 use gpl_util::{get_dummy_pubkey, get_pubkey};

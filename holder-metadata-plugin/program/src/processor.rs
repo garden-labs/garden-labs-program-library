@@ -1,13 +1,9 @@
 use crate::constants::HOLDER_METADATA_PDA_SEED;
 use crate::instructions::*;
-use crate::state::AnchorField;
 
-use anchor_lang::{
-    prelude::*,
-    solana_program::{program::invoke_signed, program_error::ProgramError, rent::Rent},
-};
+use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
 use field_authority_interface::instructions::update_field_with_field_authority;
-use gpl_util::reach_minimum_rent;
+use gpl_util::{reach_minimum_rent, AnchorField};
 
 pub fn handle_update_holder_field(
     ctx: Context<UpdateHolderField>,

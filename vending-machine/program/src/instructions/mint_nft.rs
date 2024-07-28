@@ -1,17 +1,19 @@
-use crate::constants::{PROTOCOL_FEE_LAMPORTS, VENDING_MACHINE_PDA_SEED};
-use crate::errors::VendingMachineError;
-use crate::helpers::{
-    get_advanced_token_metadata_program_id, get_member_metadata_init_space,
-    get_member_metadata_init_vals, get_treasury_pubkey,
+use crate::{
+    constants::{PROTOCOL_FEE_LAMPORTS, VENDING_MACHINE_PDA_SEED},
+    errors::VendingMachineError,
+    helpers::{
+        get_advanced_token_metadata_program_id, get_member_metadata_init_space,
+        get_member_metadata_init_vals, get_treasury_pubkey,
+    },
+    state::VendingMachineData,
 };
-use crate::VendingMachineData;
 
 use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
 use anchor_spl::{
     associated_token::AssociatedToken,
     token_2022::spl_token_2022::{
         extension::{
-            // Needed for contraints
+            // Needed for contraints (?)
             group_member_pointer::GroupMemberPointer,
             metadata_pointer::MetadataPointer,
             mint_close_authority::MintCloseAuthority,
@@ -27,7 +29,7 @@ use anchor_spl::{
     },
 };
 use gpl_util::reach_minimum_rent;
-use holder_metadata_plugin::{state::AnchorField, HOLDER_METADATA_PDA_SEED};
+use holder_metadata_plugin::HOLDER_METADATA_PDA_SEED;
 
 // TODO: Store / use name, symbol, uri, in collection mint only
 #[derive(Accounts)]
@@ -265,8 +267,6 @@ fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
     let signer_seeds = &[&vending_machine_pda_seeds[..]];
     invoke_signed(ix, accounts, signer_seeds)?;
 
-    // TODO: Refactor setting values to its own method (or its own instruction)
-
     // Grab default value if it exists
     let holder_field_default_val = match &ctx.accounts.vending_machine_data.holder_field_default_val
     {
@@ -298,7 +298,7 @@ fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
         )?;
     }
 
-    // Add rent
+    // Add rent if needed
     reach_minimum_rent(
         ctx.accounts.payer.clone(),
         ctx.accounts.metadata.to_account_info(),

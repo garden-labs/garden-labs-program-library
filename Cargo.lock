@@ -120,6 +120,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "field-authority-interface",
+ "gpl-util",
  "holder-metadata-plugin",
  "spl-pod 0.2.2",
  "spl-token-2022 3.0.2",
@@ -1846,6 +1847,7 @@ name = "gpl-util"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
+ "spl-token-metadata-interface 0.3.3",
 ]
 
 [[package]]

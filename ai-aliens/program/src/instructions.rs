@@ -8,7 +8,7 @@ use anchor_spl::{
     token_2022::Token2022,
     token_interface::{Mint, TokenAccount},
 };
-use holder_metadata_plugin::state::AnchorField;
+use gpl_util::AnchorField;
 use spl_token_2022::{
     extension::ExtensionType::{
         self, GroupMemberPointer, MetadataPointer, PermanentDelegate, TransferHook,

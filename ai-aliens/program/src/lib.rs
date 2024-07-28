@@ -9,7 +9,7 @@ use instructions::*;
 use processor::*;
 
 use anchor_lang::prelude::*;
-use holder_metadata_plugin::state::AnchorField;
+use gpl_util::AnchorField;
 
 declare_id!("48MKwUN9uxxGrFCzXAV4kF5RPMVUyruLyYnapNynNtd4");
 

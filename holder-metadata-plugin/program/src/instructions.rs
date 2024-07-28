@@ -1,5 +1,5 @@
 use crate::constants::HOLDER_METADATA_PDA_SEED;
-use crate::state::AnchorField;
+use gpl_util::AnchorField;
 
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};

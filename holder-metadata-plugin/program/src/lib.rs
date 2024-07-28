@@ -1,15 +1,14 @@
 pub mod constants;
 pub mod instructions;
 pub mod processor;
-pub mod state;
 
 pub use constants::HOLDER_METADATA_PDA_SEED;
 
 use instructions::*;
 use processor::*;
-use state::AnchorField;
 
 use anchor_lang::prelude::*;
+use gpl_util::AnchorField;
 
 declare_id!("3DkEmKWuBJbza9ur1BnVVhXrzkuiMCqBuKHdoDBdLpxZ");
 

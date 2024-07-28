@@ -5,7 +5,8 @@ use crate::instructions::*;
 
 use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
 use anchor_spl::token_interface::{mint_to, MintTo};
-use holder_metadata_plugin::{state::AnchorField, HOLDER_METADATA_PDA_SEED};
+use gpl_util::AnchorField;
+use holder_metadata_plugin::HOLDER_METADATA_PDA_SEED;
 use spl_token_2022::{
     extension::{group_member_pointer, metadata_pointer, transfer_hook},
     instruction::{initialize_mint2, initialize_permanent_delegate, set_authority, AuthorityType},
