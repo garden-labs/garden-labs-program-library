@@ -22,4 +22,6 @@ pub enum VendingMachineError {
     HolderFieldKeyRequiredForDefaultVal,
     #[msg("Holder field and Field PDA mismatch")]
     FieldPdaMismatch,
+    #[msg("Index out of bounds")]
+    IndexOutOfBounds,
 }

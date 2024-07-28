@@ -10,7 +10,7 @@ use anchor_lang::prelude::*;
 pub struct VendingMachineData {
     pub admin: Pubkey,
     pub creator: Pubkey,
-    pub max_supply: u32,
+    pub max_supply: u64,
     pub mint_price_lamports: u64,
     pub col_mint: Pubkey,
 

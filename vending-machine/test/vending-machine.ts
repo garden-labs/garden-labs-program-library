@@ -117,7 +117,7 @@ describe("Vending Machine", () => {
         .init({
           admin: ANCHOR_WALLET_KEYPAIR.publicKey,
           creator: creator.publicKey,
-          maxSupply,
+          maxSupply: new BN(maxSupply.toString()),
           mintPriceLamports: new BN(mintPriceLamports.toString()),
           colMint: colMint.publicKey,
           name: randomStr(33),
@@ -155,7 +155,7 @@ describe("Vending Machine", () => {
         .init({
           admin: ANCHOR_WALLET_KEYPAIR.publicKey,
           creator: creator.publicKey,
-          maxSupply,
+          maxSupply: new BN(maxSupply.toString()),
           mintPriceLamports: new BN(mintPriceLamports.toString()),
           colMint: colMint.publicKey,
           name,
@@ -193,7 +193,7 @@ describe("Vending Machine", () => {
         .init({
           admin: ANCHOR_WALLET_KEYPAIR.publicKey,
           creator: creator.publicKey,
-          maxSupply,
+          maxSupply: new BN(maxSupply.toString()),
           mintPriceLamports: new BN(mintPriceLamports.toString()),
           colMint: colMint.publicKey,
           name,
@@ -230,7 +230,7 @@ describe("Vending Machine", () => {
       .init({
         admin: ANCHOR_WALLET_KEYPAIR.publicKey,
         creator: creator.publicKey,
-        maxSupply,
+        maxSupply: new BN(maxSupply.toString()),
         mintPriceLamports: new BN(mintPriceLamports.toString()),
         colMint: colMint.publicKey,
         name,

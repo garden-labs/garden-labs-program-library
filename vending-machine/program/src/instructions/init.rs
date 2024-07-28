@@ -112,11 +112,13 @@ fn init_group(ctx: &Context<Init>) -> Result<()> {
         signer_seeds,
     );
 
-    token_group_initialize(
-        cpi_ctx,
-        Some(ctx.accounts.vending_machine_pda.key()),
-        ctx.accounts.vending_machine_data.max_supply,
-    )?;
+    // NOTE: Token Group Interface currently expects a u32
+    // If this is not changed, we'll have to make two collection mints for supplies > u32::MAX
+    // token_group_initialize(
+    //     cpi_ctx,
+    //     Some(ctx.accounts.vending_machine_pda.key()),
+    //     ctx.accounts.vending_machine_data.max_supply,
+    // )?;
 
     Ok(())
 }

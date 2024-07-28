@@ -125,6 +125,13 @@ pub struct MintNft<'info> {
     pub system_program: Program<'info, System>,
 }
 
+fn check_max_supply(ctx: &Context<MintNft>, index: u64) -> Result<()> {
+    if index > ctx.accounts.vending_machine_data.max_supply || index < 1 {
+        return err!(VendingMachineError::IndexOutOfBounds);
+    }
+    Ok(())
+}
+
 fn pay_protocol_fee(ctx: &Context<MintNft>) -> Result<()> {
     let ix = &anchor_lang::solana_program::system_instruction::transfer(
         ctx.accounts.payer.key,
@@ -321,6 +328,8 @@ fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
 }
 
 pub fn handle_mint_nft(mut ctx: Context<MintNft>, index: u64) -> Result<()> {
+    check_max_supply(&ctx, index)?;
+
     pay_protocol_fee(&ctx)?;
     pay_mint_fee(&ctx)?;
 
