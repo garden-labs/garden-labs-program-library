@@ -21,7 +21,11 @@ import {
 } from "@solana/spl-token";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 
-import { getEmittedMetadata, randomStr } from "../../util/js/helpers";
+import {
+  getEmittedMetadata,
+  randomStr,
+  toAnchorParam,
+} from "../../util/js/helpers";
 import { CONNECTION, setPayer } from "../../util/js/config";
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
 import {
@@ -34,7 +38,6 @@ import {
   NICKNAME_FIELD_KEY,
   indexToSeed,
 } from "../js/ai-aliens";
-import { toAnchorParam } from "../../holder-metadata-plugin/js/holder-metadata-plugin";
 import { interpretTxErr, InterpretedTxErrType } from "../../util/js/tx";
 import { AiAliens } from "../../target/types/ai_aliens";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";

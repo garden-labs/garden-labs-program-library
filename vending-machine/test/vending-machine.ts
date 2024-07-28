@@ -1,7 +1,14 @@
 import assert from "assert";
 
 import { workspace, BN, AnchorError } from "@coral-xyz/anchor";
-import { Keypair, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
+import {
+  Keypair,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  Transaction,
+  SystemProgram,
+  sendAndConfirmTransaction,
+} from "@solana/web3.js";
 import {
   getMint,
   TOKEN_2022_PROGRAM_ID,
@@ -17,7 +24,11 @@ import { TokenMetadata } from "@solana/spl-token-metadata";
 import { setPayer, CONNECTION } from "../../util/js/config";
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
 import { VendingMachine } from "../../target/types/vending_machine";
-import { randomStr, getEmittedMetadata } from "../../util/js/helpers";
+import {
+  randomStr,
+  getEmittedMetadata,
+  toAnchorParam,
+} from "../../util/js/helpers";
 import {
   VENDING_MACHINE_PDA_SEED,
   TREASURY_PUBLIC_KEY,
@@ -26,6 +37,7 @@ import {
   FIELD_AUTHORITY_PDA_SEED,
   fieldToSeedStr,
 } from "../../field-authority-interface/js/field-authority-interface";
+import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 
 describe("Vending Machine", () => {
   const vendingMachineData = Keypair.generate();
@@ -40,6 +52,9 @@ describe("Vending Machine", () => {
   const holderFieldDefaultVal = randomStr(200);
 
   const mints: PublicKey[] = [];
+  const metadatas: PublicKey[] = [];
+
+  const holder = Keypair.generate();
 
   const [vendingMachinePda] = PublicKey.findProgramAddressSync(
     [Buffer.from(VENDING_MACHINE_PDA_SEED)],
@@ -72,6 +87,21 @@ describe("Vending Machine", () => {
     };
     return metadataVals;
   }
+
+  it("Setup", async () => {
+    // Give holder some lamports
+    const amount = 10 * LAMPORTS_PER_SOL;
+    const tx = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: ANCHOR_WALLET_KEYPAIR.publicKey,
+        toPubkey: holder.publicKey,
+        lamports: amount,
+      })
+    );
+    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    const holderBalance = await CONNECTION.getBalance(holder.publicKey);
+    assert.equal(holderBalance, amount);
+  });
 
   it("Init fails with invalid name", async () => {
     const { program } = setPayer<VendingMachine>(
@@ -184,8 +214,6 @@ describe("Vending Machine", () => {
     }
   });
 
-  // TODO: Test holder field empty
-
   it("Init", async () => {
     const { program } = setPayer<VendingMachine>(
       ANCHOR_WALLET_KEYPAIR,
@@ -252,7 +280,7 @@ describe("Vending Machine", () => {
 
   it("Mint NFT", async () => {
     const { program } = setPayer<VendingMachine>(
-      ANCHOR_WALLET_KEYPAIR,
+      holder,
       workspace.VendingMachine
     );
 
@@ -278,7 +306,7 @@ describe("Vending Machine", () => {
         creator: creator.publicKey,
         mint: mint.publicKey,
         metadata: metadata.publicKey,
-        receiver: ANCHOR_WALLET_KEYPAIR.publicKey,
+        receiver: holder.publicKey,
         metadataProgram: ATM_PROGRAM_ID,
         fieldPda,
         vendingMachineData: vendingMachineData.publicKey,
@@ -286,8 +314,9 @@ describe("Vending Machine", () => {
       .signers([mint, metadata])
       .rpc();
 
-    // Add to mints array for future tests
+    // Add to arrays for future tests
     mints.push(mint.publicKey);
+    metadatas.push(metadata.publicKey);
 
     // Get mint info
     const mintInfo = await getMint(
@@ -318,16 +347,14 @@ describe("Vending Machine", () => {
     assert(permanentDelegate?.delegate?.equals(vendingMachinePda));
 
     // Check token balance
-    const anchorWalletAta = await getAssociatedTokenAddress(
+    const holderAta = await getAssociatedTokenAddress(
       mint.publicKey,
-      ANCHOR_WALLET_KEYPAIR.publicKey,
+      holder.publicKey,
       undefined,
       TOKEN_2022_PROGRAM_ID
     );
-    const anchorWalletAtaBalance = await CONNECTION.getTokenAccountBalance(
-      anchorWalletAta
-    );
-    assert.equal(anchorWalletAtaBalance.value.amount, 1);
+    const holderAtaBalance = await CONNECTION.getTokenAccountBalance(holderAta);
+    assert.equal(holderAtaBalance.value.amount, 1);
 
     // Check protocol fees
     const postTreasuryBalance = await CONNECTION.getBalance(
@@ -357,11 +384,53 @@ describe("Vending Machine", () => {
     // TODO: Check member once group is enabled in token-2022
   });
 
+  it("Update holder field with holder", async () => {
+    const index = 1;
+
+    const { program } = setPayer<HolderMetadataPlugin>(
+      holder,
+      workspace.HolderMetadataPlugin
+    );
+
+    const mint = mints[index - 1];
+    const metadata = metadatas[index - 1];
+
+    const param = toAnchorParam(holderFieldKey);
+    const newHolderFieldVal = randomStr(200);
+
+    const [fieldPda] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from(FIELD_AUTHORITY_PDA_SEED),
+        Buffer.from(fieldToSeedStr(holderFieldKey)),
+        metadata.toBuffer(),
+      ],
+      ATM_PROGRAM_ID
+    );
+
+    await program.methods
+      .updateHolderField(param, newHolderFieldVal)
+      .accounts({
+        mint,
+        metadata,
+        fieldPda,
+        fieldAuthorityProgram: ATM_PROGRAM_ID,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
+      })
+      .rpc();
+
+    const metadataVals = getMemberMetadataVals(index);
+    metadataVals.additionalMetadata.push([holderFieldKey, newHolderFieldVal]);
+    const emittedMetadata = await getEmittedMetadata(ATM_PROGRAM_ID, metadata);
+    assert.deepStrictEqual(emittedMetadata, metadataVals);
+  });
+
+  // TODO: Test holder field empty on init
+
   // TODO: Check max holder field length
 
   // TODO: Test no holder field
 
   // TODO: Test holder field / field PDA mismatch
 
-  // TODO: Test royalties on transfer once implemented
+  // TODO: Test royalties on transfer (once implemented)
 });

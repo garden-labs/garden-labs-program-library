@@ -14,10 +14,7 @@ import * as borsh from "@coral-xyz/borsh";
 import { workspace } from "@coral-xyz/anchor";
 
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
-import {
-  HOLDER_METADATA_PDA_SEED,
-  toAnchorParam,
-} from "../js/holder-metadata-plugin";
+import { HOLDER_METADATA_PDA_SEED } from "../js/holder-metadata-plugin";
 import {
   createAddFieldAuthorityIx,
   FIELD_AUTHORITY_PDA_SEED,
@@ -27,6 +24,7 @@ import {
   getEmittedMetadata,
   randomStr,
   setupMintMetadataToken,
+  toAnchorParam,
 } from "../../util/js/helpers";
 import { CONNECTION, setPayer } from "../../util/js/config";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";

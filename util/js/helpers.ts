@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/ban-types */
+
 import "dotenv/config";
 
 import crypto from "crypto";
 import assert from "assert";
 
 import {
-  ParsedTransactionWithMeta,
   Transaction,
   sendAndConfirmTransaction,
   PublicKey,
@@ -25,6 +26,7 @@ import {
   TOKEN_METADATA_DISCRIMINATOR,
   TokenMetadata,
   createInitializeInstruction,
+  Field,
 } from "@solana/spl-token-metadata";
 
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "./constants";
@@ -176,4 +178,24 @@ export async function setupMintMetadataToken(
   assert.deepStrictEqual(emittedMetadata, metadataVals);
 
   return tokenAddress;
+}
+
+type AnchorFieldParam =
+  | { name: {} }
+  | { symbol: {} }
+  | { uri: {} }
+  | { key: [string] };
+
+export function toAnchorParam(field: Field | string): AnchorFieldParam {
+  switch (field) {
+    case Field.Name:
+      return { name: {} };
+    case Field.Symbol:
+      return { symbol: {} };
+    case Field.Uri:
+      return { uri: {} };
+    // String
+    default:
+      return { key: [field] };
+  }
 }
