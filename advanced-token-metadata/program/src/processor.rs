@@ -217,6 +217,11 @@ pub fn process(program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> P
                 msg!("Instruction: RemoveFieldAuthority");
                 return process_remove_field_authority(program_id, accounts, data);
             }
+            // TEMP
+            _ => {
+                msg!("Error: Unsupported FieldAuthorityInstruction variant");
+                return Err(ProgramError::InvalidInstructionData.into());
+            }
         }
     }
 
