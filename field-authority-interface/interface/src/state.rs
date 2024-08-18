@@ -7,10 +7,7 @@ use {
     },
     spl_discriminator::SplDiscriminate,
     spl_token_metadata_interface::state::Field,
-    spl_type_length_value::{
-        state::{TlvState, TlvStateMut},
-        variable_len_pack::VariableLenPack,
-    },
+    spl_type_length_value::variable_len_pack::VariableLenPack,
 };
 
 // Legacy implementation
@@ -53,6 +50,7 @@ impl VariableLenPack for FieldAuthorities {
     }
 }
 impl FieldAuthorities {
+    /// Adds field authority pair. Exits early if already found.
     pub fn add_field_authority(&mut self, field: Field, authority: Pubkey) {
         for fa in &self.authorities {
             if fa.field == field && fa.authority == authority {

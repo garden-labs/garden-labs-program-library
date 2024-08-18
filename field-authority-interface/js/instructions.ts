@@ -18,10 +18,17 @@ import {
   getDataEnumCodec,
   mapEncoder,
   getTupleEncoder,
+  getArrayEncoder,
 } from "@solana/codecs";
 import type { Encoder } from "@solana/codecs";
 
-// The following functions are from: https://github.com/solana-labs/solana-program-library/blob/8c8e7de68b96f8853fdc555ce0af3cfdc717bf55/token-metadata/js/src/instruction.ts
+import {
+  FIELD_AUTHORITY_PDA_SEED,
+  fieldToSeedStr,
+  FieldAuthority,
+} from "./state";
+
+// These functions are from: https://github.com/solana-labs/solana-program-library/blob/8c8e7de68b96f8853fdc555ce0af3cfdc717bf55/token-metadata/js/src/instruction.ts
 
 function getInstructionEncoder<T extends object>(
   discriminator: Uint8Array,
@@ -39,19 +46,50 @@ function getPublicKeyEncoder(): Encoder<PublicKey> {
   );
 }
 
-export const FIELD_AUTHORITY_PDA_SEED = "field-authority-pda";
+export interface InitializeFieldAuthoritiesV2Args {
+  programId: PublicKey;
+  metadata: PublicKey;
+  updateAuthority: PublicKey;
+  fieldAuthorities: FieldAuthority[];
+}
 
-export function fieldToSeedStr(field: Field | string): string {
-  switch (field) {
-    case Field.Name:
-      return "name";
-    case Field.Symbol:
-      return "symbol";
-    case Field.Uri:
-      return "uri";
-    default:
-      return `key:${field}`;
-  }
+export function createInitializeFieldAuthoritiesV2Ix(
+  args: InitializeFieldAuthoritiesV2Args
+): TransactionInstruction {
+  const { programId, metadata, updateAuthority, fieldAuthorities } = args;
+
+  const fieldAuthoritiesConfig = fieldAuthorities.map((fieldAuthority) => ({
+    field: getFieldConfig(fieldAuthority.field),
+    authority: fieldAuthority.authority,
+  }));
+
+  return new TransactionInstruction({
+    programId,
+    keys: [
+      { isSigner: false, isWritable: true, pubkey: metadata },
+      { isSigner: true, isWritable: false, pubkey: updateAuthority },
+    ],
+    data: Buffer.from(
+      getInstructionEncoder(
+        splDiscriminate(
+          "field_authority_interface:initialize_field_authorities_v2"
+        ),
+        getStructEncoder([
+          [
+            "fieldAuthorities",
+            getArrayEncoder(
+              getStructEncoder([
+                ["field", getDataEnumCodec(getFieldCodec())],
+                ["authority", getPublicKeyEncoder()],
+              ])
+            ),
+          ],
+        ])
+      ).encode({
+        fieldAuthorities: fieldAuthoritiesConfig,
+      })
+    ),
+  });
 }
 
 export function createAddFieldAuthorityIx(
@@ -62,19 +100,6 @@ export function createAddFieldAuthorityIx(
   field: Field | string,
   programId: PublicKey
 ): TransactionInstruction {
-  const data = Buffer.from(
-    getInstructionEncoder(
-      splDiscriminate("field_interface_interface:add_field_authority"),
-      getStructEncoder([
-        ["field", getDataEnumCodec(getFieldCodec())],
-        ["authority", getPublicKeyEncoder()],
-      ])
-    ).encode({
-      field: getFieldConfig(field),
-      authority: fieldAuthority,
-    })
-  );
-
   const [fieldPda] = PublicKey.findProgramAddressSync(
     [
       Buffer.from(FIELD_AUTHORITY_PDA_SEED),
@@ -84,7 +109,8 @@ export function createAddFieldAuthorityIx(
     programId
   );
 
-  const ix = new TransactionInstruction({
+  return new TransactionInstruction({
+    programId,
     keys: [
       {
         pubkey: payer,
@@ -112,11 +138,19 @@ export function createAddFieldAuthorityIx(
         isWritable: false,
       },
     ],
-    data,
-    programId,
+    data: Buffer.from(
+      getInstructionEncoder(
+        splDiscriminate("field_authority_interface:add_field_authority"),
+        getStructEncoder([
+          ["field", getDataEnumCodec(getFieldCodec())],
+          ["authority", getPublicKeyEncoder()],
+        ])
+      ).encode({
+        field: getFieldConfig(field),
+        authority: fieldAuthority,
+      })
+    ),
   });
-
-  return ix;
 }
 
 export function createUpdateFieldWithFieldAuthorityIx(
@@ -126,18 +160,6 @@ export function createUpdateFieldWithFieldAuthorityIx(
   value: string,
   programId: PublicKey
 ): TransactionInstruction {
-  const data = Buffer.from(
-    getInstructionEncoder(
-      splDiscriminate(
-        "field_interface_interface:update_field_with_field_authority"
-      ),
-      getStructEncoder([
-        ["field", getDataEnumCodec(getFieldCodec())],
-        ["value", getStringEncoder()],
-      ])
-    ).encode({ field: getFieldConfig(field), value })
-  );
-
   const [pda] = PublicKey.findProgramAddressSync(
     [
       Buffer.from(FIELD_AUTHORITY_PDA_SEED),
@@ -147,7 +169,8 @@ export function createUpdateFieldWithFieldAuthorityIx(
     programId
   );
 
-  const ix = new TransactionInstruction({
+  return new TransactionInstruction({
+    programId,
     keys: [
       { pubkey: metadata, isSigner: false, isWritable: true },
       {
@@ -161,11 +184,18 @@ export function createUpdateFieldWithFieldAuthorityIx(
         isWritable: false,
       },
     ],
-    data,
-    programId,
+    data: Buffer.from(
+      getInstructionEncoder(
+        splDiscriminate(
+          "field_authority_interface:update_field_with_field_authority"
+        ),
+        getStructEncoder([
+          ["field", getDataEnumCodec(getFieldCodec())],
+          ["value", getStringEncoder()],
+        ])
+      ).encode({ field: getFieldConfig(field), value })
+    ),
   });
-
-  return ix;
 }
 
 export function createRemoveFieldAuthorityIx(
@@ -174,13 +204,6 @@ export function createRemoveFieldAuthorityIx(
   field: Field | string,
   programId: PublicKey
 ): TransactionInstruction {
-  const data = Buffer.from(
-    getInstructionEncoder(
-      splDiscriminate("field_interface_interface:remove_field_authority"),
-      getStructEncoder([["field", getDataEnumCodec(getFieldCodec())]])
-    ).encode({ field: getFieldConfig(field) })
-  );
-
   const [pda] = PublicKey.findProgramAddressSync(
     [
       Buffer.from(FIELD_AUTHORITY_PDA_SEED),
@@ -190,7 +213,8 @@ export function createRemoveFieldAuthorityIx(
     programId
   );
 
-  const ix = new TransactionInstruction({
+  return new TransactionInstruction({
+    programId,
     keys: [
       {
         pubkey: metadata,
@@ -208,9 +232,11 @@ export function createRemoveFieldAuthorityIx(
         isWritable: true,
       },
     ],
-    data,
-    programId,
+    data: Buffer.from(
+      getInstructionEncoder(
+        splDiscriminate("field_authority_interface:remove_field_authority"),
+        getStructEncoder([["field", getDataEnumCodec(getFieldCodec())]])
+      ).encode({ field: getFieldConfig(field) })
+    ),
   });
-
-  return ix;
 }

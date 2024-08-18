@@ -19,7 +19,7 @@ import {
   createAddFieldAuthorityIx,
   FIELD_AUTHORITY_PDA_SEED,
   fieldToSeedStr,
-} from "../../field-authority-interface/js/field-authority-interface";
+} from "../../field-authority-interface/js";
 import {
   getEmittedMetadata,
   randomStr,

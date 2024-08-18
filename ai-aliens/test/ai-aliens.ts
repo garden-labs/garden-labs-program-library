@@ -31,7 +31,7 @@ import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
 import {
   FIELD_AUTHORITY_PDA_SEED,
   fieldToSeedStr,
-} from "../../field-authority-interface/js/field-authority-interface";
+} from "../../field-authority-interface/js";
 import {
   AI_ALIENS_AUTHORITY_PDA_SEED,
   NFT_MINTED_PDA_SEED,

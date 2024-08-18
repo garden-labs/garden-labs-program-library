@@ -39,7 +39,7 @@ import {
 import {
   FIELD_AUTHORITY_PDA_SEED,
   fieldToSeedStr,
-} from "../../field-authority-interface/js/field-authority-interface";
+} from "../../field-authority-interface/js";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 
 describe("Vending Machine", () => {

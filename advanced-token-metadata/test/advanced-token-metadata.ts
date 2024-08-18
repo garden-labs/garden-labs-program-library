@@ -27,7 +27,7 @@ import {
   createUpdateFieldWithFieldAuthorityIx,
   FIELD_AUTHORITY_PDA_SEED,
   createRemoveFieldAuthorityIx,
-} from "../../field-authority-interface/js/field-authority-interface";
+} from "../../field-authority-interface/js";
 
 describe("Advanced Token Metadata Program", () => {
   const mintKeypair = Keypair.generate();

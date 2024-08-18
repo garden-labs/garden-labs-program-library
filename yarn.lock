@@ -492,7 +492,7 @@
 
 "@solana/spl-token-metadata@0.1.3":
   version "0.1.3"
-  resolved "https://registry.npmjs.org/@solana/spl-token-metadata/-/spl-token-metadata-0.1.3.tgz"
+  resolved "https://registry.yarnpkg.com/@solana/spl-token-metadata/-/spl-token-metadata-0.1.3.tgz#ffbcbe10213a253908717b2505222474f12ded64"
   integrity sha512-XZVt4M8m8d2B7or3kHiIbeaNeKi/7IWeKozji0izRWcI5wmdf6zxkhnCHexFP3JNV2Y665+igPJxyPvDaRr0Ug==
   dependencies:
     "@solana/codecs" "2.0.0-preview.2"
@@ -3225,7 +3225,7 @@ typed-array-length@^1.0.4:
 
 typescript@^4.3.5:
   version "4.9.5"
-  resolved "https://registry.npmjs.org/typescript/-/typescript-4.9.5.tgz"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-4.9.5.tgz#095979f9bcc0d09da324d58d03ce8f8374cbe65a"
   integrity sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==
 
 ufo@^1.5.3:
