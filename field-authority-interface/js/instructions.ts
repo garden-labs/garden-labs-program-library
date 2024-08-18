@@ -76,7 +76,7 @@ export function createInitializeFieldAuthoritiesV2Ix(
         ),
         getStructEncoder([
           [
-            "fieldAuthorities",
+            "authorities",
             getArrayEncoder(
               getStructEncoder([
                 ["field", getDataEnumCodec(getFieldCodec())],
@@ -86,12 +86,15 @@ export function createInitializeFieldAuthoritiesV2Ix(
           ],
         ])
       ).encode({
-        fieldAuthorities: fieldAuthoritiesConfig,
+        authorities: fieldAuthoritiesConfig,
       })
     ),
   });
 }
 
+/**
+ * @deprecated
+ */
 export function createAddFieldAuthorityIx(
   payer: PublicKey,
   metadata: PublicKey,
@@ -153,6 +156,9 @@ export function createAddFieldAuthorityIx(
   });
 }
 
+/**
+ * @deprecated
+ */
 export function createUpdateFieldWithFieldAuthorityIx(
   metadata: PublicKey,
   fieldAuthority: PublicKey,
@@ -198,6 +204,9 @@ export function createUpdateFieldWithFieldAuthorityIx(
   });
 }
 
+/**
+ * @deprecated
+ */
 export function createRemoveFieldAuthorityIx(
   metadata: PublicKey,
   updateAuthority: PublicKey,

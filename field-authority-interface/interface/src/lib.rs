@@ -5,6 +5,7 @@ pub mod errors;
 pub mod helpers;
 pub mod instructions;
 pub mod state;
+pub mod state_v2;
 
 pub use constants::*;
 pub use helpers::*;

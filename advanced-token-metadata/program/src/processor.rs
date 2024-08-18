@@ -1,9 +1,12 @@
 //! Program state processor
 
 use {
-    crate::field_authority::{
-        process_add_field_authority, process_initialize_field_authorities_v2,
-        process_remove_field_authority, process_update_field_with_field_authority,
+    crate::{
+        field_authority::{
+            process_add_field_authority, process_remove_field_authority,
+            process_update_field_with_field_authority,
+        },
+        field_authority_v2::process_initialize_field_authorities_v2,
     },
     field_authority_interface::instructions::FieldAuthorityInstruction,
     solana_program::{

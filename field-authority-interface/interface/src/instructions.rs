@@ -200,28 +200,28 @@ pub fn add_field_authority(
     }
 }
 
-/// Creates `AddFieldAuthorityV2` instruction
-pub fn add_field_authority_v2(
-    program_id: &Pubkey,
-    metadata: &Pubkey,
-    update_authority: &Pubkey,
-    field: Field,
-    field_authority: &Pubkey,
-) -> Instruction {
-    let data = FieldAuthorityInstruction::AddFieldAuthority(AddFieldAuthority {
-        field,
-        authority: *field_authority,
-    });
+// /// Creates `AddFieldAuthorityV2` instruction
+// pub fn add_field_authority_v2(
+//     program_id: &Pubkey,
+//     metadata: &Pubkey,
+//     update_authority: &Pubkey,
+//     field: Field,
+//     field_authority: &Pubkey,
+// ) -> Instruction {
+//     let data = FieldAuthorityInstruction::AddFieldAuthority(AddFieldAuthority {
+//         field,
+//         authority: *field_authority,
+//     });
 
-    Instruction {
-        program_id: *program_id,
-        accounts: vec![
-            AccountMeta::new_readonly(*metadata, false),
-            AccountMeta::new_readonly(*update_authority, true),
-        ],
-        data: data.pack(),
-    }
-}
+//     Instruction {
+//         program_id: *program_id,
+//         accounts: vec![
+//             AccountMeta::new_readonly(*metadata, false),
+//             AccountMeta::new_readonly(*update_authority, true),
+//         ],
+//         data: data.pack(),
+//     }
+// }
 
 /// Creates `UpdateFieldWithFieldAuthority` instruction
 pub fn update_field_with_field_authority(

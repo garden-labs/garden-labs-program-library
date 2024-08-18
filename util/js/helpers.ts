@@ -38,7 +38,7 @@ export function randomStr(numChars: number): string {
 
 // Alternative Method
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function getAccountMetadata(
+export async function getAccountMetadata(
   metadataPubkey: PublicKey
 ): Promise<TokenMetadata> {
   const accountInfo = await CONNECTION.getAccountInfo(metadataPubkey);
