@@ -3,7 +3,7 @@
 use {
     crate::field_authority::check_metadata_update_authority,
     field_authority_interface::{
-        instructions::InitializeFieldAuthoritiesV2, state::FieldAuthorities,
+        instructions_v2::InitializeFieldAuthorities, state::FieldAuthorities,
     },
     solana_program::{
         account_info::{next_account_info, AccountInfo},
@@ -13,11 +13,11 @@ use {
     spl_type_length_value::state::TlvStateMut,
 };
 
-/// Proccesses an InitializeFieldAuthoritiesV2 instruction
-pub fn process_initialize_field_authorities_v2(
+/// Proccesses an InitializeFieldAuthorities instruction
+pub fn process_initialize_field_authorities(
     _program_id: &Pubkey,
     accounts: &[AccountInfo],
-    data: InitializeFieldAuthoritiesV2,
+    data: InitializeFieldAuthorities,
 ) -> ProgramResult {
     let account_info_iter = &mut accounts.iter();
     let metadata_info = next_account_info(account_info_iter)?;
@@ -33,7 +33,7 @@ pub fn process_initialize_field_authorities_v2(
     // Allocate a TLV entry for the space and write it in
     let mut buffer = metadata_info.try_borrow_mut_data()?;
     let mut state = TlvStateMut::unpack(&mut buffer)?;
-    // state.alloc_and_pack_variable_len_entry(&field_authorities, false)?;
+    state.alloc_and_pack_variable_len_entry(&field_authorities, false)?;
 
     Ok(())
 }

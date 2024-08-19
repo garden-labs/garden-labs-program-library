@@ -11,8 +11,8 @@ import {
   TokenMetadata,
   Field,
   createUpdateFieldInstruction,
+  pack,
 } from "@solana/spl-token-metadata";
-import * as borsh from "@coral-xyz/borsh";
 
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
 import {
@@ -22,7 +22,13 @@ import {
   getAccountMetadata,
 } from "../../util/js/helpers";
 import { CONNECTION } from "../../util/js/config";
-import { createInitializeFieldAuthoritiesV2Ix } from "../../field-authority-interface/js";
+import {
+  createInitializeFieldAuthoritiesV2Ix,
+  FIELD_AUTHORITIES_DISCRIMINATOR,
+  FieldAuthority,
+  FieldAuthorities,
+  pack as packFieldAuthorities,
+} from "../../field-authority-interface/js";
 
 describe("Advanced Token Metadata Program V2", () => {
   const mintKeypair = Keypair.generate();
@@ -38,14 +44,22 @@ describe("Advanced Token Metadata Program V2", () => {
   };
   const additionalFieldKey = "additional field key";
 
-  const fieldAuthority = Keypair.generate();
+  const fieldAuthorityKp = Keypair.generate();
+  const fieldAuthority: FieldAuthority = {
+    field: Field.Name,
+    authority: fieldAuthorityKp.publicKey,
+  };
+  const fieldAuthorities: FieldAuthorities = {
+    authorities: [fieldAuthority],
+  };
 
   it("Setup mint, metadata, and token", async () => {
     await setupMintMetadataToken(
       mintKeypair,
       metadataKeypair,
       metadataVals,
-      additionalFieldKey
+      additionalFieldKey,
+      fieldAuthorities
     );
 
     // Check emmitted metadata
@@ -88,36 +102,24 @@ describe("Advanced Token Metadata Program V2", () => {
       programId: ATM_PROGRAM_ID,
       metadata: metadataKeypair.publicKey,
       updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
-      fieldAuthorities: [
-        {
-          field: Field.Name,
-          authority: fieldAuthority.publicKey,
-        },
-      ],
+      fieldAuthorities,
     });
 
     const tx = new Transaction().add(ix);
 
-    try {
-      await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
-    } catch (err) {
-      console.log(err);
-      if (err instanceof SendTransactionError) {
-        const logs = await err.getLogs(CONNECTION);
-        console.log("logs!");
-        console.log(logs);
-      }
-    }
+    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
 
-    // // Check emmitted metadata
-    // const emittedMetadata = await getEmittedMetadata(
-    //   ATM_PROGRAM_ID,
-    //   metadataKeypair.publicKey
-    // );
-    // assert.deepStrictEqual(emittedMetadata, metadataVals);
+    // Check emmitted metadata
+    const emittedMetadata = await getEmittedMetadata(
+      ATM_PROGRAM_ID,
+      metadataKeypair.publicKey
+    );
+    assert.deepStrictEqual(emittedMetadata, metadataVals);
 
-    // // Check account metadata
-    // const parsedMetadata = await getAccountMetadata(metadataKeypair.publicKey);
-    // assert.deepStrictEqual(parsedMetadata, metadataVals);
+    // Check account metadata
+    const parsedMetadata = await getAccountMetadata(metadataKeypair.publicKey);
+    assert.deepStrictEqual(parsedMetadata, metadataVals);
+
+    // TODO: Check field authorities
   });
 });

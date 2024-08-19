@@ -31,6 +31,11 @@ import {
 
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "./constants";
 import { CONNECTION } from "./config";
+import type { FieldAuthorities } from "../../field-authority-interface/js";
+import {
+  pack as packFieldAuthorities,
+  FIELD_AUTHORITIES_DISCRIMINATOR,
+} from "../../field-authority-interface/js";
 
 export function randomStr(numChars: number): string {
   return crypto.randomBytes(numChars).toString("hex").slice(0, numChars);
@@ -76,27 +81,42 @@ export async function getEmittedMetadata(
   return unpack(data);
 }
 
+// TODO: Perhaps remove adding future space beforehand and place that before
+// functions that require it.
 export async function createMetadataAccount(
   metadataKeypair: Keypair,
   metadataVals: TokenMetadata,
-  additionalFieldKey: string
+  additionalFieldKey: string,
+  fieldAuthorities?: FieldAuthorities
 ): Promise<void> {
-  // Calculate space for metadata account
-  const tlSpace = 4; // 2 bytes for type, 2 bytes for length, for TLV encoding
-  const space =
+  // TODO: Is this actually just length and the descriminator below counts for type?
+  // 2 bytes for type, 2 bytes for length, for TLV encoding
+  const tlSpace = 4;
+
+  // Calculate space for metadata
+  const metadataSpace =
     TOKEN_METADATA_DISCRIMINATOR.length + tlSpace + pack(metadataVals).length;
 
-  // Calculate lamports for metadata account
+  // Calculate space for metadata with additional fields
   metadataVals.additionalMetadata.push([
     // Temporary
     additionalFieldKey,
     randomStr(10),
   ]);
-  const futureSpace =
+  const futureMetadataSpace =
     TOKEN_METADATA_DISCRIMINATOR.length + tlSpace + pack(metadataVals).length;
   metadataVals.additionalMetadata.pop();
+
+  // Calculate space for field authorities
+  const fieldAuthoritiesSpace = fieldAuthorities
+    ? FIELD_AUTHORITIES_DISCRIMINATOR.length +
+      tlSpace +
+      packFieldAuthorities(fieldAuthorities).length
+    : 0;
+
+  // Calculate lamports for future space
   const lamports = await CONNECTION.getMinimumBalanceForRentExemption(
-    futureSpace
+    futureMetadataSpace + fieldAuthoritiesSpace
   );
 
   // Create metadata account
@@ -104,7 +124,7 @@ export async function createMetadataAccount(
     fromPubkey: ANCHOR_WALLET_KEYPAIR.publicKey,
     newAccountPubkey: metadataKeypair.publicKey,
     lamports,
-    space,
+    space: metadataSpace + fieldAuthoritiesSpace,
     programId: ATM_PROGRAM_ID,
   });
   const createAccountTx = new Transaction().add(createAccountIx);
@@ -122,7 +142,8 @@ export async function setupMintMetadataToken(
   mintKeypair: Keypair,
   metadataKeypair: Keypair,
   metadataVals: TokenMetadata,
-  additionalFieldKey: string
+  additionalFieldKey: string,
+  fieldAuthorities?: FieldAuthorities
 ): Promise<PublicKey> {
   // Create mint
   await createMint(
@@ -153,7 +174,8 @@ export async function setupMintMetadataToken(
   await createMetadataAccount(
     metadataKeypair,
     metadataVals,
-    additionalFieldKey
+    additionalFieldKey,
+    fieldAuthorities
   );
 
   // Set metadata account data

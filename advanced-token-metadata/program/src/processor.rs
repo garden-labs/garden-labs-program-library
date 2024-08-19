@@ -6,7 +6,7 @@ use {
             process_add_field_authority, process_remove_field_authority,
             process_update_field_with_field_authority,
         },
-        field_authority_v2::process_initialize_field_authorities_v2,
+        field_authority_v2::process_initialize_field_authorities,
     },
     field_authority_interface::instructions::FieldAuthorityInstruction,
     solana_program::{
@@ -208,9 +208,9 @@ pub fn process(program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> P
 
     if let Ok(field_authority_ix) = FieldAuthorityInstruction::unpack(input) {
         match field_authority_ix {
-            FieldAuthorityInstruction::InitializeFieldAuthoritiesV2(data) => {
-                msg!("Instruction: InitializeFieldAuthoritiesV2");
-                return process_initialize_field_authorities_v2(program_id, accounts, data);
+            FieldAuthorityInstruction::InitializeFieldAuthorities(data) => {
+                msg!("Instruction: InitializeFieldAuthorities");
+                return process_initialize_field_authorities(program_id, accounts, data);
             }
             FieldAuthorityInstruction::AddFieldAuthority(data) => {
                 msg!("Instruction: AddFieldAuthority");

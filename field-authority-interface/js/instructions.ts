@@ -18,19 +18,14 @@ import {
   getDataEnumCodec,
   mapEncoder,
   getTupleEncoder,
-  getArrayEncoder,
 } from "@solana/codecs";
 import type { Encoder } from "@solana/codecs";
 
-import {
-  FIELD_AUTHORITY_PDA_SEED,
-  fieldToSeedStr,
-  FieldAuthority,
-} from "./state";
+import { FIELD_AUTHORITY_PDA_SEED, fieldToSeedStr } from "./state";
 
 // These functions are from: https://github.com/solana-labs/solana-program-library/blob/8c8e7de68b96f8853fdc555ce0af3cfdc717bf55/token-metadata/js/src/instruction.ts
 
-function getInstructionEncoder<T extends object>(
+export function getInstructionEncoder<T extends object>(
   discriminator: Uint8Array,
   dataEncoder: Encoder<T>
 ): Encoder<T> {
@@ -40,56 +35,10 @@ function getInstructionEncoder<T extends object>(
   );
 }
 
-function getPublicKeyEncoder(): Encoder<PublicKey> {
+export function getPublicKeyEncoder(): Encoder<PublicKey> {
   return mapEncoder(getBytesEncoder({ size: 32 }), (publicKey: PublicKey) =>
     publicKey.toBytes()
   );
-}
-
-export interface InitializeFieldAuthoritiesV2Args {
-  programId: PublicKey;
-  metadata: PublicKey;
-  updateAuthority: PublicKey;
-  fieldAuthorities: FieldAuthority[];
-}
-
-export function createInitializeFieldAuthoritiesV2Ix(
-  args: InitializeFieldAuthoritiesV2Args
-): TransactionInstruction {
-  const { programId, metadata, updateAuthority, fieldAuthorities } = args;
-
-  const fieldAuthoritiesConfig = fieldAuthorities.map((fieldAuthority) => ({
-    field: getFieldConfig(fieldAuthority.field),
-    authority: fieldAuthority.authority,
-  }));
-
-  return new TransactionInstruction({
-    programId,
-    keys: [
-      { isSigner: false, isWritable: true, pubkey: metadata },
-      { isSigner: true, isWritable: false, pubkey: updateAuthority },
-    ],
-    data: Buffer.from(
-      getInstructionEncoder(
-        splDiscriminate(
-          "field_authority_interface:initialize_field_authorities_v2"
-        ),
-        getStructEncoder([
-          [
-            "authorities",
-            getArrayEncoder(
-              getStructEncoder([
-                ["field", getDataEnumCodec(getFieldCodec())],
-                ["authority", getPublicKeyEncoder()],
-              ])
-            ),
-          ],
-        ])
-      ).encode({
-        authorities: fieldAuthoritiesConfig,
-      })
-    ),
-  });
 }
 
 /**

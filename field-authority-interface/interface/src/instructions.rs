@@ -1,5 +1,7 @@
 use {
-    crate::{field_to_seed_str, state::FieldAuthority, FIELD_AUTHORITY_PDA_SEED},
+    crate::{
+        field_to_seed_str, instructions_v2::InitializeFieldAuthorities, FIELD_AUTHORITY_PDA_SEED,
+    },
     borsh::{BorshDeserialize, BorshSerialize},
     solana_program::{
         instruction::{AccountMeta, Instruction},
@@ -12,24 +14,11 @@ use {
 };
 
 #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
-#[discriminator_hash_input("field_authority_interface:initialize_field_authorities_v2")]
-pub struct InitializeFieldAuthoritiesV2 {
-    pub authorities: Vec<FieldAuthority>,
-}
-
-#[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
 #[discriminator_hash_input("field_authority_interface:add_field_authority")]
 pub struct AddFieldAuthority {
     pub field: Field,
     pub authority: Pubkey,
 }
-
-// #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
-// #[discriminator_hash_input("field_authority_interface:add_field_authority_v2")]
-// pub struct AddFieldAuthorityV2 {
-//     pub field: Field,
-//     pub authority: Pubkey,
-// }
 
 #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
 #[discriminator_hash_input("field_authority_interface:update_field_with_field_authority")]
@@ -38,28 +27,14 @@ pub struct UpdateFieldWithFieldAuthority {
     pub value: String,
 }
 
-// #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
-// #[discriminator_hash_input("field_authority_interface:update_field_with_field_authority_v2")]
-// pub struct UpdateFieldWithFieldAuthorityV2 {
-//     pub field: Field,
-//     pub value: String,
-// }
-
 #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
 #[discriminator_hash_input("field_authority_interface:remove_field_authority")]
 pub struct RemoveFieldAuthority {
     pub field: Field,
 }
 
-// #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
-// #[discriminator_hash_input("field_authority_interface:remove_field_authority_v2")]
-// pub struct RemoveFieldAuthorityV2 {
-//     pub field: Field,
-//     pub authority: Pubkey,
-// }
-
 pub enum FieldAuthorityInstruction {
-    InitializeFieldAuthoritiesV2(InitializeFieldAuthoritiesV2),
+    InitializeFieldAuthorities(InitializeFieldAuthorities),
     AddFieldAuthority(AddFieldAuthority),
     // AddFieldAuthorityV2(AddFieldAuthorityV2),
     UpdateFieldWithFieldAuthority(UpdateFieldWithFieldAuthority),
@@ -75,9 +50,9 @@ impl FieldAuthorityInstruction {
         }
         let (discriminator, rest) = input.split_at(ArrayDiscriminator::LENGTH);
         Ok(match discriminator {
-            InitializeFieldAuthoritiesV2::SPL_DISCRIMINATOR_SLICE => {
-                let data = InitializeFieldAuthoritiesV2::try_from_slice(rest)?;
-                Self::InitializeFieldAuthoritiesV2(data)
+            InitializeFieldAuthorities::SPL_DISCRIMINATOR_SLICE => {
+                let data = InitializeFieldAuthorities::try_from_slice(rest)?;
+                Self::InitializeFieldAuthorities(data)
             }
             AddFieldAuthority::SPL_DISCRIMINATOR_SLICE => {
                 let data = AddFieldAuthority::try_from_slice(rest)?;
@@ -110,8 +85,8 @@ impl FieldAuthorityInstruction {
     pub fn pack(&self) -> Vec<u8> {
         let mut buf = vec![];
         match self {
-            Self::InitializeFieldAuthoritiesV2(data) => {
-                buf.extend_from_slice(InitializeFieldAuthoritiesV2::SPL_DISCRIMINATOR_SLICE);
+            Self::InitializeFieldAuthorities(data) => {
+                buf.extend_from_slice(InitializeFieldAuthorities::SPL_DISCRIMINATOR_SLICE);
                 buf.append(&mut borsh::to_vec(data).unwrap());
             }
             Self::AddFieldAuthority(data) => {
@@ -139,28 +114,6 @@ impl FieldAuthorityInstruction {
               // }
         };
         buf
-    }
-}
-
-/// Creates `InitializeFieldAuthoritiesV2` instruction
-pub fn initialize_field_authorities_v2(
-    program_id: &Pubkey,
-    metadata: &Pubkey,
-    update_authority: &Pubkey,
-    field_authorities: Vec<FieldAuthority>,
-) -> Instruction {
-    let data =
-        FieldAuthorityInstruction::InitializeFieldAuthoritiesV2(InitializeFieldAuthoritiesV2 {
-            authorities: field_authorities,
-        });
-
-    Instruction {
-        program_id: *program_id,
-        accounts: vec![
-            AccountMeta::new(*metadata, false),
-            AccountMeta::new_readonly(*update_authority, true),
-        ],
-        data: data.pack(),
     }
 }
 
@@ -200,29 +153,6 @@ pub fn add_field_authority(
     }
 }
 
-// /// Creates `AddFieldAuthorityV2` instruction
-// pub fn add_field_authority_v2(
-//     program_id: &Pubkey,
-//     metadata: &Pubkey,
-//     update_authority: &Pubkey,
-//     field: Field,
-//     field_authority: &Pubkey,
-// ) -> Instruction {
-//     let data = FieldAuthorityInstruction::AddFieldAuthority(AddFieldAuthority {
-//         field,
-//         authority: *field_authority,
-//     });
-
-//     Instruction {
-//         program_id: *program_id,
-//         accounts: vec![
-//             AccountMeta::new_readonly(*metadata, false),
-//             AccountMeta::new_readonly(*update_authority, true),
-//         ],
-//         data: data.pack(),
-//     }
-// }
-
 /// Creates `UpdateFieldWithFieldAuthority` instruction
 pub fn update_field_with_field_authority(
     program_id: &Pubkey,
@@ -257,30 +187,6 @@ pub fn update_field_with_field_authority(
     }
 }
 
-// /// Creates `UpdateFieldWithFieldAuthorityV2` instruction
-// pub fn update_field_with_field_authority_v2(
-//     program_id: &Pubkey,
-//     metadata: &Pubkey,
-//     field_authority: &Pubkey,
-//     field: Field,
-//     value: String,
-//     field_authorities: &Pubkey, // Can be the same as metadata
-// ) -> Instruction {
-//     let data = FieldAuthorityInstruction::UpdateFieldWithFieldAuthorityV2(
-//         UpdateFieldWithFieldAuthorityV2 { field, value },
-//     );
-
-//     Instruction {
-//         program_id: *program_id,
-//         accounts: vec![
-//             AccountMeta::new(*metadata, false),
-//             AccountMeta::new_readonly(*field_authority, true),
-//             AccountMeta::new_readonly(*field_authorities, false),
-//         ],
-//         data: data.pack(),
-//     }
-// }
-
 /// Creates `RemoveFieldAuthority` instruction
 pub fn remove_field_authority(
     program_id: &Pubkey,
@@ -309,26 +215,3 @@ pub fn remove_field_authority(
         data: data.pack(),
     }
 }
-
-// /// Creates `RemoveFieldAuthorityV2` instruction
-// pub fn remove_field_authority_v2(
-//     program_id: &Pubkey,
-//     update_authority: &Pubkey,
-//     field: Field,
-//     field_authority: &Pubkey,
-//     field_authorities: &Pubkey, // Can be the same as metadata
-// ) -> Instruction {
-//     let data = FieldAuthorityInstruction::RemoveFieldAuthorityV2(RemoveFieldAuthorityV2 {
-//         field,
-//         authority: *field_authority,
-//     });
-
-//     Instruction {
-//         program_id: *program_id,
-//         accounts: vec![
-//             AccountMeta::new(*field_authorities, false),
-//             AccountMeta::new_readonly(*update_authority, true),
-//         ],
-//         data: data.pack(),
-//     }
-// }
