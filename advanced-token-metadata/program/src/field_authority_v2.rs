@@ -33,6 +33,8 @@ pub fn process_initialize_field_authorities(
     // Allocate a TLV entry for the space and write it in
     let mut buffer = metadata_info.try_borrow_mut_data()?;
     let mut state = TlvStateMut::unpack(&mut buffer)?;
+    // TODO: Perhaps could use realloc here to not require the initial account creation? We'll
+    // keep alloc for now to match TokenMetadata
     state.alloc_and_pack_variable_len_entry(&field_authorities, false)?;
 
     Ok(())
