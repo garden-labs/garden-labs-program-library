@@ -1,3 +1,5 @@
+// TODO: Begin adding things like Connection to params, make this a library
+
 /* eslint-disable @typescript-eslint/ban-types */
 
 import "dotenv/config";
@@ -7,12 +9,14 @@ import assert from "assert";
 
 import {
   Transaction,
+  TransactionInstruction,
   sendAndConfirmTransaction,
   PublicKey,
   SystemProgram,
   Keypair,
   TransactionMessage,
   VersionedTransaction,
+  Connection,
 } from "@solana/web3.js";
 import {
   createMint,
@@ -28,29 +32,50 @@ import {
   createInitializeInstruction,
   Field,
 } from "@solana/spl-token-metadata";
+import { TlvState } from "@solana/spl-type-length-value";
 
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "./constants";
 import { CONNECTION } from "./config";
+import type { FieldAuthorities } from "../../field-authority-interface/js";
+import {
+  pack as packFieldAuthorities,
+  FIELD_AUTHORITIES_DISCRIMINATOR,
+} from "../../field-authority-interface/js";
+
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 export function randomStr(numChars: number): string {
   return crypto.randomBytes(numChars).toString("hex").slice(0, numChars);
 }
 
-// Alternative Method
+// Alternative Method (assumes tlv account)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function getAccountMetadata(
+export async function getAccountMetadata(
   metadataPubkey: PublicKey
 ): Promise<TokenMetadata> {
   const accountInfo = await CONNECTION.getAccountInfo(metadataPubkey);
   if (!accountInfo) {
     throw new Error("Account not found");
   }
-  // From https://github.com/ZYJLiu/anchor-token-metadata/blob/f9114d9d14a0620d1a7cfd5806c82887a72dc5e3/tests/token-metadata.ts#L22
-  // Metadata starts with offset of 12 bytes
-  // 8 byte discriminator + 4 byte extra offset? (not sure)
-  return unpack(accountInfo.data.subarray(12));
+
+  const tlv = new TlvState(
+    accountInfo.data,
+    TOKEN_METADATA_DISCRIMINATOR.length,
+    4 // length
+  );
+  const buffer = tlv.firstBytes(TOKEN_METADATA_DISCRIMINATOR);
+  if (!buffer) {
+    throw new Error("Token metadata not found");
+  }
+
+  return unpack(buffer);
 }
 
+// Primary Method (data structure agnostic, uses simulation)
 export async function getEmittedMetadata(
   programId: PublicKey,
   metadataPubkey: PublicKey
@@ -76,27 +101,90 @@ export async function getEmittedMetadata(
   return unpack(data);
 }
 
+/**
+ * @returns null if min rent reached
+ */
+export async function getEnsureRentMinTx(
+  connection: Connection,
+  payer: PublicKey,
+  account: PublicKey,
+  minRent: number
+): Promise<TransactionInstruction | null> {
+  let currentRent = 0;
+  const accountInfo = await connection.getAccountInfo(account);
+  if (accountInfo) {
+    currentRent = accountInfo.lamports;
+  }
+
+  if (currentRent >= minRent) {
+    return null;
+  }
+
+  return SystemProgram.transfer({
+    fromPubkey: payer,
+    toPubkey: account,
+    lamports: minRent - currentRent,
+  });
+}
+
+export async function calculateMinRent(
+  connection: Connection,
+  metadata?: TokenMetadata,
+  fieldAuthorities?: FieldAuthorities
+): Promise<number> {
+  let space = 0;
+
+  if (metadata) {
+    space += TOKEN_METADATA_DISCRIMINATOR.length + 4 + pack(metadata).length;
+  }
+
+  if (fieldAuthorities) {
+    space +=
+      FIELD_AUTHORITIES_DISCRIMINATOR.length +
+      4 +
+      packFieldAuthorities(fieldAuthorities).length;
+  }
+
+  if (space === 0) {
+    return 0;
+  }
+
+  return connection.getMinimumBalanceForRentExemption(space);
+}
+
+// TODO #1: Remove adding the "future rent" and use the functions above directly
+// in the tests like `advanced-token-metadata-v2.ts`
+// TODO: #2: See if the functions above work for the initial alloc as well
 export async function createMetadataAccount(
   metadataKeypair: Keypair,
   metadataVals: TokenMetadata,
-  additionalFieldKey: string
+  additionalFieldKey: string,
+  fieldAuthorities?: FieldAuthorities
 ): Promise<void> {
-  // Calculate space for metadata account
-  const tlSpace = 4; // 2 bytes for type, 2 bytes for length, for TLV encoding
-  const space =
-    TOKEN_METADATA_DISCRIMINATOR.length + tlSpace + pack(metadataVals).length;
+  // 4 bytes for length
+  const tlSpace = TOKEN_METADATA_DISCRIMINATOR.length + 4;
 
-  // Calculate lamports for metadata account
+  const metadataSpace = tlSpace + pack(metadataVals).length;
+
+  // Calculate space for metadata with additional fields
   metadataVals.additionalMetadata.push([
     // Temporary
     additionalFieldKey,
     randomStr(10),
   ]);
-  const futureSpace =
-    TOKEN_METADATA_DISCRIMINATOR.length + tlSpace + pack(metadataVals).length;
+  const futureMetadataSpace = tlSpace + pack(metadataVals).length;
   metadataVals.additionalMetadata.pop();
+
+  // Calculate space for field authorities
+  const fieldAuthoritiesSpace = fieldAuthorities
+    ? FIELD_AUTHORITIES_DISCRIMINATOR.length +
+      4 +
+      packFieldAuthorities(fieldAuthorities).length
+    : 0;
+
+  // Calculate lamports for future space
   const lamports = await CONNECTION.getMinimumBalanceForRentExemption(
-    futureSpace
+    futureMetadataSpace + fieldAuthoritiesSpace
   );
 
   // Create metadata account
@@ -104,7 +192,7 @@ export async function createMetadataAccount(
     fromPubkey: ANCHOR_WALLET_KEYPAIR.publicKey,
     newAccountPubkey: metadataKeypair.publicKey,
     lamports,
-    space,
+    space: metadataSpace + fieldAuthoritiesSpace,
     programId: ATM_PROGRAM_ID,
   });
   const createAccountTx = new Transaction().add(createAccountIx);
@@ -122,7 +210,8 @@ export async function setupMintMetadataToken(
   mintKeypair: Keypair,
   metadataKeypair: Keypair,
   metadataVals: TokenMetadata,
-  additionalFieldKey: string
+  additionalFieldKey: string,
+  fieldAuthorities?: FieldAuthorities
 ): Promise<PublicKey> {
   // Create mint
   await createMint(
@@ -153,7 +242,8 @@ export async function setupMintMetadataToken(
   await createMetadataAccount(
     metadataKeypair,
     metadataVals,
-    additionalFieldKey
+    additionalFieldKey,
+    fieldAuthorities
   );
 
   // Set metadata account data
@@ -177,6 +267,10 @@ export async function setupMintMetadataToken(
   );
   assert.deepStrictEqual(emittedMetadata, metadataVals);
 
+  // Check account metadata
+  const accountMetadata = await getAccountMetadata(metadataKeypair.publicKey);
+  assert.deepStrictEqual(accountMetadata, metadataVals);
+
   return tokenAddress;
 }
 
@@ -186,7 +280,7 @@ type AnchorFieldParam =
   | { uri: {} }
   | { key: [string] };
 
-export function toAnchorParam(field: Field | string): AnchorFieldParam {
+export function fieldToAnchorParam(field: Field | string): AnchorFieldParam {
   switch (field) {
     case Field.Name:
       return { name: {} };
@@ -198,4 +292,29 @@ export function toAnchorParam(field: Field | string): AnchorFieldParam {
     default:
       return { key: [field] };
   }
+}
+
+export function updateField(
+  tokenMetadata: TokenMetadata,
+  field: Field | string,
+  val: string
+): TokenMetadata {
+  switch (field) {
+    case Field.Name:
+      return { ...tokenMetadata, name: val };
+    case Field.Symbol:
+      return { ...tokenMetadata, symbol: val };
+    case Field.Uri:
+      return { ...tokenMetadata, uri: val };
+    // String
+    default:
+      break;
+  }
+  const filtered = tokenMetadata.additionalMetadata.filter(
+    ([key]) => key !== field
+  );
+  return {
+    ...tokenMetadata,
+    additionalMetadata: [...filtered, [field, val]],
+  };
 }

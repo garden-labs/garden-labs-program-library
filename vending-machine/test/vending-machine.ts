@@ -27,7 +27,7 @@ import { VendingMachine } from "../../target/types/vending_machine";
 import {
   randomStr,
   getEmittedMetadata,
-  toAnchorParam,
+  fieldToAnchorParam,
 } from "../../util/js/helpers";
 import { interpretTxErr } from "../../util/js/tx";
 import {
@@ -39,7 +39,7 @@ import {
 import {
   FIELD_AUTHORITY_PDA_SEED,
   fieldToSeedStr,
-} from "../../field-authority-interface/js/field-authority-interface";
+} from "../../field-authority-interface/js";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 
 describe("Vending Machine", () => {
@@ -132,6 +132,7 @@ describe("Vending Machine", () => {
         })
         .signers([vendingMachineData, colMint])
         .rpc();
+      throw new Error("Expected error to be thrown");
     } catch (err) {
       if (
         !(
@@ -170,6 +171,7 @@ describe("Vending Machine", () => {
         })
         .signers([vendingMachineData, colMint])
         .rpc();
+      throw new Error("Expected error to be thrown");
     } catch (err) {
       if (
         !(
@@ -208,6 +210,7 @@ describe("Vending Machine", () => {
         })
         .signers([vendingMachineData, colMint])
         .rpc();
+      throw new Error("Expected error to be thrown");
     } catch (err) {
       if (
         !(
@@ -440,6 +443,7 @@ describe("Vending Machine", () => {
         })
         .signers([mint, metadata])
         .rpc();
+      throw new Error("Expected error to be thrown");
     } catch (err) {
       const interpretedTxErr = interpretTxErr(err);
       assert.equal(interpretedTxErr.type, "AllocateAccountAlreadyInUse");
@@ -457,7 +461,7 @@ describe("Vending Machine", () => {
     const mint = mints[index - 1];
     const metadata = metadatas[index - 1];
 
-    const param = toAnchorParam(holderFieldKey);
+    const param = fieldToAnchorParam(holderFieldKey);
     const newHolderFieldVal = randomStr(200);
 
     const [fieldPda] = PublicKey.findProgramAddressSync(

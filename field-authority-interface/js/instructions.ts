@@ -21,9 +21,11 @@ import {
 } from "@solana/codecs";
 import type { Encoder } from "@solana/codecs";
 
-// The following functions are from: https://github.com/solana-labs/solana-program-library/blob/8c8e7de68b96f8853fdc555ce0af3cfdc717bf55/token-metadata/js/src/instruction.ts
+import { FIELD_AUTHORITY_PDA_SEED, fieldToSeedStr } from "./state";
 
-function getInstructionEncoder<T extends object>(
+// These functions are from: https://github.com/solana-labs/solana-program-library/blob/8c8e7de68b96f8853fdc555ce0af3cfdc717bf55/token-metadata/js/src/instruction.ts
+
+export function getInstructionEncoder<T extends object>(
   discriminator: Uint8Array,
   dataEncoder: Encoder<T>
 ): Encoder<T> {
@@ -33,27 +35,15 @@ function getInstructionEncoder<T extends object>(
   );
 }
 
-function getPublicKeyEncoder(): Encoder<PublicKey> {
+export function getPublicKeyEncoder(): Encoder<PublicKey> {
   return mapEncoder(getBytesEncoder({ size: 32 }), (publicKey: PublicKey) =>
     publicKey.toBytes()
   );
 }
 
-export const FIELD_AUTHORITY_PDA_SEED = "field-authority-pda";
-
-export function fieldToSeedStr(field: Field | string): string {
-  switch (field) {
-    case Field.Name:
-      return "name";
-    case Field.Symbol:
-      return "symbol";
-    case Field.Uri:
-      return "uri";
-    default:
-      return `key:${field}`;
-  }
-}
-
+/**
+ * @deprecated
+ */
 export function createAddFieldAuthorityIx(
   payer: PublicKey,
   metadata: PublicKey,
@@ -62,19 +52,6 @@ export function createAddFieldAuthorityIx(
   field: Field | string,
   programId: PublicKey
 ): TransactionInstruction {
-  const data = Buffer.from(
-    getInstructionEncoder(
-      splDiscriminate("field_interface_interface:add_field_authority"),
-      getStructEncoder([
-        ["field", getDataEnumCodec(getFieldCodec())],
-        ["authority", getPublicKeyEncoder()],
-      ])
-    ).encode({
-      field: getFieldConfig(field),
-      authority: fieldAuthority,
-    })
-  );
-
   const [fieldPda] = PublicKey.findProgramAddressSync(
     [
       Buffer.from(FIELD_AUTHORITY_PDA_SEED),
@@ -84,7 +61,8 @@ export function createAddFieldAuthorityIx(
     programId
   );
 
-  const ix = new TransactionInstruction({
+  return new TransactionInstruction({
+    programId,
     keys: [
       {
         pubkey: payer,
@@ -112,13 +90,24 @@ export function createAddFieldAuthorityIx(
         isWritable: false,
       },
     ],
-    data,
-    programId,
+    data: Buffer.from(
+      getInstructionEncoder(
+        splDiscriminate("field_authority_interface:add_field_authority"),
+        getStructEncoder([
+          ["field", getDataEnumCodec(getFieldCodec())],
+          ["authority", getPublicKeyEncoder()],
+        ])
+      ).encode({
+        field: getFieldConfig(field),
+        authority: fieldAuthority,
+      })
+    ),
   });
-
-  return ix;
 }
 
+/**
+ * @deprecated
+ */
 export function createUpdateFieldWithFieldAuthorityIx(
   metadata: PublicKey,
   fieldAuthority: PublicKey,
@@ -126,18 +115,6 @@ export function createUpdateFieldWithFieldAuthorityIx(
   value: string,
   programId: PublicKey
 ): TransactionInstruction {
-  const data = Buffer.from(
-    getInstructionEncoder(
-      splDiscriminate(
-        "field_interface_interface:update_field_with_field_authority"
-      ),
-      getStructEncoder([
-        ["field", getDataEnumCodec(getFieldCodec())],
-        ["value", getStringEncoder()],
-      ])
-    ).encode({ field: getFieldConfig(field), value })
-  );
-
   const [pda] = PublicKey.findProgramAddressSync(
     [
       Buffer.from(FIELD_AUTHORITY_PDA_SEED),
@@ -147,7 +124,8 @@ export function createUpdateFieldWithFieldAuthorityIx(
     programId
   );
 
-  const ix = new TransactionInstruction({
+  return new TransactionInstruction({
+    programId,
     keys: [
       { pubkey: metadata, isSigner: false, isWritable: true },
       {
@@ -161,26 +139,29 @@ export function createUpdateFieldWithFieldAuthorityIx(
         isWritable: false,
       },
     ],
-    data,
-    programId,
+    data: Buffer.from(
+      getInstructionEncoder(
+        splDiscriminate(
+          "field_authority_interface:update_field_with_field_authority"
+        ),
+        getStructEncoder([
+          ["field", getDataEnumCodec(getFieldCodec())],
+          ["value", getStringEncoder()],
+        ])
+      ).encode({ field: getFieldConfig(field), value })
+    ),
   });
-
-  return ix;
 }
 
+/**
+ * @deprecated
+ */
 export function createRemoveFieldAuthorityIx(
   metadata: PublicKey,
   updateAuthority: PublicKey,
   field: Field | string,
   programId: PublicKey
 ): TransactionInstruction {
-  const data = Buffer.from(
-    getInstructionEncoder(
-      splDiscriminate("field_interface_interface:remove_field_authority"),
-      getStructEncoder([["field", getDataEnumCodec(getFieldCodec())]])
-    ).encode({ field: getFieldConfig(field) })
-  );
-
   const [pda] = PublicKey.findProgramAddressSync(
     [
       Buffer.from(FIELD_AUTHORITY_PDA_SEED),
@@ -190,7 +171,8 @@ export function createRemoveFieldAuthorityIx(
     programId
   );
 
-  const ix = new TransactionInstruction({
+  return new TransactionInstruction({
+    programId,
     keys: [
       {
         pubkey: metadata,
@@ -208,9 +190,11 @@ export function createRemoveFieldAuthorityIx(
         isWritable: true,
       },
     ],
-    data,
-    programId,
+    data: Buffer.from(
+      getInstructionEncoder(
+        splDiscriminate("field_authority_interface:remove_field_authority"),
+        getStructEncoder([["field", getDataEnumCodec(getFieldCodec())]])
+      ).encode({ field: getFieldConfig(field) })
+    ),
   });
-
-  return ix;
 }

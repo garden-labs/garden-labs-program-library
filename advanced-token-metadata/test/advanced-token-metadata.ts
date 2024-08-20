@@ -19,6 +19,7 @@ import {
   getEmittedMetadata,
   randomStr,
   setupMintMetadataToken,
+  updateField,
 } from "../../util/js/helpers";
 import { CONNECTION } from "../../util/js/config";
 import {
@@ -27,7 +28,7 @@ import {
   createUpdateFieldWithFieldAuthorityIx,
   FIELD_AUTHORITY_PDA_SEED,
   createRemoveFieldAuthorityIx,
-} from "../../field-authority-interface/js/field-authority-interface";
+} from "../../field-authority-interface/js";
 
 describe("Advanced Token Metadata Program", () => {
   const mintKeypair = Keypair.generate();
@@ -98,7 +99,7 @@ describe("Advanced Token Metadata Program", () => {
   }
 
   it("Update field with update authority (regular)", async () => {
-    const val = "new name";
+    const val = randomStr(10);
 
     const ix = createUpdateFieldInstruction({
       programId: ATM_PROGRAM_ID,
@@ -113,7 +114,7 @@ describe("Advanced Token Metadata Program", () => {
     await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
 
     // Check emmitted metadata
-    const vals: TokenMetadata = { ...metadataVals, name: val };
+    const vals = updateField(metadataVals, Field.Name, val);
     const emittedMetadata = await getEmittedMetadata(
       ATM_PROGRAM_ID,
       metadataKeypair.publicKey
@@ -148,8 +149,9 @@ describe("Advanced Token Metadata Program", () => {
       fa,
     ]);
 
+    const vals = updateField(metadataVals, field, val);
+
     // Check emmitted metadata
-    const vals: TokenMetadata = { ...metadataVals, name: val };
     const emittedMetadata = await getEmittedMetadata(
       ATM_PROGRAM_ID,
       metadataKeypair.publicKey

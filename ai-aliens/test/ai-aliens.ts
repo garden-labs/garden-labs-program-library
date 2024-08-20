@@ -24,14 +24,14 @@ import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 import {
   getEmittedMetadata,
   randomStr,
-  toAnchorParam,
+  fieldToAnchorParam,
 } from "../../util/js/helpers";
 import { CONNECTION, setPayer } from "../../util/js/config";
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
 import {
   FIELD_AUTHORITY_PDA_SEED,
   fieldToSeedStr,
-} from "../../field-authority-interface/js/field-authority-interface";
+} from "../../field-authority-interface/js";
 import {
   AI_ALIENS_AUTHORITY_PDA_SEED,
   NFT_MINTED_PDA_SEED,
@@ -295,6 +295,7 @@ describe("AI Aliens Program", () => {
   it("Create mint fails with insufficient funds", async () => {
     try {
       await createMint(3, insufficientFundsAccount);
+      throw new Error("Expected error to be thrown");
     } catch (err) {
       const interpretedTxErr = interpretTxErr(err);
       assert.equal(
@@ -308,6 +309,7 @@ describe("AI Aliens Program", () => {
     const zeroFundsAccount = Keypair.generate();
     try {
       await createMint(4, zeroFundsAccount);
+      throw new Error("Expected error to be thrown");
     } catch (err) {
       const interpretedTxErr = interpretTxErr(err);
       assert.equal(
@@ -329,7 +331,7 @@ describe("AI Aliens Program", () => {
     );
 
     const field = NICKNAME_FIELD_KEY;
-    const param = toAnchorParam(field);
+    const param = fieldToAnchorParam(field);
 
     const mint = mints[index - 1];
     const metadata = metadatas[index - 1];
@@ -369,7 +371,7 @@ describe("AI Aliens Program", () => {
     assert(async () => {
       try {
         await updateNickname(1, randomStr(31));
-        throw new Error("Should have thrown");
+        throw new Error("Expected error to be thrown");
       } catch (e) {
         assert(e instanceof SendTransactionError);
       }
@@ -382,7 +384,7 @@ describe("AI Aliens Program", () => {
       workspace.AiAliens
     );
 
-    const fieldParam = toAnchorParam(Field.Uri);
+    const fieldParam = fieldToAnchorParam(Field.Uri);
     const metadata = metadatas[index - 1];
 
     await program.methods

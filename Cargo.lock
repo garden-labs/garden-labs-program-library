@@ -1634,6 +1634,7 @@ dependencies = [
  "solana-program",
  "spl-discriminator 0.2.2",
  "spl-token-metadata-interface 0.3.3",
+ "spl-type-length-value 0.4.3",
  "thiserror",
 ]
 

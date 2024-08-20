@@ -1,11 +1,12 @@
 use {
+    crate::state_v2,
     borsh::{BorshDeserialize, BorshSerialize},
     solana_program::pubkey::Pubkey,
 };
 
-// NOTE: Currently only a single field authority is supported via a PDA
-// We could extend this to support multiple field authorities and use a TLV structure to store them
-// That said, single authorities may be simpler for authority programs / PDAs
+// Re-export
+pub use state_v2::*;
+
 #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize)]
 pub struct FieldAuthorityAccount {
     pub authority: Pubkey,
