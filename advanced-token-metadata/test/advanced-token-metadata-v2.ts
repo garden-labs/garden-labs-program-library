@@ -22,6 +22,7 @@ import {
   createInitializeFieldAuthoritiesV2Ix,
   FieldAuthority,
   FieldAuthorities,
+  getFieldAuthorities,
 } from "../../field-authority-interface/js";
 
 describe("Advanced Token Metadata Program V2", () => {
@@ -111,6 +112,11 @@ describe("Advanced Token Metadata Program V2", () => {
     const accountMetadata = await getAccountMetadata(metadataKeypair.publicKey);
     assert.deepStrictEqual(accountMetadata, metadataVals);
 
-    // TODO: Check field authorities
+    // Check field authorities
+    const accountFieldAuthorities = await getFieldAuthorities(
+      CONNECTION,
+      metadataKeypair.publicKey
+    );
+    assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
   });
 });
