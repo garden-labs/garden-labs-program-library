@@ -13,9 +13,11 @@ use {
         program_error::ProgramError,
         pubkey::Pubkey,
     },
-    spl_token_metadata_interface::state::Field,
+    spl_token_metadata_interface::state::{Field, TokenMetadata},
     // TlvState needed for get_first_variable_len_value()
-    spl_type_length_value::state::{TlvState, TlvStateBorrowed, TlvStateMut},
+    spl_type_length_value::state::{
+        realloc_and_pack_first_variable_len, TlvState, TlvStateBorrowed, TlvStateMut,
+    },
 };
 
 /// Proccesses an InitializeFieldAuthorities instruction
@@ -89,12 +91,27 @@ pub fn process_update_field_with_field_authority_v2(
         let state = TlvStateBorrowed::unpack(&buffer)?;
         state.get_first_variable_len_value::<FieldAuthorities>()?
     };
-    if !field_authorities.contains_field_authority(data.field, field_authority_info.key.clone()) {
+    if !field_authorities
+        .contains_field_authority(data.field.clone(), field_authority_info.key.clone())
+    {
         return Err(FieldAuthorityError::IncorrectFieldAuthority.into());
     }
     if !field_authority_info.is_signer {
         return Err(ProgramError::MissingRequiredSignature);
     }
+
+    // Deserialize the metadata, but scope the data borrow since we'll probably realloc the account
+    let mut token_metadata = {
+        let buffer = metadata_info.try_borrow_data()?;
+        let state = TlvStateBorrowed::unpack(&buffer)?;
+        state.get_first_variable_len_value::<TokenMetadata>()?
+    };
+
+    // Update the field
+    token_metadata.update(data.field, data.value);
+
+    // Update / realloc the account
+    realloc_and_pack_first_variable_len(metadata_info, &token_metadata)?;
 
     Ok(())
 }

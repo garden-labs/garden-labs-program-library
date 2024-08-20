@@ -2,6 +2,7 @@ import assert from "assert";
 
 import {
   Keypair,
+  SendTransactionError,
   Transaction,
   sendAndConfirmTransaction,
 } from "@solana/web3.js";
@@ -33,9 +34,9 @@ describe("Advanced Token Metadata Program V2", () => {
   const metadataKeypair = Keypair.generate();
 
   let metadataVals: TokenMetadata = {
-    name: "My test token",
-    symbol: "TEST",
-    uri: "http://test.test",
+    name: randomStr(10),
+    symbol: randomStr(10),
+    uri: randomStr(10),
     updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
     mint: mintKeypair.publicKey,
     additionalMetadata: [],
@@ -133,7 +134,8 @@ describe("Advanced Token Metadata Program V2", () => {
   async function updateFieldWithFieldAuthorityTest(
     field: Field | string,
     val: string,
-    fa: Keypair = fieldAuthorityKpOne
+    fa: Keypair = fieldAuthorityKpOne,
+    signers: Keypair[] = [ANCHOR_WALLET_KEYPAIR, fa]
   ): Promise<void> {
     const ix = createUpdateFieldWithFieldAuthorityV2Ix({
       programId: ATM_PROGRAM_ID,
@@ -145,10 +147,7 @@ describe("Advanced Token Metadata Program V2", () => {
 
     const tx = new Transaction().add(ix);
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [
-      ANCHOR_WALLET_KEYPAIR,
-      fa,
-    ]);
+    await sendAndConfirmTransaction(CONNECTION, tx, signers);
 
     const vals = updateField(metadataVals, field, val);
 
@@ -161,14 +160,14 @@ describe("Advanced Token Metadata Program V2", () => {
 
     // Check account metadata
     const accountMetadata = await getAccountMetadata(metadataKeypair.publicKey);
-    assert.deepStrictEqual(accountMetadata, metadataVals);
+    assert.deepStrictEqual(accountMetadata, vals);
 
     // Update if succeeded
     metadataVals = vals;
   }
 
   it("Update field with incorrect field authority fails (v2)", async () => {
-    const val = randomStr(20);
+    const val = randomStr(10);
 
     try {
       await updateFieldWithFieldAuthorityTest(
@@ -176,35 +175,49 @@ describe("Advanced Token Metadata Program V2", () => {
         val,
         ANCHOR_WALLET_KEYPAIR
       );
+      throw new Error("Should have thrown");
     } catch (err) {
-      // Better error parsing is coming with the new @solana/web3.js: https://github.com/solana-labs/solana-web3.js/issues/2019
-      // As of right now it's not easy to parse these errors, (see below).
-      // {
-      //   "signature": "",
-      //   "transactionMessage": "Transaction simulation failed: Error processing Instruction 0: custom program error: 0x1",
-      //   "transactionLogs": [
-      //     "Program 2GkHVZ2y5wP4nw4uA2GWFnc7jphfjKbbcEKwqMCV42a6 invoke [1]",
-      //     "Program log: Instruction: UpdateFieldWithFieldAuthorityV2",
-      //     "Program log: Error: Unknown",
-      //     "Program 2GkHVZ2y5wP4nw4uA2GWFnc7jphfjKbbcEKwqMCV42a6 consumed 3022 of 200000 compute units",
-      //     "Program 2GkHVZ2y5wP4nw4uA2GWFnc7jphfjKbbcEKwqMCV42a6 failed: custom program error: 0x1"
-      //   ]
-      // }
+      // Better error parsing is coming with the new @solana/web3.js
+      // https://github.com/solana-labs/solana-web3.js/issues/2019
+      assert(err instanceof SendTransactionError);
     }
   });
 
   it("Update field with correct field authority (v2)", async () => {
-    const val = randomStr(20);
+    const val = randomStr(10);
     await updateFieldWithFieldAuthorityTest(Field.Name, val);
   });
 
   it("Update additional field with correct field authority (v2)", async () => {
-    const val = randomStr(20);
+    const val = randomStr(10);
     await updateFieldWithFieldAuthorityTest(
       additionalFieldKey,
       val,
       ANCHOR_WALLET_KEYPAIR
     );
+  });
+
+  it("Update field with non-signer fails", async () => {
+    const val = randomStr(10);
+    try {
+      await updateFieldWithFieldAuthorityTest(Field.Name, val, undefined, [
+        ANCHOR_WALLET_KEYPAIR,
+      ]);
+      throw new Error("Should have thrown");
+    } catch (err) {
+      // Better error parsing is coming with the new @solana/web3.js
+      // https://github.com/solana-labs/solana-web3.js/issues/2019
+
+      // SendTransactionError doens't work here, probably caught in JS
+      if (
+        !(
+          err instanceof Error &&
+          err.message.includes("Signature verification failed.")
+        )
+      ) {
+        throw err;
+      }
+    }
   });
 
   // TODO: Add field authority
