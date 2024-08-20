@@ -246,6 +246,7 @@ describe("Advanced Token Metadata Program V2", () => {
       metadata: metadataKeypair.publicKey,
       updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
       fieldAuthority,
+      idempotent: true,
     });
     const tx = new Transaction().add(addFieldAuthIx);
 
@@ -333,4 +334,6 @@ describe("Advanced Token Metadata Program V2", () => {
   // TODO: Remove field authority
 
   // TODO: Test removed field authority
+
+  // TODO: Test re-adding, re-removing, with and without indempotent
 });

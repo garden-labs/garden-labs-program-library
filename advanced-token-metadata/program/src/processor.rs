@@ -8,7 +8,7 @@ use {
         },
         field_authority_v2::{
             process_add_field_authority_v2, process_initialize_field_authorities,
-            process_update_field_with_field_authority_v2,
+            process_remove_field_authority_v2, process_update_field_with_field_authority_v2,
         },
     },
     field_authority_interface::instructions::FieldAuthorityInstruction,
@@ -234,6 +234,10 @@ pub fn process(program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> P
             FieldAuthorityInstruction::RemoveFieldAuthority(data) => {
                 msg!("Instruction: RemoveFieldAuthority");
                 return process_remove_field_authority(program_id, accounts, data);
+            }
+            FieldAuthorityInstruction::RemoveFieldAuthorityV2(data) => {
+                msg!("Instruction: RemoveFieldAuthorityV2");
+                return process_remove_field_authority_v2(program_id, accounts, data);
             }
         }
     }

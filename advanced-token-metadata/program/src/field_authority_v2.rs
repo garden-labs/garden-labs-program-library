@@ -5,7 +5,8 @@ use {
     field_authority_interface::{
         errors::FieldAuthorityError,
         instructions_v2::{
-            AddFieldAuthorityV2, InitializeFieldAuthorities, UpdateFieldWithFieldAuthorityV2,
+            AddFieldAuthorityV2, InitializeFieldAuthorities, RemoveFieldAuthorityV2,
+            UpdateFieldWithFieldAuthorityV2,
         },
         state::{FieldAuthorities, FieldAuthority},
     },
@@ -70,7 +71,9 @@ pub fn process_add_field_authority_v2(
     };
 
     // Add field authority
-    field_authorities.add_field_authority(data.field_authority);
+    if !field_authorities.add_field_authority(data.field_authority) && !data.idempotent {
+        return Err(FieldAuthorityError::FieldAuthorityAlreadyExists.into());
+    }
 
     // Update / realloc the account
     realloc_and_pack_first_variable_len(metadata_info, &field_authorities)?;
@@ -117,6 +120,37 @@ pub fn process_update_field_with_field_authority_v2(
 
     // Update / realloc the account
     realloc_and_pack_first_variable_len(metadata_info, &token_metadata)?;
+
+    Ok(())
+}
+
+/// Proccesses an AddFieldAuthorityV2 instruction
+pub fn process_remove_field_authority_v2(
+    _program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    data: RemoveFieldAuthorityV2,
+) -> ProgramResult {
+    let account_info_iter = &mut accounts.iter();
+    let metadata_info = next_account_info(account_info_iter)?;
+    let update_authority_info = next_account_info(account_info_iter)?;
+
+    check_metadata_update_authority(metadata_info, update_authority_info)?;
+
+    // Field authorities are stored in metadata account
+    // Scope the data borrow like TokenMetadata because we may realloc later
+    let mut field_authorities = {
+        let buffer = metadata_info.try_borrow_data()?;
+        let state = TlvStateBorrowed::unpack(&buffer)?;
+        state.get_first_variable_len_value::<FieldAuthorities>()?
+    };
+
+    // Remove field authority
+    if !field_authorities.remove_field_authority(data.field_authority) && !data.idempotent {
+        return Err(FieldAuthorityError::FieldAuthorityNotFound.into());
+    }
+
+    // Update / realloc the account
+    realloc_and_pack_first_variable_len(metadata_info, &field_authorities)?;
 
     Ok(())
 }

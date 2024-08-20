@@ -39,14 +39,15 @@ impl VariableLenPack for FieldAuthorities {
     }
 }
 impl FieldAuthorities {
-    /// Adds a field authority. Exits early if already found.
-    pub fn add_field_authority(&mut self, field_authority: FieldAuthority) {
+    /// Adds a field authority. Returns true if the field authority was added (and wasn't found).
+    pub fn add_field_authority(&mut self, field_authority: FieldAuthority) -> bool {
         for fa in &self.authorities {
             if fa.field == field_authority.field && fa.authority == field_authority.authority {
-                return; // Exit early if a match is found
+                return false;
             }
         }
         self.authorities.push(field_authority);
+        return true;
     }
 
     /// Checks if a field authority pair exists. Returns true if found.

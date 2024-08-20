@@ -11,6 +11,7 @@ import {
   getStructEncoder,
   getDataEnumCodec,
   getStringEncoder,
+  getBooleanEncoder,
 } from "@solana/codecs";
 
 import { getInstructionEncoder } from "./instructions";
@@ -63,12 +64,14 @@ export interface AddFieldAuthorityV2Args {
   metadata: PublicKey;
   updateAuthority: PublicKey;
   fieldAuthority: FieldAuthority;
+  idempotent: boolean;
 }
 
 export function createAddFieldAuthorityV2Ix(
   args: AddFieldAuthorityV2Args
 ): TransactionInstruction {
-  const { programId, metadata, updateAuthority, fieldAuthority } = args;
+  const { programId, metadata, updateAuthority, fieldAuthority, idempotent } =
+    args;
 
   return new TransactionInstruction({
     programId,
@@ -79,8 +82,12 @@ export function createAddFieldAuthorityV2Ix(
     data: Buffer.from(
       getInstructionEncoder(
         splDiscriminate("field_authority_interface:add_field_authority_v2"),
-        getStructEncoder([["field_authority", fieldAuthorityCodec]])
+        getStructEncoder([
+          ["idempotent", getBooleanEncoder()],
+          ["field_authority", fieldAuthorityCodec],
+        ])
       ).encode({
+        idempotent,
         field_authority: {
           field: getFieldConfig(fieldAuthority.field),
           authority: fieldAuthority.authority.toBuffer(),

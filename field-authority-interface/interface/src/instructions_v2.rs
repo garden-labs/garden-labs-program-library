@@ -18,6 +18,7 @@ pub struct InitializeFieldAuthorities {
 #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
 #[discriminator_hash_input("field_authority_interface:add_field_authority_v2")]
 pub struct AddFieldAuthorityV2 {
+    pub idempotent: bool,
     pub field_authority: FieldAuthority,
 }
 
@@ -28,12 +29,12 @@ pub struct UpdateFieldWithFieldAuthorityV2 {
     pub value: String,
 }
 
-// #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
-// #[discriminator_hash_input("field_authority_interface:remove_field_authority_v2")]
-// pub struct RemoveFieldAuthorityV2 {
-//     pub field: Field,
-//     pub authority: Pubkey,
-// }
+#[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
+#[discriminator_hash_input("field_authority_interface:remove_field_authority_v2")]
+pub struct RemoveFieldAuthorityV2 {
+    pub idempotent: bool,
+    pub field_authority: FieldAuthority,
+}
 
 /// Creates `InitializeFieldAuthorities` instruction
 pub fn initialize_field_authorities(
@@ -62,9 +63,12 @@ pub fn add_field_authority_v2(
     metadata: &Pubkey,
     update_authority: &Pubkey,
     field_authority: FieldAuthority,
+    idempotent: bool,
 ) -> Instruction {
-    let data =
-        FieldAuthorityInstruction::AddFieldAuthorityV2(AddFieldAuthorityV2 { field_authority });
+    let data = FieldAuthorityInstruction::AddFieldAuthorityV2(AddFieldAuthorityV2 {
+        field_authority,
+        idempotent,
+    });
 
     Instruction {
         program_id: *program_id,
@@ -99,25 +103,25 @@ pub fn update_field_with_field_authority_v2(
     }
 }
 
-// /// Creates `RemoveFieldAuthorityV2` instruction
-// pub fn remove_field_authority_v2(
-//     program_id: &Pubkey,
-//     update_authority: &Pubkey,
-//     field: Field,
-//     field_authority: &Pubkey,
-//     field_authorities: &Pubkey, // Can be the same as metadata
-// ) -> Instruction {
-//     let data = FieldAuthorityInstruction::RemoveFieldAuthorityV2(RemoveFieldAuthorityV2 {
-//         field,
-//         authority: *field_authority,
-//     });
+/// Creates `RemoveFieldAuthorityV2` instruction
+pub fn remove_field_authority_v2(
+    program_id: &Pubkey,
+    metadata: &Pubkey,
+    update_authority: &Pubkey,
+    field_authority: FieldAuthority,
+    idempotent: bool,
+) -> Instruction {
+    let data = FieldAuthorityInstruction::RemoveFieldAuthorityV2(RemoveFieldAuthorityV2 {
+        field_authority,
+        idempotent,
+    });
 
-//     Instruction {
-//         program_id: *program_id,
-//         accounts: vec![
-//             AccountMeta::new(*field_authorities, false),
-//             AccountMeta::new_readonly(*update_authority, true),
-//         ],
-//         data: data.pack(),
-//     }
-// }
+    Instruction {
+        program_id: *program_id,
+        accounts: vec![
+            AccountMeta::new_readonly(*metadata, false),
+            AccountMeta::new_readonly(*update_authority, true),
+        ],
+        data: data.pack(),
+    }
+}

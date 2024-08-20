@@ -2,7 +2,8 @@ use {
     crate::{
         field_to_seed_str,
         instructions_v2::{
-            AddFieldAuthorityV2, InitializeFieldAuthorities, UpdateFieldWithFieldAuthorityV2,
+            AddFieldAuthorityV2, InitializeFieldAuthorities, RemoveFieldAuthorityV2,
+            UpdateFieldWithFieldAuthorityV2,
         },
         FIELD_AUTHORITY_PDA_SEED,
     },
@@ -44,7 +45,7 @@ pub enum FieldAuthorityInstruction {
     UpdateFieldWithFieldAuthority(UpdateFieldWithFieldAuthority),
     UpdateFieldWithFieldAuthorityV2(UpdateFieldWithFieldAuthorityV2),
     RemoveFieldAuthority(RemoveFieldAuthority),
-    // RemoveFieldAuthorityV2(RemoveFieldAuthorityV2),
+    RemoveFieldAuthorityV2(RemoveFieldAuthorityV2),
 }
 
 impl FieldAuthorityInstruction {
@@ -78,10 +79,10 @@ impl FieldAuthorityInstruction {
                 let data = RemoveFieldAuthority::try_from_slice(rest)?;
                 Self::RemoveFieldAuthority(data)
             }
-            // RemoveFieldAuthorityV2::SPL_DISCRIMINATOR_SLICE => {
-            //     let data = RemoveFieldAuthorityV2::try_from_slice(rest)?;
-            //     Self::RemoveFieldAuthorityV2(data)
-            // }
+            RemoveFieldAuthorityV2::SPL_DISCRIMINATOR_SLICE => {
+                let data = RemoveFieldAuthorityV2::try_from_slice(rest)?;
+                Self::RemoveFieldAuthorityV2(data)
+            }
             _ => return Err(ProgramError::InvalidInstructionData),
         })
     }
@@ -112,10 +113,11 @@ impl FieldAuthorityInstruction {
             Self::RemoveFieldAuthority(data) => {
                 buf.extend_from_slice(RemoveFieldAuthority::SPL_DISCRIMINATOR_SLICE);
                 buf.append(&mut borsh::to_vec(data).unwrap());
-            } // Self::RemoveFieldAuthorityV2(data) => {
-              //     buf.extend_from_slice(RemoveFieldAuthorityV2::SPL_DISCRIMINATOR_SLICE);
-              //     buf.append(&mut borsh::to_vec(data).unwrap());
-              // }
+            }
+            Self::RemoveFieldAuthorityV2(data) => {
+                buf.extend_from_slice(RemoveFieldAuthorityV2::SPL_DISCRIMINATOR_SLICE);
+                buf.append(&mut borsh::to_vec(data).unwrap());
+            }
         };
         buf
     }
