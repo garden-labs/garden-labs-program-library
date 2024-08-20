@@ -19,6 +19,8 @@ import {
   getAccountMetadata,
   randomStr,
   updateField,
+  getEnsureRentMinTx,
+  calculateMinRent,
 } from "../../util/js/helpers";
 import { CONNECTION } from "../../util/js/config";
 import {
@@ -27,6 +29,7 @@ import {
   FieldAuthorities,
   getFieldAuthorities,
   createUpdateFieldWithFieldAuthorityV2Ix,
+  createAddFieldAuthorityV2Ix,
 } from "../../field-authority-interface/js";
 
 describe("Advanced Token Metadata Program V2", () => {
@@ -221,9 +224,48 @@ describe("Advanced Token Metadata Program V2", () => {
   });
 
   it("Add field authority", async () => {
-    // Add field authority
-    // Add lamports ix
+    const fieldAuthority: FieldAuthority = {
+      field: Field.Name,
+      authority: fieldAuthorityKpTwo.publicKey,
+    };
+    fieldAuthorities.authorities.push(fieldAuthority);
+
+    // Add field authority ix
+    const addFieldAuthIx = createAddFieldAuthorityV2Ix({
+      programId: ATM_PROGRAM_ID,
+      metadata: metadataKeypair.publicKey,
+      updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
+      fieldAuthority,
+    });
+    const tx = new Transaction().add(addFieldAuthIx);
+
+    // Add rent ix
+    const minRent = await calculateMinRent(
+      CONNECTION,
+      metadataVals,
+      fieldAuthorities
+    );
+    const minRentIx = await getEnsureRentMinTx(
+      CONNECTION,
+      ANCHOR_WALLET_KEYPAIR.publicKey,
+      metadataKeypair.publicKey,
+      minRent
+    );
+    if (minRentIx) {
+      tx.add(minRentIx);
+    }
+
+    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+
+    // Check field authorities
+    const accountFieldAuthorities = await getFieldAuthorities(
+      CONNECTION,
+      metadataKeypair.publicKey
+    );
+    assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
   });
+
+  // TODO: Add field authority fails with non update authority
 
   // TODO: Test with new field authority
 

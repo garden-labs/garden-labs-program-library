@@ -1,3 +1,5 @@
+// TODO: Begin adding things like Connection to params, make this a library
+
 /* eslint-disable @typescript-eslint/ban-types */
 
 import "dotenv/config";
@@ -7,12 +9,14 @@ import assert from "assert";
 
 import {
   Transaction,
+  TransactionInstruction,
   sendAndConfirmTransaction,
   PublicKey,
   SystemProgram,
   Keypair,
   TransactionMessage,
   VersionedTransaction,
+  Connection,
 } from "@solana/web3.js";
 import {
   createMint,
@@ -58,7 +62,11 @@ export async function getAccountMetadata(
     throw new Error("Account not found");
   }
 
-  const tlv = new TlvState(accountInfo.data, 8, 4);
+  const tlv = new TlvState(
+    accountInfo.data,
+    TOKEN_METADATA_DISCRIMINATOR.length,
+    4 // length
+  );
   const buffer = tlv.firstBytes(TOKEN_METADATA_DISCRIMINATOR);
   if (!buffer) {
     throw new Error("Token metadata not found");
@@ -93,21 +101,70 @@ export async function getEmittedMetadata(
   return unpack(data);
 }
 
-// TODO: Perhaps remove adding future space beforehand and place that before
-// functions that require it.
+/**
+ * @returns null if min rent reached
+ */
+export async function getEnsureRentMinTx(
+  connection: Connection,
+  payer: PublicKey,
+  account: PublicKey,
+  minRent: number
+): Promise<TransactionInstruction | null> {
+  let currentRent = 0;
+  const accountInfo = await connection.getAccountInfo(account);
+  if (accountInfo) {
+    currentRent = accountInfo.lamports;
+  }
+
+  if (currentRent >= minRent) {
+    return null;
+  }
+
+  return SystemProgram.transfer({
+    fromPubkey: payer,
+    toPubkey: account,
+    lamports: minRent - currentRent,
+  });
+}
+
+export async function calculateMinRent(
+  connection: Connection,
+  metadata?: TokenMetadata,
+  fieldAuthorities?: FieldAuthorities
+): Promise<number> {
+  let space = 0;
+
+  if (metadata) {
+    space += TOKEN_METADATA_DISCRIMINATOR.length + 4 + pack(metadata).length;
+  }
+
+  if (fieldAuthorities) {
+    space +=
+      FIELD_AUTHORITIES_DISCRIMINATOR.length +
+      4 +
+      packFieldAuthorities(fieldAuthorities).length;
+  }
+
+  if (space === 0) {
+    return 0;
+  }
+
+  return connection.getMinimumBalanceForRentExemption(space);
+}
+
+// TODO #1: Remove adding the "future rent" and use the functions above directly
+// in the tests like `advanced-token-metadata-v2.ts`
+// TODO: #2: See if the functions above work for the initial alloc as well
 export async function createMetadataAccount(
   metadataKeypair: Keypair,
   metadataVals: TokenMetadata,
   additionalFieldKey: string,
   fieldAuthorities?: FieldAuthorities
 ): Promise<void> {
-  // TODO: Is this actually just length and the descriminator below counts for type?
-  // 2 bytes for type, 2 bytes for length, for TLV encoding
-  const tlSpace = 4;
+  // 4 bytes for length
+  const tlSpace = TOKEN_METADATA_DISCRIMINATOR.length + 4;
 
-  // Calculate space for metadata
-  const metadataSpace =
-    TOKEN_METADATA_DISCRIMINATOR.length + tlSpace + pack(metadataVals).length;
+  const metadataSpace = tlSpace + pack(metadataVals).length;
 
   // Calculate space for metadata with additional fields
   metadataVals.additionalMetadata.push([
@@ -115,14 +172,13 @@ export async function createMetadataAccount(
     additionalFieldKey,
     randomStr(10),
   ]);
-  const futureMetadataSpace =
-    TOKEN_METADATA_DISCRIMINATOR.length + tlSpace + pack(metadataVals).length;
+  const futureMetadataSpace = tlSpace + pack(metadataVals).length;
   metadataVals.additionalMetadata.pop();
 
   // Calculate space for field authorities
   const fieldAuthoritiesSpace = fieldAuthorities
     ? FIELD_AUTHORITIES_DISCRIMINATOR.length +
-      tlSpace +
+      4 +
       packFieldAuthorities(fieldAuthorities).length
     : 0;
 
@@ -235,20 +291,6 @@ export function fieldToAnchorParam(field: Field | string): AnchorFieldParam {
     // String
     default:
       return { key: [field] };
-  }
-}
-
-function fieldToObjKey(field: Field | string): string {
-  switch (field) {
-    case Field.Name:
-      return "name";
-    case Field.Symbol:
-      return "symbol";
-    case Field.Uri:
-      return "uri";
-    // String
-    default:
-      return field;
   }
 }
 
