@@ -5,6 +5,8 @@ import {
   SendTransactionError,
   Transaction,
   sendAndConfirmTransaction,
+  SystemProgram,
+  LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
 import {
   TokenMetadata,
@@ -69,6 +71,17 @@ describe("Advanced Token Metadata Program V2", () => {
       additionalFieldKey,
       fieldAuthorities
     );
+  });
+
+  it("Add some lamports to field authority one", async () => {
+    const ix = SystemProgram.transfer({
+      fromPubkey: ANCHOR_WALLET_KEYPAIR.publicKey,
+      toPubkey: fieldAuthorityKpOne.publicKey,
+      lamports: 0.2 * LAMPORTS_PER_SOL,
+    });
+    await sendAndConfirmTransaction(CONNECTION, new Transaction().add(ix), [
+      ANCHOR_WALLET_KEYPAIR,
+    ]);
   });
 
   it("Update field with update authority (regular)", async () => {
@@ -138,7 +151,7 @@ describe("Advanced Token Metadata Program V2", () => {
     field: Field | string,
     val: string,
     fa: Keypair = fieldAuthorityKpOne,
-    signers: Keypair[] = [ANCHOR_WALLET_KEYPAIR, fa]
+    signer: Keypair = fa
   ): Promise<void> {
     const ix = createUpdateFieldWithFieldAuthorityV2Ix({
       programId: ATM_PROGRAM_ID,
@@ -150,7 +163,7 @@ describe("Advanced Token Metadata Program V2", () => {
 
     const tx = new Transaction().add(ix);
 
-    await sendAndConfirmTransaction(CONNECTION, tx, signers);
+    await sendAndConfirmTransaction(CONNECTION, tx, [signer]);
 
     const vals = updateField(metadataVals, field, val);
 
@@ -196,6 +209,7 @@ describe("Advanced Token Metadata Program V2", () => {
     await updateFieldWithFieldAuthorityTest(
       additionalFieldKey,
       val,
+      ANCHOR_WALLET_KEYPAIR,
       ANCHOR_WALLET_KEYPAIR
     );
   });
@@ -203,9 +217,12 @@ describe("Advanced Token Metadata Program V2", () => {
   it("Update field with non-signer fails", async () => {
     const val = randomStr(10);
     try {
-      await updateFieldWithFieldAuthorityTest(Field.Name, val, undefined, [
-        ANCHOR_WALLET_KEYPAIR,
-      ]);
+      await updateFieldWithFieldAuthorityTest(
+        Field.Name,
+        val,
+        undefined,
+        ANCHOR_WALLET_KEYPAIR
+      );
       throw new Error("Should have thrown");
     } catch (err) {
       // Better error parsing is coming with the new @solana/web3.js
@@ -223,13 +240,10 @@ describe("Advanced Token Metadata Program V2", () => {
     }
   });
 
-  it("Add field authority", async () => {
-    const fieldAuthority: FieldAuthority = {
-      field: Field.Name,
-      authority: fieldAuthorityKpTwo.publicKey,
-    };
-    fieldAuthorities.authorities.push(fieldAuthority);
-
+  async function addFieldAuthorityTest(
+    fieldAuthority: FieldAuthority,
+    signer: Keypair = ANCHOR_WALLET_KEYPAIR
+  ): Promise<void> {
     // Add field authority ix
     const addFieldAuthIx = createAddFieldAuthorityV2Ix({
       programId: ATM_PROGRAM_ID,
@@ -239,11 +253,16 @@ describe("Advanced Token Metadata Program V2", () => {
     });
     const tx = new Transaction().add(addFieldAuthIx);
 
+    // Check field authorities
+    const newFieldAuthorities = {
+      authorities: [...fieldAuthorities.authorities, fieldAuthority],
+    };
+
     // Add rent ix
     const minRent = await calculateMinRent(
       CONNECTION,
       metadataVals,
-      fieldAuthorities
+      newFieldAuthorities
     );
     const minRentIx = await getEnsureRentMinTx(
       CONNECTION,
@@ -255,17 +274,50 @@ describe("Advanced Token Metadata Program V2", () => {
       tx.add(minRentIx);
     }
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    await sendAndConfirmTransaction(CONNECTION, tx, [signer]);
 
     // Check field authorities
     const accountFieldAuthorities = await getFieldAuthorities(
       CONNECTION,
       metadataKeypair.publicKey
     );
-    assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
+    assert.deepStrictEqual(accountFieldAuthorities, newFieldAuthorities);
+
+    // Update if succeeded
+    fieldAuthorities.authorities.push(fieldAuthority);
+  }
+
+  it("Add field authority v2 fails with non update authority", async () => {
+    const fieldAuthority: FieldAuthority = {
+      field: Field.Name,
+      authority: fieldAuthorityKpTwo.publicKey,
+    };
+    try {
+      await addFieldAuthorityTest(fieldAuthority, fieldAuthorityKpOne);
+      throw new Error("Should have thrown");
+    } catch (err) {
+      // Better error parsing is coming with the new @solana/web3.js
+      // https://github.com/solana-labs/solana-web3.js/issues/2019
+
+      // SendTransactionError doens't work here, probably caught in JS
+      if (
+        !(
+          err instanceof Error &&
+          err.message.includes("Signature verification failed.")
+        )
+      ) {
+        throw err;
+      }
+    }
   });
 
-  // TODO: Add field authority fails with non update authority
+  it("Add field authority v2", async () => {
+    const fieldAuthority: FieldAuthority = {
+      field: Field.Name,
+      authority: fieldAuthorityKpTwo.publicKey,
+    };
+    await addFieldAuthorityTest(fieldAuthority);
+  });
 
   // TODO: Test with new field authority
 
