@@ -32,6 +32,7 @@ import {
   getFieldAuthorities,
   createUpdateFieldWithFieldAuthorityV2Ix,
   createAddFieldAuthorityV2Ix,
+  createRemoveFieldAuthorityV2Ix,
 } from "../../field-authority-interface/js";
 
 describe("Advanced Token Metadata Program V2", () => {
@@ -250,12 +251,10 @@ describe("Advanced Token Metadata Program V2", () => {
     });
     const tx = new Transaction().add(addFieldAuthIx);
 
-    // Check field authorities
+    // Add rent ix
     const newFieldAuthorities = {
       authorities: [...fieldAuthorities.authorities, fieldAuthority],
     };
-
-    // Add rent ix
     const minRent = await calculateMinRent(
       CONNECTION,
       metadataVals,
@@ -331,9 +330,60 @@ describe("Advanced Token Metadata Program V2", () => {
     await updateFieldWithFieldAuthorityTest(Field.Name, val);
   });
 
-  // TODO: Remove field authority
+  async function removeFieldAuthorityTest(
+    fieldAuthority: FieldAuthority,
+    signer: Keypair = ANCHOR_WALLET_KEYPAIR
+  ): Promise<void> {
+    // Add field authority ix
+    const removeFieldAuthIx = createRemoveFieldAuthorityV2Ix({
+      programId: ATM_PROGRAM_ID,
+      metadata: metadataKeypair.publicKey,
+      updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
+      fieldAuthority,
+      idempotent: true,
+    });
+    const tx = new Transaction().add(removeFieldAuthIx);
 
-  // TODO: Test removed field authority
+    await sendAndConfirmTransaction(CONNECTION, tx, [signer]);
+
+    // Check field authorities
+    const newAuthorities = fieldAuthorities.authorities.filter(
+      (fa) =>
+        fa.field !== fieldAuthority.field ||
+        fa.authority !== fieldAuthority.authority
+    );
+    const newFieldAuthorities = {
+      authorities: newAuthorities,
+    };
+
+    const accountFieldAuthorities = await getFieldAuthorities(
+      CONNECTION,
+      metadataKeypair.publicKey
+    );
+    assert.deepStrictEqual(accountFieldAuthorities, newFieldAuthorities);
+
+    // Update if succeeded
+    fieldAuthorities.authorities.push(fieldAuthority);
+  }
+
+  it("Remove field authority v2", async () => {
+    await removeFieldAuthorityTest(fieldAuthorities.authorities[0]);
+  });
+
+  it("Update field with removed field authority fails", async () => {
+    const val = randomStr(10);
+
+    try {
+      await updateFieldWithFieldAuthorityTest(Field.Name, val);
+      throw new Error("Should have thrown");
+    } catch (err) {
+      // Better error parsing is coming with the new @solana/web3.js
+      // https://github.com/solana-labs/solana-web3.js/issues/2019
+      assert(err instanceof SendTransactionError);
+    }
+  });
+
+  // TODO: Remove field authority with non-update authority fails
 
   // TODO: Test re-adding, re-removing, with and without indempotent
 });

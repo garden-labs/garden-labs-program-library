@@ -129,3 +129,41 @@ export function createUpdateFieldWithFieldAuthorityV2Ix(
     ),
   });
 }
+
+export interface RemoveFieldAuthorityV2Args {
+  programId: PublicKey;
+  metadata: PublicKey;
+  updateAuthority: PublicKey;
+  fieldAuthority: FieldAuthority;
+  idempotent: boolean;
+}
+
+export function createRemoveFieldAuthorityV2Ix(
+  args: RemoveFieldAuthorityV2Args
+): TransactionInstruction {
+  const { programId, metadata, updateAuthority, fieldAuthority, idempotent } =
+    args;
+
+  return new TransactionInstruction({
+    programId,
+    keys: [
+      { isSigner: false, isWritable: true, pubkey: metadata },
+      { isSigner: true, isWritable: false, pubkey: updateAuthority },
+    ],
+    data: Buffer.from(
+      getInstructionEncoder(
+        splDiscriminate("field_authority_interface:remove_field_authority_v2"),
+        getStructEncoder([
+          ["idempotent", getBooleanEncoder()],
+          ["field_authority", fieldAuthorityCodec],
+        ])
+      ).encode({
+        idempotent,
+        field_authority: {
+          field: getFieldConfig(fieldAuthority.field),
+          authority: fieldAuthority.authority.toBuffer(),
+        },
+      })
+    ),
+  });
+}
