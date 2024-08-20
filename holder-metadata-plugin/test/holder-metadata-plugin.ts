@@ -24,7 +24,7 @@ import {
   getEmittedMetadata,
   randomStr,
   setupMintMetadataToken,
-  toAnchorParam,
+  fieldToAnchorParam,
 } from "../../util/js/helpers";
 import { CONNECTION, setPayer } from "../../util/js/config";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
@@ -116,7 +116,7 @@ describe("Holder Metadata Plugin", () => {
       workspace.HolderMetadataPlugin
     );
 
-    const param = toAnchorParam(Field.Name);
+    const param = fieldToAnchorParam(Field.Name);
 
     const [fieldPda] = PublicKey.findProgramAddressSync(
       [

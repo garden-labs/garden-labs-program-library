@@ -37,6 +37,7 @@ import {
   pack as packFieldAuthorities,
   FIELD_AUTHORITIES_DISCRIMINATOR,
 } from "../../field-authority-interface/js";
+import { token } from "@coral-xyz/anchor/dist/cjs/utils";
 
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {
@@ -224,7 +225,7 @@ type AnchorFieldParam =
   | { uri: {} }
   | { key: [string] };
 
-export function toAnchorParam(field: Field | string): AnchorFieldParam {
+export function fieldToAnchorParam(field: Field | string): AnchorFieldParam {
   switch (field) {
     case Field.Name:
       return { name: {} };
@@ -236,4 +237,43 @@ export function toAnchorParam(field: Field | string): AnchorFieldParam {
     default:
       return { key: [field] };
   }
+}
+
+function fieldToObjKey(field: Field | string): string {
+  switch (field) {
+    case Field.Name:
+      return "name";
+    case Field.Symbol:
+      return "symbol";
+    case Field.Uri:
+      return "uri";
+    // String
+    default:
+      return field;
+  }
+}
+
+export function updateField(
+  tokenMetadata: TokenMetadata,
+  field: Field | string,
+  val: string
+): TokenMetadata {
+  switch (field) {
+    case Field.Name:
+      return { ...tokenMetadata, name: val };
+    case Field.Symbol:
+      return { ...tokenMetadata, symbol: val };
+    case Field.Uri:
+      return { ...tokenMetadata, uri: val };
+    // String
+    default:
+      break;
+  }
+  const filtered = tokenMetadata.additionalMetadata.filter(
+    ([key]) => key !== field
+  );
+  return {
+    ...tokenMetadata,
+    additionalMetadata: [...filtered, [field, val]],
+  };
 }

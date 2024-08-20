@@ -27,7 +27,7 @@ import { VendingMachine } from "../../target/types/vending_machine";
 import {
   randomStr,
   getEmittedMetadata,
-  toAnchorParam,
+  fieldToAnchorParam,
 } from "../../util/js/helpers";
 import { interpretTxErr } from "../../util/js/tx";
 import {
@@ -461,7 +461,7 @@ describe("Vending Machine", () => {
     const mint = mints[index - 1];
     const metadata = metadatas[index - 1];
 
-    const param = toAnchorParam(holderFieldKey);
+    const param = fieldToAnchorParam(holderFieldKey);
     const newHolderFieldVal = randomStr(200);
 
     const [fieldPda] = PublicKey.findProgramAddressSync(

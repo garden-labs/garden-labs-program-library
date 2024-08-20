@@ -24,7 +24,7 @@ import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 import {
   getEmittedMetadata,
   randomStr,
-  toAnchorParam,
+  fieldToAnchorParam,
 } from "../../util/js/helpers";
 import { CONNECTION, setPayer } from "../../util/js/config";
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
@@ -331,7 +331,7 @@ describe("AI Aliens Program", () => {
     );
 
     const field = NICKNAME_FIELD_KEY;
-    const param = toAnchorParam(field);
+    const param = fieldToAnchorParam(field);
 
     const mint = mints[index - 1];
     const metadata = metadatas[index - 1];
@@ -384,7 +384,7 @@ describe("AI Aliens Program", () => {
       workspace.AiAliens
     );
 
-    const fieldParam = toAnchorParam(Field.Uri);
+    const fieldParam = fieldToAnchorParam(Field.Uri);
     const metadata = metadatas[index - 1];
 
     await program.methods

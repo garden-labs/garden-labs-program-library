@@ -16,6 +16,8 @@ import {
   getEmittedMetadata,
   setupMintMetadataToken,
   getAccountMetadata,
+  randomStr,
+  updateField,
 } from "../../util/js/helpers";
 import { CONNECTION } from "../../util/js/config";
 import {
@@ -38,7 +40,7 @@ describe("Advanced Token Metadata Program V2", () => {
     mint: mintKeypair.publicKey,
     additionalMetadata: [],
   };
-  const additionalFieldKey = "additional field key";
+  const additionalFieldKey = randomStr(10);
 
   const fieldAuthorityKpOne = Keypair.generate();
   const fieldAuthorityOne: FieldAuthority = {
@@ -66,7 +68,7 @@ describe("Advanced Token Metadata Program V2", () => {
   });
 
   it("Update field with update authority (regular)", async () => {
-    const val = "new name";
+    const val = randomStr(20);
 
     const ix = createUpdateFieldInstruction({
       programId: ATM_PROGRAM_ID,
@@ -80,8 +82,9 @@ describe("Advanced Token Metadata Program V2", () => {
 
     await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
 
+    const vals = updateField(metadataVals, Field.Name, val);
+
     // Check emmitted metadata
-    const vals: TokenMetadata = { ...metadataVals, name: val };
     const emittedMetadata = await getEmittedMetadata(
       ATM_PROGRAM_ID,
       metadataKeypair.publicKey
@@ -147,7 +150,7 @@ describe("Advanced Token Metadata Program V2", () => {
       fa,
     ]);
 
-    const vals: TokenMetadata = { ...metadataVals, name: val };
+    const vals = updateField(metadataVals, field, val);
 
     // Check emmitted metadata
     const emittedMetadata = await getEmittedMetadata(
@@ -165,7 +168,7 @@ describe("Advanced Token Metadata Program V2", () => {
   }
 
   it("Update field with incorrect field authority fails (v2)", async () => {
-    const val = "new name";
+    const val = randomStr(20);
 
     try {
       await updateFieldWithFieldAuthorityTest(
@@ -191,12 +194,12 @@ describe("Advanced Token Metadata Program V2", () => {
   });
 
   it("Update field with correct field authority (v2)", async () => {
-    const val = "new name";
+    const val = randomStr(20);
     await updateFieldWithFieldAuthorityTest(Field.Name, val);
   });
 
   it("Update additional field with correct field authority (v2)", async () => {
-    const val = "new name";
+    const val = randomStr(20);
     await updateFieldWithFieldAuthorityTest(
       additionalFieldKey,
       val,
