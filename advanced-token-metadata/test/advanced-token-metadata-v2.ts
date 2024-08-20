@@ -1,33 +1,27 @@
 import assert from "assert";
 
 import {
-  PublicKey,
   Keypair,
   Transaction,
   sendAndConfirmTransaction,
-  SendTransactionError,
 } from "@solana/web3.js";
 import {
   TokenMetadata,
   Field,
   createUpdateFieldInstruction,
-  pack,
 } from "@solana/spl-token-metadata";
 
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
 import {
   getEmittedMetadata,
-  randomStr,
   setupMintMetadataToken,
   getAccountMetadata,
 } from "../../util/js/helpers";
 import { CONNECTION } from "../../util/js/config";
 import {
   createInitializeFieldAuthoritiesV2Ix,
-  FIELD_AUTHORITIES_DISCRIMINATOR,
   FieldAuthority,
   FieldAuthorities,
-  pack as packFieldAuthorities,
 } from "../../field-authority-interface/js";
 
 describe("Advanced Token Metadata Program V2", () => {
@@ -61,13 +55,6 @@ describe("Advanced Token Metadata Program V2", () => {
       additionalFieldKey,
       fieldAuthorities
     );
-
-    // Check emmitted metadata
-    const emittedMetadata = await getEmittedMetadata(
-      ATM_PROGRAM_ID,
-      metadataKeypair.publicKey
-    );
-    assert.deepStrictEqual(emittedMetadata, metadataVals);
   });
 
   it("Update field with update authority (regular)", async () => {
@@ -93,6 +80,10 @@ describe("Advanced Token Metadata Program V2", () => {
     );
     assert.deepStrictEqual(emittedMetadata, vals);
 
+    // Check account metadata
+    const accountMetadata = await getAccountMetadata(metadataKeypair.publicKey);
+    assert.deepStrictEqual(accountMetadata, vals);
+
     // Update if succeeded
     metadataVals = vals;
   });
@@ -117,8 +108,8 @@ describe("Advanced Token Metadata Program V2", () => {
     assert.deepStrictEqual(emittedMetadata, metadataVals);
 
     // Check account metadata
-    const parsedMetadata = await getAccountMetadata(metadataKeypair.publicKey);
-    assert.deepStrictEqual(parsedMetadata, metadataVals);
+    const accountMetadata = await getAccountMetadata(metadataKeypair.publicKey);
+    assert.deepStrictEqual(accountMetadata, metadataVals);
 
     // TODO: Check field authorities
   });

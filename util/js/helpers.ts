@@ -28,6 +28,7 @@ import {
   createInitializeInstruction,
   Field,
 } from "@solana/spl-token-metadata";
+import { TlvState } from "@solana/spl-type-length-value";
 
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "./constants";
 import { CONNECTION } from "./config";
@@ -37,11 +38,17 @@ import {
   FIELD_AUTHORITIES_DISCRIMINATOR,
 } from "../../field-authority-interface/js";
 
+export function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 export function randomStr(numChars: number): string {
   return crypto.randomBytes(numChars).toString("hex").slice(0, numChars);
 }
 
-// Alternative Method
+// Alternative Method (assumes tlv account)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function getAccountMetadata(
   metadataPubkey: PublicKey
@@ -50,12 +57,17 @@ export async function getAccountMetadata(
   if (!accountInfo) {
     throw new Error("Account not found");
   }
-  // From https://github.com/ZYJLiu/anchor-token-metadata/blob/f9114d9d14a0620d1a7cfd5806c82887a72dc5e3/tests/token-metadata.ts#L22
-  // Metadata starts with offset of 12 bytes
-  // 8 byte discriminator + 4 byte extra offset? (not sure)
-  return unpack(accountInfo.data.subarray(12));
+
+  const tlv = new TlvState(accountInfo.data, 8, 4);
+  const buffer = tlv.firstBytes(TOKEN_METADATA_DISCRIMINATOR);
+  if (!buffer) {
+    throw new Error("Token metadata not found");
+  }
+
+  return unpack(buffer);
 }
 
+// Primary Method (data structure agnostic, uses simulation)
 export async function getEmittedMetadata(
   programId: PublicKey,
   metadataPubkey: PublicKey
@@ -198,6 +210,10 @@ export async function setupMintMetadataToken(
     metadataKeypair.publicKey
   );
   assert.deepStrictEqual(emittedMetadata, metadataVals);
+
+  // Check account metadata
+  const accountMetadata = await getAccountMetadata(metadataKeypair.publicKey);
+  assert.deepStrictEqual(accountMetadata, metadataVals);
 
   return tokenAddress;
 }
