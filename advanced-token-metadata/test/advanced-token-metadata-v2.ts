@@ -151,7 +151,7 @@ describe("Advanced Token Metadata Program V2", () => {
     field: Field | string,
     val: string,
     fa: Keypair = fieldAuthorityKpOne,
-    signer: Keypair = fa
+    signers: Keypair[] = [fa]
   ): Promise<void> {
     const ix = createUpdateFieldWithFieldAuthorityV2Ix({
       programId: ATM_PROGRAM_ID,
@@ -163,7 +163,7 @@ describe("Advanced Token Metadata Program V2", () => {
 
     const tx = new Transaction().add(ix);
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [signer]);
+    await sendAndConfirmTransaction(CONNECTION, tx, signers);
 
     const vals = updateField(metadataVals, field, val);
 
@@ -209,7 +209,6 @@ describe("Advanced Token Metadata Program V2", () => {
     await updateFieldWithFieldAuthorityTest(
       additionalFieldKey,
       val,
-      ANCHOR_WALLET_KEYPAIR,
       ANCHOR_WALLET_KEYPAIR
     );
   });
@@ -217,12 +216,9 @@ describe("Advanced Token Metadata Program V2", () => {
   it("Update field with non-signer fails", async () => {
     const val = randomStr(10);
     try {
-      await updateFieldWithFieldAuthorityTest(
-        Field.Name,
-        val,
-        undefined,
-        ANCHOR_WALLET_KEYPAIR
-      );
+      await updateFieldWithFieldAuthorityTest(Field.Name, val, undefined, [
+        ANCHOR_WALLET_KEYPAIR,
+      ]);
       throw new Error("Should have thrown");
     } catch (err) {
       // Better error parsing is coming with the new @solana/web3.js
@@ -319,7 +315,20 @@ describe("Advanced Token Metadata Program V2", () => {
     await addFieldAuthorityTest(fieldAuthority);
   });
 
-  // TODO: Test with new field authority
+  it("Update field with new field authority", async () => {
+    const val = randomStr(10);
+    await updateFieldWithFieldAuthorityTest(
+      Field.Name,
+      val,
+      fieldAuthorityKpTwo,
+      [ANCHOR_WALLET_KEYPAIR, fieldAuthorityKpTwo]
+    );
+  });
+
+  it("Update field with old field authority", async () => {
+    const val = randomStr(10);
+    await updateFieldWithFieldAuthorityTest(Field.Name, val);
+  });
 
   // TODO: Remove field authority
 
