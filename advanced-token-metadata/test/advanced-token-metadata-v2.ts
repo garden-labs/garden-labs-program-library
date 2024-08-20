@@ -25,7 +25,6 @@ import {
   getFieldAuthorities,
   createUpdateFieldWithFieldAuthorityV2Ix,
 } from "../../field-authority-interface/js";
-import { AnchorError } from "@coral-xyz/anchor";
 
 describe("Advanced Token Metadata Program V2", () => {
   const mintKeypair = Keypair.generate();
@@ -41,18 +40,20 @@ describe("Advanced Token Metadata Program V2", () => {
   };
   const additionalFieldKey = "additional field key";
 
-  const fieldAuthorityKp = Keypair.generate();
+  const fieldAuthorityKpOne = Keypair.generate();
   const fieldAuthorityOne: FieldAuthority = {
     field: Field.Name,
-    authority: fieldAuthorityKp.publicKey,
+    authority: fieldAuthorityKpOne.publicKey,
   };
   const fieldAuthorityTwo: FieldAuthority = {
     field: additionalFieldKey,
-    authority: fieldAuthorityKp.publicKey,
+    authority: ANCHOR_WALLET_KEYPAIR.publicKey,
   };
   const fieldAuthorities: FieldAuthorities = {
     authorities: [fieldAuthorityOne, fieldAuthorityTwo],
   };
+
+  const fieldAuthorityKpTwo = Keypair.generate();
 
   it("Setup mint, metadata, and token", async () => {
     await setupMintMetadataToken(
@@ -126,22 +127,52 @@ describe("Advanced Token Metadata Program V2", () => {
     assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
   });
 
-  it("Update field with incorrect field authority fails (v2)", async () => {
-    const val = "new name";
-
+  async function updateFieldWithFieldAuthorityTest(
+    field: Field | string,
+    val: string,
+    fa: Keypair = fieldAuthorityKpOne
+  ): Promise<void> {
     const ix = createUpdateFieldWithFieldAuthorityV2Ix({
       programId: ATM_PROGRAM_ID,
       metadata: metadataKeypair.publicKey,
-      fieldAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
-      field: Field.Name,
+      fieldAuthority: fa.publicKey,
+      field,
       value: val,
     });
 
     const tx = new Transaction().add(ix);
 
+    await sendAndConfirmTransaction(CONNECTION, tx, [
+      ANCHOR_WALLET_KEYPAIR,
+      fa,
+    ]);
+
+    const vals: TokenMetadata = { ...metadataVals, name: val };
+
+    // Check emmitted metadata
+    const emittedMetadata = await getEmittedMetadata(
+      ATM_PROGRAM_ID,
+      metadataKeypair.publicKey
+    );
+    assert.deepStrictEqual(emittedMetadata, vals);
+
+    // Check account metadata
+    const accountMetadata = await getAccountMetadata(metadataKeypair.publicKey);
+    assert.deepStrictEqual(accountMetadata, metadataVals);
+
+    // Update if succeeded
+    metadataVals = vals;
+  }
+
+  it("Update field with incorrect field authority fails (v2)", async () => {
+    const val = "new name";
+
     try {
-      await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
-      throw new Error("Expected error to be thrown");
+      await updateFieldWithFieldAuthorityTest(
+        Field.Name,
+        val,
+        ANCHOR_WALLET_KEYPAIR
+      );
     } catch (err) {
       // Better error parsing is coming with the new @solana/web3.js: https://github.com/solana-labs/solana-web3.js/issues/2019
       // As of right now it's not easy to parse these errors, (see below).
@@ -161,36 +192,23 @@ describe("Advanced Token Metadata Program V2", () => {
 
   it("Update field with correct field authority (v2)", async () => {
     const val = "new name";
-
-    const ix = createUpdateFieldWithFieldAuthorityV2Ix({
-      programId: ATM_PROGRAM_ID,
-      metadata: metadataKeypair.publicKey,
-      fieldAuthority: fieldAuthorityKp.publicKey,
-      field: Field.Name,
-      value: val,
-    });
-
-    const tx = new Transaction().add(ix);
-
-    await sendAndConfirmTransaction(CONNECTION, tx, [
-      ANCHOR_WALLET_KEYPAIR,
-      fieldAuthorityKp,
-    ]);
-
-    const vals: TokenMetadata = { ...metadataVals, name: val };
-
-    // Check emmitted metadata
-    const emittedMetadata = await getEmittedMetadata(
-      ATM_PROGRAM_ID,
-      metadataKeypair.publicKey
-    );
-    assert.deepStrictEqual(emittedMetadata, vals);
-
-    // Check account metadata
-    const accountMetadata = await getAccountMetadata(metadataKeypair.publicKey);
-    assert.deepStrictEqual(accountMetadata, metadataVals);
-
-    // Update if succeeded
-    metadataVals = vals;
+    await updateFieldWithFieldAuthorityTest(Field.Name, val);
   });
+
+  it("Update additional field with correct field authority (v2)", async () => {
+    const val = "new name";
+    await updateFieldWithFieldAuthorityTest(
+      additionalFieldKey,
+      val,
+      ANCHOR_WALLET_KEYPAIR
+    );
+  });
+
+  // TODO: Add field authority
+
+  // TODO: Test with new field authority
+
+  // TODO: Remove field authority
+
+  // TODO: Test removed field authority
 });
