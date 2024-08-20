@@ -14,7 +14,12 @@ import {
 } from "@solana/codecs";
 
 import { getInstructionEncoder } from "./instructions";
-import { FieldAuthorities, fieldAuthoritiesCodec } from "./state-v2";
+import {
+  FieldAuthorities,
+  fieldAuthoritiesCodec,
+  FieldAuthority,
+  fieldAuthorityCodec,
+} from "./state-v2";
 
 export interface InitializeFieldAuthoritiesArgs {
   programId: PublicKey;
@@ -48,6 +53,38 @@ export function createInitializeFieldAuthoritiesIx(
         fieldAuthoritiesCodec
       ).encode({
         authorities: authoritiesConfig,
+      })
+    ),
+  });
+}
+
+export interface AddFieldAuthorityV2Args {
+  programId: PublicKey;
+  metadata: PublicKey;
+  updateAuthority: PublicKey;
+  fieldAuthority: FieldAuthority;
+}
+
+export function createAddFieldAuthorityV2Ix(
+  args: AddFieldAuthorityV2Args
+): TransactionInstruction {
+  const { programId, metadata, updateAuthority, fieldAuthority } = args;
+
+  return new TransactionInstruction({
+    programId,
+    keys: [
+      { isSigner: false, isWritable: true, pubkey: metadata },
+      { isSigner: true, isWritable: false, pubkey: updateAuthority },
+    ],
+    data: Buffer.from(
+      getInstructionEncoder(
+        splDiscriminate("field_authority_interface:add_field_authority_v2"),
+        getStructEncoder([["field_authority", fieldAuthorityCodec]])
+      ).encode({
+        field_authority: {
+          field: getFieldConfig(fieldAuthority.field),
+          authority: fieldAuthority.authority.toBuffer(),
+        },
       })
     ),
   });

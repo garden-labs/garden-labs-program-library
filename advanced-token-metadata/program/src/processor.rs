@@ -7,7 +7,8 @@ use {
             process_update_field_with_field_authority,
         },
         field_authority_v2::{
-            process_initialize_field_authorities, process_update_field_with_field_authority_v2,
+            process_add_field_authority_v2, process_initialize_field_authorities,
+            process_update_field_with_field_authority_v2,
         },
     },
     field_authority_interface::instructions::FieldAuthorityInstruction,
@@ -217,6 +218,10 @@ pub fn process(program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> P
             FieldAuthorityInstruction::AddFieldAuthority(data) => {
                 msg!("Instruction: AddFieldAuthority");
                 return process_add_field_authority(program_id, accounts, data);
+            }
+            FieldAuthorityInstruction::AddFieldAuthorityV2(data) => {
+                msg!("Instruction: AddFieldAuthorityV2");
+                return process_add_field_authority_v2(program_id, accounts, data);
             }
             FieldAuthorityInstruction::UpdateFieldWithFieldAuthority(data) => {
                 msg!("Instruction: UpdateFieldWithFieldAuthority");

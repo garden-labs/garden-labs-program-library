@@ -220,7 +220,10 @@ describe("Advanced Token Metadata Program V2", () => {
     }
   });
 
-  // TODO: Add field authority
+  it("Add field authority", async () => {
+    // Add field authority
+    // Add lamports ix
+  });
 
   // TODO: Test with new field authority
 

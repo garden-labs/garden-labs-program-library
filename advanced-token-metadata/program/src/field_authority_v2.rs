@@ -4,8 +4,10 @@ use {
     crate::field_authority::check_metadata_update_authority,
     field_authority_interface::{
         errors::FieldAuthorityError,
-        instructions_v2::{InitializeFieldAuthorities, UpdateFieldWithFieldAuthorityV2},
-        state::FieldAuthorities,
+        instructions_v2::{
+            AddFieldAuthorityV2, InitializeFieldAuthorities, UpdateFieldWithFieldAuthorityV2,
+        },
+        state::{FieldAuthorities, FieldAuthority},
     },
     solana_program::{
         account_info::{next_account_info, AccountInfo},
@@ -47,33 +49,34 @@ pub fn process_initialize_field_authorities(
     Ok(())
 }
 
-// /// Proccesses an AddFieldAuthorityV2 instruction
-// pub fn process_add_field_authority_v2(
-//     _program_id: &Pubkey,
-//     accounts: &[AccountInfo],
-//     data: AddFieldAuthorityV2,
-// ) -> ProgramResult {
-//     let account_info_iter = &mut accounts.iter();
-//     let metadata_info = next_account_info(account_info_iter)?;
-//     let update_authority_info = next_account_info(account_info_iter)?;
+/// Proccesses an AddFieldAuthorityV2 instruction
+pub fn process_add_field_authority_v2(
+    _program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    data: AddFieldAuthorityV2,
+) -> ProgramResult {
+    let account_info_iter = &mut accounts.iter();
+    let metadata_info = next_account_info(account_info_iter)?;
+    let update_authority_info = next_account_info(account_info_iter)?;
 
-//     check_metadata_update_authority(metadata_info, update_authority_info)?;
+    check_metadata_update_authority(metadata_info, update_authority_info)?;
 
-//     // Field authorities are stored in metadata account
-//     let mut field_authorities = {
-//         let buffer = metadata_info.try_borrow_data()?;
-//         let state = TlvStateBorrowed::unpack(&buffer)?;
-//         state.get_first_variable_len_value::<FieldAuthorities>()?
-//     };
+    // Field authorities are stored in metadata account
+    // Scope the data borrow like TokenMetadata because we may realloc later
+    let mut field_authorities = {
+        let buffer = metadata_info.try_borrow_data()?;
+        let state = TlvStateBorrowed::unpack(&buffer)?;
+        state.get_first_variable_len_value::<FieldAuthorities>()?
+    };
 
-//     // Add field authority
-//     field_authorities.add_field_authority(data.field, data.authority);
+    // Add field authority
+    field_authorities.add_field_authority(data.field_authority);
 
-//     // Update / realloc the account
-//     realloc_and_pack_first_variable_len(metadata_info, &field_authorities)?;
+    // Update / realloc the account
+    realloc_and_pack_first_variable_len(metadata_info, &field_authorities)?;
 
-//     Ok(())
-// }
+    Ok(())
+}
 
 /// Proccesses an UpdateFieldWithFieldAuthorityV2 instruction
 pub fn process_update_field_with_field_authority_v2(
@@ -91,9 +94,11 @@ pub fn process_update_field_with_field_authority_v2(
         let state = TlvStateBorrowed::unpack(&buffer)?;
         state.get_first_variable_len_value::<FieldAuthorities>()?
     };
-    if !field_authorities
-        .contains_field_authority(data.field.clone(), field_authority_info.key.clone())
-    {
+    let field_authority = FieldAuthority {
+        field: data.field.clone(),
+        authority: field_authority_info.key.clone(),
+    };
+    if !field_authorities.contains_field_authority(field_authority) {
         return Err(FieldAuthorityError::IncorrectFieldAuthority.into());
     }
     if !field_authority_info.is_signer {

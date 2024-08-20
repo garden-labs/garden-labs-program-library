@@ -15,12 +15,11 @@ pub struct InitializeFieldAuthorities {
     pub authorities: Vec<FieldAuthority>,
 }
 
-// #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
-// #[discriminator_hash_input("field_authority_interface:add_field_authority_v2")]
-// pub struct AddFieldAuthorityV2 {
-//     pub field: Field,
-//     pub authority: Pubkey,
-// }
+#[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
+#[discriminator_hash_input("field_authority_interface:add_field_authority_v2")]
+pub struct AddFieldAuthorityV2 {
+    pub field_authority: FieldAuthority,
+}
 
 #[derive(Clone, Debug, PartialEq, BorshSerialize, BorshDeserialize, SplDiscriminate)]
 #[discriminator_hash_input("field_authority_interface:update_field_with_field_authority_v2")]
@@ -57,28 +56,25 @@ pub fn initialize_field_authorities(
     }
 }
 
-// /// Creates `AddFieldAuthorityV2` instruction
-// pub fn add_field_authority_v2(
-//     program_id: &Pubkey,
-//     metadata: &Pubkey,
-//     update_authority: &Pubkey,
-//     field: Field,
-//     field_authority: &Pubkey,
-// ) -> Instruction {
-//     let data = FieldAuthorityInstruction::AddFieldAuthorityV2(AddFieldAuthorityV2 {
-//         field,
-//         authority: *field_authority,
-//     });
+/// Creates `AddFieldAuthorityV2` instruction
+pub fn add_field_authority_v2(
+    program_id: &Pubkey,
+    metadata: &Pubkey,
+    update_authority: &Pubkey,
+    field_authority: FieldAuthority,
+) -> Instruction {
+    let data =
+        FieldAuthorityInstruction::AddFieldAuthorityV2(AddFieldAuthorityV2 { field_authority });
 
-//     Instruction {
-//         program_id: *program_id,
-//         accounts: vec![
-//             AccountMeta::new_readonly(*metadata, false),
-//             AccountMeta::new_readonly(*update_authority, true),
-//         ],
-//         data: data.pack(),
-//     }
-// }
+    Instruction {
+        program_id: *program_id,
+        accounts: vec![
+            AccountMeta::new_readonly(*metadata, false),
+            AccountMeta::new_readonly(*update_authority, true),
+        ],
+        data: data.pack(),
+    }
+}
 
 //  NOTE: Same accounts as token metadata update field – perhaps could be combined
 /// Creates `UpdateFieldWithFieldAuthorityV2` instruction

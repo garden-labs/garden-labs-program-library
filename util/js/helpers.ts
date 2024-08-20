@@ -37,7 +37,6 @@ import {
   pack as packFieldAuthorities,
   FIELD_AUTHORITIES_DISCRIMINATOR,
 } from "../../field-authority-interface/js";
-import { token } from "@coral-xyz/anchor/dist/cjs/utils";
 
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => {

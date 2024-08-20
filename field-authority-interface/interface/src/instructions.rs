@@ -1,7 +1,9 @@
 use {
     crate::{
         field_to_seed_str,
-        instructions_v2::{InitializeFieldAuthorities, UpdateFieldWithFieldAuthorityV2},
+        instructions_v2::{
+            AddFieldAuthorityV2, InitializeFieldAuthorities, UpdateFieldWithFieldAuthorityV2,
+        },
         FIELD_AUTHORITY_PDA_SEED,
     },
     borsh::{BorshDeserialize, BorshSerialize},
@@ -38,7 +40,7 @@ pub struct RemoveFieldAuthority {
 pub enum FieldAuthorityInstruction {
     InitializeFieldAuthorities(InitializeFieldAuthorities),
     AddFieldAuthority(AddFieldAuthority),
-    // AddFieldAuthorityV2(AddFieldAuthorityV2),
+    AddFieldAuthorityV2(AddFieldAuthorityV2),
     UpdateFieldWithFieldAuthority(UpdateFieldWithFieldAuthority),
     UpdateFieldWithFieldAuthorityV2(UpdateFieldWithFieldAuthorityV2),
     RemoveFieldAuthority(RemoveFieldAuthority),
@@ -60,10 +62,10 @@ impl FieldAuthorityInstruction {
                 let data = AddFieldAuthority::try_from_slice(rest)?;
                 Self::AddFieldAuthority(data)
             }
-            // AddFieldAuthorityV2::SPL_DISCRIMINATOR_SLICE => {
-            //     let data = AddFieldAuthorityV2::try_from_slice(rest)?;
-            //     Self::AddFieldAuthorityV2(data)
-            // }
+            AddFieldAuthorityV2::SPL_DISCRIMINATOR_SLICE => {
+                let data = AddFieldAuthorityV2::try_from_slice(rest)?;
+                Self::AddFieldAuthorityV2(data)
+            }
             UpdateFieldWithFieldAuthority::SPL_DISCRIMINATOR_SLICE => {
                 let data = UpdateFieldWithFieldAuthority::try_from_slice(rest)?;
                 Self::UpdateFieldWithFieldAuthority(data)
@@ -95,10 +97,10 @@ impl FieldAuthorityInstruction {
                 buf.extend_from_slice(AddFieldAuthority::SPL_DISCRIMINATOR_SLICE);
                 buf.append(&mut borsh::to_vec(data).unwrap());
             }
-            // Self::AddFieldAuthorityV2(data) => {
-            //     buf.extend_from_slice(AddFieldAuthorityV2::SPL_DISCRIMINATOR_SLICE);
-            //     buf.append(&mut borsh::to_vec(data).unwrap());
-            // }
+            Self::AddFieldAuthorityV2(data) => {
+                buf.extend_from_slice(AddFieldAuthorityV2::SPL_DISCRIMINATOR_SLICE);
+                buf.append(&mut borsh::to_vec(data).unwrap());
+            }
             Self::UpdateFieldWithFieldAuthority(data) => {
                 buf.extend_from_slice(UpdateFieldWithFieldAuthority::SPL_DISCRIMINATOR_SLICE);
                 buf.append(&mut borsh::to_vec(data).unwrap());

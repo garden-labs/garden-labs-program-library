@@ -9,7 +9,7 @@ use {
     spl_token_metadata_interface::state::Field,
     spl_type_length_value::{
         // TlvState needs to be imported for get_base_len() method
-        state::{TlvState, TlvStateBorrowed},
+        state::TlvState,
         variable_len_pack::VariableLenPack,
     },
 };
@@ -39,20 +39,20 @@ impl VariableLenPack for FieldAuthorities {
     }
 }
 impl FieldAuthorities {
-    /// Adds field authority pair. Exits early if already found.
-    pub fn add_field_authority(&mut self, field: Field, authority: Pubkey) {
+    /// Adds a field authority. Exits early if already found.
+    pub fn add_field_authority(&mut self, field_authority: FieldAuthority) {
         for fa in &self.authorities {
-            if fa.field == field && fa.authority == authority {
+            if fa.field == field_authority.field && fa.authority == field_authority.authority {
                 return; // Exit early if a match is found
             }
         }
-        self.authorities.push(FieldAuthority { field, authority });
+        self.authorities.push(field_authority);
     }
 
     /// Checks if a field authority pair exists. Returns true if found.
-    pub fn contains_field_authority(&self, field: Field, authority: Pubkey) -> bool {
+    pub fn contains_field_authority(&self, field_authority: FieldAuthority) -> bool {
         for fa in &self.authorities {
-            if fa.field == field && fa.authority == authority {
+            if fa.field == field_authority.field && fa.authority == field_authority.authority {
                 return true;
             }
         }
@@ -60,10 +60,11 @@ impl FieldAuthorities {
     }
 
     /// Removes the field authority pair. Returns true if the pair was found.
-    pub fn remove_field_authority(&mut self, field: Field, authority: Pubkey) -> bool {
+    pub fn remove_field_authority(&mut self, field_authority: FieldAuthority) -> bool {
         let mut found = false;
         self.authorities.retain(|fa| {
-            let should_retain = !(fa.field == field && fa.authority == authority);
+            let should_retain =
+                !(fa.field == field_authority.field && fa.authority == field_authority.authority);
             if !should_retain {
                 found = true;
             }
