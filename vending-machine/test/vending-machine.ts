@@ -132,6 +132,7 @@ describe("Vending Machine", () => {
         })
         .signers([vendingMachineData, colMint])
         .rpc();
+      throw new Error("Expected error to be thrown");
     } catch (err) {
       if (
         !(
@@ -170,6 +171,7 @@ describe("Vending Machine", () => {
         })
         .signers([vendingMachineData, colMint])
         .rpc();
+      throw new Error("Expected error to be thrown");
     } catch (err) {
       if (
         !(
@@ -208,6 +210,7 @@ describe("Vending Machine", () => {
         })
         .signers([vendingMachineData, colMint])
         .rpc();
+      throw new Error("Expected error to be thrown");
     } catch (err) {
       if (
         !(
@@ -440,6 +443,7 @@ describe("Vending Machine", () => {
         })
         .signers([mint, metadata])
         .rpc();
+      throw new Error("Expected error to be thrown");
     } catch (err) {
       const interpretedTxErr = interpretTxErr(err);
       assert.equal(interpretedTxErr.type, "AllocateAccountAlreadyInUse");

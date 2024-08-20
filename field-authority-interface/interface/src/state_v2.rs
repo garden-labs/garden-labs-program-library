@@ -49,6 +49,16 @@ impl FieldAuthorities {
         self.authorities.push(FieldAuthority { field, authority });
     }
 
+    /// Checks if a field authority pair exists. Returns true if found.
+    pub fn contains_field_authority(&self, field: Field, authority: Pubkey) -> bool {
+        for fa in &self.authorities {
+            if fa.field == field && fa.authority == authority {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /// Removes the field authority pair. Returns true if the pair was found.
     pub fn remove_field_authority(&mut self, field: Field, authority: Pubkey) -> bool {
         let mut found = false;

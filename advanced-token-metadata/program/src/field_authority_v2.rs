@@ -3,14 +3,19 @@
 use {
     crate::field_authority::check_metadata_update_authority,
     field_authority_interface::{
-        instructions_v2::InitializeFieldAuthorities, state::FieldAuthorities,
+        errors::FieldAuthorityError,
+        instructions_v2::{InitializeFieldAuthorities, UpdateFieldWithFieldAuthorityV2},
+        state::FieldAuthorities,
     },
     solana_program::{
         account_info::{next_account_info, AccountInfo},
         entrypoint::ProgramResult,
+        program_error::ProgramError,
         pubkey::Pubkey,
     },
-    spl_type_length_value::state::TlvStateMut,
+    spl_token_metadata_interface::state::Field,
+    // TlvState needed for get_first_variable_len_value()
+    spl_type_length_value::state::{TlvState, TlvStateBorrowed, TlvStateMut},
 };
 
 /// Proccesses an InitializeFieldAuthorities instruction
@@ -67,3 +72,29 @@ pub fn process_initialize_field_authorities(
 
 //     Ok(())
 // }
+
+/// Proccesses an UpdateFieldWithFieldAuthorityV2 instruction
+pub fn process_update_field_with_field_authority_v2(
+    _program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    data: UpdateFieldWithFieldAuthorityV2,
+) -> ProgramResult {
+    let account_info_iter = &mut accounts.iter();
+    let metadata_info = next_account_info(account_info_iter)?;
+    let field_authority_info = next_account_info(account_info_iter)?;
+
+    // Check field authority
+    let field_authorities = {
+        let buffer = metadata_info.try_borrow_data()?;
+        let state = TlvStateBorrowed::unpack(&buffer)?;
+        state.get_first_variable_len_value::<FieldAuthorities>()?
+    };
+    if !field_authorities.contains_field_authority(data.field, field_authority_info.key.clone()) {
+        return Err(FieldAuthorityError::IncorrectFieldAuthority.into());
+    }
+    if !field_authority_info.is_signer {
+        return Err(ProgramError::MissingRequiredSignature);
+    }
+
+    Ok(())
+}

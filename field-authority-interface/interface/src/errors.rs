@@ -7,6 +7,9 @@ pub enum FieldAuthorityError {
     /// Error 0: Incorrect field PDA provided
     #[error("Incorrect field PDA was passed to the instruction")]
     IncorrectFieldPda,
+    /// Error 1: Incorrect field authority provided
+    #[error("Incorrect field authority was passed to the instruction")]
+    IncorrectFieldAuthority,
 }
 
 impl From<FieldAuthorityError> for ProgramError {

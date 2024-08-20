@@ -295,6 +295,7 @@ describe("AI Aliens Program", () => {
   it("Create mint fails with insufficient funds", async () => {
     try {
       await createMint(3, insufficientFundsAccount);
+      throw new Error("Expected error to be thrown");
     } catch (err) {
       const interpretedTxErr = interpretTxErr(err);
       assert.equal(
@@ -308,6 +309,7 @@ describe("AI Aliens Program", () => {
     const zeroFundsAccount = Keypair.generate();
     try {
       await createMint(4, zeroFundsAccount);
+      throw new Error("Expected error to be thrown");
     } catch (err) {
       const interpretedTxErr = interpretTxErr(err);
       assert.equal(
@@ -369,7 +371,7 @@ describe("AI Aliens Program", () => {
     assert(async () => {
       try {
         await updateNickname(1, randomStr(31));
-        throw new Error("Should have thrown");
+        throw new Error("Expected error to be thrown");
       } catch (e) {
         assert(e instanceof SendTransactionError);
       }

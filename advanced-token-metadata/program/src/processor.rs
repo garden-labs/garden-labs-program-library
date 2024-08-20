@@ -6,7 +6,9 @@ use {
             process_add_field_authority, process_remove_field_authority,
             process_update_field_with_field_authority,
         },
-        field_authority_v2::process_initialize_field_authorities,
+        field_authority_v2::{
+            process_initialize_field_authorities, process_update_field_with_field_authority_v2,
+        },
     },
     field_authority_interface::instructions::FieldAuthorityInstruction,
     solana_program::{
@@ -220,14 +222,13 @@ pub fn process(program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> P
                 msg!("Instruction: UpdateFieldWithFieldAuthority");
                 return process_update_field_with_field_authority(program_id, accounts, data);
             }
+            FieldAuthorityInstruction::UpdateFieldWithFieldAuthorityV2(data) => {
+                msg!("Instruction: UpdateFieldWithFieldAuthorityV2");
+                return process_update_field_with_field_authority_v2(program_id, accounts, data);
+            }
             FieldAuthorityInstruction::RemoveFieldAuthority(data) => {
                 msg!("Instruction: RemoveFieldAuthority");
                 return process_remove_field_authority(program_id, accounts, data);
-            }
-            // TEMP
-            _ => {
-                msg!("Error: Unsupported FieldAuthorityInstruction variant");
-                return Err(ProgramError::InvalidInstructionData.into());
             }
         }
     }
