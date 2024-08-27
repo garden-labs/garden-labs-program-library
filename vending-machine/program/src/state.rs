@@ -1,5 +1,5 @@
 use crate::constants::{
-    MAX_HOLDER_FIELD_KEY_LEN, MAX_HOLDER_FIELD_VAL_LEN, MAX_NAME_LEN, MAX_SYMBOL_LEN, MAX_URI_LEN,
+    MAX_HOLDER_FIELDS, MAX_HOLDER_FIELD_LEN, MAX_NAME_LEN, MAX_SYMBOL_LEN, MAX_URI_LEN,
 };
 use crate::errors::VendingMachineError;
 
@@ -22,15 +22,8 @@ pub struct VendingMachineData {
     #[max_len(MAX_URI_LEN)]
     pub uri: String,
 
-    // TODO: Move to Vec once field authority interface is switched from
-    // PDA model to single tlv account
-    // We will only allow holder fields in additional fields
-    // #[max_len(10, MAX_HOLDER_FIELD_LEN)]
-    // pub holder_fields: Vec<String>>,
-    #[max_len(MAX_HOLDER_FIELD_KEY_LEN)]
-    pub holder_field_key: Option<String>, // Empty string means no holder field
-    #[max_len(MAX_HOLDER_FIELD_VAL_LEN)]
-    pub holder_field_default_val: Option<String>, // Empty string means no default value
+    #[max_len(MAX_HOLDER_FIELDS, MAX_HOLDER_FIELD_LEN)]
+    pub holder_fields: Vec<String>,
 }
 
 impl VendingMachineData {
