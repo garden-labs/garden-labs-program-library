@@ -65,8 +65,7 @@ describe("Holder Metadata Plugin", () => {
     const token = await setupMintMetadataToken(
       mintKeypair,
       metadataKeypair,
-      metadataVals,
-      additionalFieldKey
+      metadataVals
     );
 
     mints.push(mintKeypair.publicKey);
@@ -204,8 +203,7 @@ describe("Holder Metadata Plugin", () => {
     const token = await setupMintMetadataToken(
       mintKeypair,
       metadataKeypair,
-      metadataVals,
-      additionalFieldKey
+      metadataVals
     );
 
     mints.push(mintKeypair.publicKey);

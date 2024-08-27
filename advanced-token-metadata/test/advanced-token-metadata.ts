@@ -47,12 +47,7 @@ describe("Advanced Token Metadata Program", () => {
   const fieldAuthority = Keypair.generate();
 
   it("Setup mint, metadata, and token", async () => {
-    await setupMintMetadataToken(
-      mintKeypair,
-      metadataKeypair,
-      metadataVals,
-      additionalFieldKey
-    );
+    await setupMintMetadataToken(mintKeypair, metadataKeypair, metadataVals);
 
     // Check emmitted metadata
     const emittedMetadata = await getEmittedMetadata(
@@ -207,7 +202,7 @@ describe("Advanced Token Metadata Program", () => {
   });
 
   it("Add field authority with additional field", async () => {
-    await addFieldAuthorityTest("additional field key");
+    await addFieldAuthorityTest(additionalFieldKey);
   });
 
   it("Add field authority with wrong update authority fails", async () => {

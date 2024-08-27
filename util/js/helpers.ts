@@ -101,6 +101,34 @@ export async function getEmittedMetadata(
   return unpack(data);
 }
 
+export async function getSpaceRent(
+  connection: Connection,
+  metadata?: TokenMetadata,
+  fieldAuthorities?: FieldAuthorities
+): Promise<{ space: number; rent: number }> {
+  let space = 0;
+  let rent = 0;
+
+  if (metadata) {
+    space += TOKEN_METADATA_DISCRIMINATOR.length + 4 + pack(metadata).length;
+  }
+
+  if (fieldAuthorities) {
+    space +=
+      FIELD_AUTHORITIES_DISCRIMINATOR.length +
+      4 +
+      packFieldAuthorities(fieldAuthorities).length;
+  }
+
+  if (space === 0) {
+    rent = 0;
+  } else {
+    rent = await connection.getMinimumBalanceForRentExemption(space);
+  }
+
+  return { space, rent };
+}
+
 /**
  * @returns null if min rent reached
  */
@@ -127,72 +155,25 @@ export async function getEnsureRentMinTx(
   });
 }
 
-export async function calculateMinRent(
-  connection: Connection,
-  metadata?: TokenMetadata,
-  fieldAuthorities?: FieldAuthorities
-): Promise<number> {
-  let space = 0;
-
-  if (metadata) {
-    space += TOKEN_METADATA_DISCRIMINATOR.length + 4 + pack(metadata).length;
-  }
-
-  if (fieldAuthorities) {
-    space +=
-      FIELD_AUTHORITIES_DISCRIMINATOR.length +
-      4 +
-      packFieldAuthorities(fieldAuthorities).length;
-  }
-
-  if (space === 0) {
-    return 0;
-  }
-
-  return connection.getMinimumBalanceForRentExemption(space);
-}
-
-// TODO #1: Remove adding the "future rent" and use the functions above directly
-// in the tests like `advanced-token-metadata-v2.ts`
-// TODO: #2: See if the functions above work for the initial alloc as well
+// TODO: Create realloc instruction to metadata program so we don't need to
+// preallocate field authority space
 export async function createMetadataAccount(
   metadataKeypair: Keypair,
   metadataVals: TokenMetadata,
-  additionalFieldKey: string,
-  fieldAuthorities?: FieldAuthorities
+  futureFieldAuthorities?: FieldAuthorities
 ): Promise<void> {
-  // 4 bytes for length
-  const tlSpace = TOKEN_METADATA_DISCRIMINATOR.length + 4;
-
-  const metadataSpace = tlSpace + pack(metadataVals).length;
-
-  // Calculate space for metadata with additional fields
-  metadataVals.additionalMetadata.push([
-    // Temporary
-    additionalFieldKey,
-    randomStr(10),
-  ]);
-  const futureMetadataSpace = tlSpace + pack(metadataVals).length;
-  metadataVals.additionalMetadata.pop();
-
-  // Calculate space for field authorities
-  const fieldAuthoritiesSpace = fieldAuthorities
-    ? FIELD_AUTHORITIES_DISCRIMINATOR.length +
-      4 +
-      packFieldAuthorities(fieldAuthorities).length
-    : 0;
-
-  // Calculate lamports for future space
-  const lamports = await CONNECTION.getMinimumBalanceForRentExemption(
-    futureMetadataSpace + fieldAuthoritiesSpace
+  const { space, rent } = await getSpaceRent(
+    CONNECTION,
+    metadataVals,
+    futureFieldAuthorities
   );
 
   // Create metadata account
   const createAccountIx = SystemProgram.createAccount({
     fromPubkey: ANCHOR_WALLET_KEYPAIR.publicKey,
     newAccountPubkey: metadataKeypair.publicKey,
-    lamports,
-    space: metadataSpace + fieldAuthoritiesSpace,
+    lamports: rent,
+    space,
     programId: ATM_PROGRAM_ID,
   });
   const createAccountTx = new Transaction().add(createAccountIx);
@@ -203,15 +184,16 @@ export async function createMetadataAccount(
 
   // Check balance
   const balance = await CONNECTION.getBalance(metadataKeypair.publicKey);
-  assert.equal(balance, lamports);
+  assert.equal(balance, rent);
 }
 
+// TODO: Create realloc instruction to metadata program so we don't need to
+// preallocate field authority space
 export async function setupMintMetadataToken(
   mintKeypair: Keypair,
   metadataKeypair: Keypair,
   metadataVals: TokenMetadata,
-  additionalFieldKey: string,
-  fieldAuthorities?: FieldAuthorities
+  futureFieldAuthorities?: FieldAuthorities
 ): Promise<PublicKey> {
   // Create mint
   await createMint(
@@ -242,8 +224,7 @@ export async function setupMintMetadataToken(
   await createMetadataAccount(
     metadataKeypair,
     metadataVals,
-    additionalFieldKey,
-    fieldAuthorities
+    futureFieldAuthorities
   );
 
   // Set metadata account data
