@@ -52,8 +52,6 @@ export function setPayer<T extends Idl>(
   program: Program<T>;
 } {
   const provider = setProv(payer);
-
   const program = new Program(prog.idl, provider);
-
   return { provider, program };
 }

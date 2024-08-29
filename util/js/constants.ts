@@ -3,15 +3,21 @@ import "dotenv/config";
 import path from "path";
 import { readFileSync } from "fs";
 
+import toml from "@iarna/toml";
 import { web3 } from "@coral-xyz/anchor";
 import { Keypair } from "@solana/web3.js";
+import expandTilde from "expand-tilde";
 
+// Derive Anchor wallet keypair from Anchor.toml
+const tomlStr = readFileSync(
+  path.join(__dirname, "..", "..", "Anchor.toml"),
+  "utf-8"
+);
+const parsed = toml.parse(tomlStr);
+const anchorWalletPath = parsed.provider.wallet as string;
+const anchorWalletPathExpanded = expandTilde(anchorWalletPath);
 export const ANCHOR_WALLET_KEYPAIR = Keypair.fromSecretKey(
-  new Uint8Array(
-    JSON.parse(
-      readFileSync(process.env.ANCHOR_WALLET_PATH as string).toString()
-    )
-  )
+  new Uint8Array(JSON.parse(readFileSync(anchorWalletPathExpanded).toString()))
 );
 
 export const BUILD_ATM_SCRIPT_PATH = path.join(
