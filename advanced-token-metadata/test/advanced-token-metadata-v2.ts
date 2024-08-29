@@ -417,9 +417,6 @@ describe("Advanced Token Metadata Program V2", () => {
       await updateFieldWithFieldAuthorityTest(Field.Name, val);
       throw new Error("Should have thrown");
     } catch (err) {
-      if (err instanceof Error) {
-        console.log(err.message);
-      }
       // Better error parsing is coming with the new @solana/web3.js
       // https://github.com/solana-labs/solana-web3.js/issues/2019
       assert(err instanceof SendTransactionError);
