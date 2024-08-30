@@ -7,6 +7,7 @@ import {
   sendAndConfirmTransaction,
   SystemProgram,
   LAMPORTS_PER_SOL,
+  PublicKey,
 } from "@solana/web3.js";
 import {
   TokenMetadata,
@@ -22,7 +23,7 @@ import {
   randomStr,
   updateField,
   getEnsureRentMinTx,
-  calculateMinRent,
+  getSpaceRent,
 } from "../../util/js/helpers";
 import { CONNECTION } from "../../util/js/config";
 import {
@@ -65,11 +66,12 @@ describe("Advanced Token Metadata Program V2", () => {
   const fieldAuthorityKpTwo = Keypair.generate();
 
   it("Setup mint, metadata, and token", async () => {
+    // TODO: Create realloc instruction to metadata program so we don't need to
+    // preallocate field authority space
     await setupMintMetadataToken(
       mintKeypair,
       metadataKeypair,
       metadataVals,
-      additionalFieldKey,
       fieldAuthorities
     );
   });
@@ -86,21 +88,31 @@ describe("Advanced Token Metadata Program V2", () => {
   });
 
   it("Update field with update authority (regular)", async () => {
+    const key = Field.Name;
     const val = randomStr(20);
+    const vals = updateField(metadataVals, key, val);
 
-    const ix = createUpdateFieldInstruction({
+    const updateIx = createUpdateFieldInstruction({
       programId: ATM_PROGRAM_ID,
       metadata: metadataKeypair.publicKey,
       updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
-      field: Field.Name,
+      field: key,
       value: val,
     });
+    const tx = new Transaction().add(updateIx);
 
-    const tx = new Transaction().add(ix);
+    const { rent } = await getSpaceRent(CONNECTION, vals, fieldAuthorities);
+    const rentIx = await getEnsureRentMinTx(
+      CONNECTION,
+      ANCHOR_WALLET_KEYPAIR.publicKey,
+      metadataKeypair.publicKey,
+      rent
+    );
+    if (rentIx) {
+      tx.add(rentIx);
+    }
 
     await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
-
-    const vals = updateField(metadataVals, Field.Name, val);
 
     // Check emmitted metadata
     const emittedMetadata = await getEmittedMetadata(
@@ -118,14 +130,30 @@ describe("Advanced Token Metadata Program V2", () => {
   });
 
   it("Initialize field authorities", async () => {
+    // Init ix
     const ix = createInitializeFieldAuthoritiesIx({
       programId: ATM_PROGRAM_ID,
       metadata: metadataKeypair.publicKey,
       updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
       fieldAuthorities,
     });
-
     const tx = new Transaction().add(ix);
+
+    // Ensure rent minimum
+    const { rent } = await getSpaceRent(
+      CONNECTION,
+      metadataVals,
+      fieldAuthorities
+    );
+    const rentIx = await getEnsureRentMinTx(
+      CONNECTION,
+      ANCHOR_WALLET_KEYPAIR.publicKey,
+      metadataKeypair.publicKey,
+      rent
+    );
+    if (rentIx) {
+      tx.add(rentIx);
+    }
 
     await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
 
@@ -151,22 +179,32 @@ describe("Advanced Token Metadata Program V2", () => {
   async function updateFieldWithFieldAuthorityTest(
     field: Field | string,
     val: string,
-    fa: Keypair = fieldAuthorityKpOne,
-    signers: Keypair[] = [fa]
+    fa: PublicKey = fieldAuthorityKpOne.publicKey,
+    signers: Keypair[] = [fieldAuthorityKpOne]
   ): Promise<void> {
+    const vals = updateField(metadataVals, field, val);
+
     const ix = createUpdateFieldWithFieldAuthorityV2Ix({
       programId: ATM_PROGRAM_ID,
       metadata: metadataKeypair.publicKey,
-      fieldAuthority: fa.publicKey,
+      fieldAuthority: fa,
       field,
       value: val,
     });
-
     const tx = new Transaction().add(ix);
 
-    await sendAndConfirmTransaction(CONNECTION, tx, signers);
+    const { rent } = await getSpaceRent(CONNECTION, vals, fieldAuthorities);
+    const rentIx = await getEnsureRentMinTx(
+      CONNECTION,
+      signers[0].publicKey,
+      metadataKeypair.publicKey,
+      rent
+    );
+    if (rentIx) {
+      tx.add(rentIx);
+    }
 
-    const vals = updateField(metadataVals, field, val);
+    await sendAndConfirmTransaction(CONNECTION, tx, signers);
 
     // Check emmitted metadata
     const emittedMetadata = await getEmittedMetadata(
@@ -190,7 +228,8 @@ describe("Advanced Token Metadata Program V2", () => {
       await updateFieldWithFieldAuthorityTest(
         Field.Name,
         val,
-        ANCHOR_WALLET_KEYPAIR
+        ANCHOR_WALLET_KEYPAIR.publicKey,
+        [ANCHOR_WALLET_KEYPAIR]
       );
       throw new Error("Should have thrown");
     } catch (err) {
@@ -210,7 +249,8 @@ describe("Advanced Token Metadata Program V2", () => {
     await updateFieldWithFieldAuthorityTest(
       additionalFieldKey,
       val,
-      ANCHOR_WALLET_KEYPAIR
+      ANCHOR_WALLET_KEYPAIR.publicKey,
+      [ANCHOR_WALLET_KEYPAIR]
     );
   });
 
@@ -252,10 +292,10 @@ describe("Advanced Token Metadata Program V2", () => {
     const tx = new Transaction().add(addFieldAuthIx);
 
     // Add rent ix
-    const newFieldAuthorities = {
+    const newFieldAuthorities: FieldAuthorities = {
       authorities: [...fieldAuthorities.authorities, fieldAuthority],
     };
-    const minRent = await calculateMinRent(
+    const { rent } = await getSpaceRent(
       CONNECTION,
       metadataVals,
       newFieldAuthorities
@@ -264,7 +304,7 @@ describe("Advanced Token Metadata Program V2", () => {
       CONNECTION,
       ANCHOR_WALLET_KEYPAIR.publicKey,
       metadataKeypair.publicKey,
-      minRent
+      rent
     );
     if (minRentIx) {
       tx.add(minRentIx);
@@ -320,7 +360,7 @@ describe("Advanced Token Metadata Program V2", () => {
     await updateFieldWithFieldAuthorityTest(
       Field.Name,
       val,
-      fieldAuthorityKpTwo,
+      fieldAuthorityKpTwo.publicKey,
       [ANCHOR_WALLET_KEYPAIR, fieldAuthorityKpTwo]
     );
   });

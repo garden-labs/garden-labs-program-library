@@ -23,4 +23,12 @@ pub mod holder_metadata_plugin {
     ) -> Result<()> {
         return handle_update_holder_field(ctx, field, val);
     }
+
+    pub fn update_holder_field_v2(
+        ctx: Context<UpdateHolderFieldV2>,
+        field: AnchorField,
+        val: String,
+    ) -> Result<()> {
+        return handle_update_holder_field_v2(ctx, field, val);
+    }
 }
