@@ -8,9 +8,8 @@ import {
   SystemProgram,
   LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
-import { AuthorityType, TOKEN_PROGRAM_ID } from "@solana/spl-token";
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
-import * as borsh from "@coral-xyz/borsh";
 import { workspace } from "@coral-xyz/anchor";
 
 import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
@@ -18,10 +17,8 @@ import { HOLDER_METADATA_PDA_SEED } from "../js/holder-metadata-plugin";
 import {
   createAddFieldAuthorityV2Ix,
   createInitializeFieldAuthoritiesIx,
-  FIELD_AUTHORITY_PDA_SEED,
   FieldAuthorities,
   FieldAuthority,
-  fieldToSeedStr,
   getFieldAuthorities,
 } from "../../field-authority-interface/js";
 import {
