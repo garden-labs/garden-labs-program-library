@@ -292,7 +292,7 @@ describe("Advanced Token Metadata Program V2", () => {
     const tx = new Transaction().add(addFieldAuthIx);
 
     // Add rent ix
-    const newFieldAuthorities = {
+    const newFieldAuthorities: FieldAuthorities = {
       authorities: [...fieldAuthorities.authorities, fieldAuthority],
     };
     const { rent } = await getSpaceRent(
