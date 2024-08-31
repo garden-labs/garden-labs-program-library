@@ -6,7 +6,7 @@ use {
             get_advanced_token_metadata_program_id, get_member_metadata_init_space,
             get_treasury_pubkey,
         },
-        state::{MemberPda, VendingMachineData, VendingMachinePda},
+        state::{MemberPda, VendingMachineData},
     },
     anchor_lang::{prelude::*, solana_program::program::invoke_signed},
     anchor_spl::{

@@ -1,8 +1,5 @@
 use {
-    crate::{
-        constants::VENDING_MACHINE_PDA_SEED,
-        state::{VendingMachineData, VendingMachinePda},
-    },
+    crate::{constants::VENDING_MACHINE_PDA_SEED, state::VendingMachineData},
     anchor_lang::prelude::*,
 };
 

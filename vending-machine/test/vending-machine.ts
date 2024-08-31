@@ -70,5 +70,14 @@ describe("Vending Machine", () => {
       })
       .signers([vendingMachineData])
       .rpc();
+
+    // Check vending machine data
+    const v = await program.account.vendingMachineData.fetch(
+      vendingMachineData.publicKey
+    );
+    assert(v.creator.equals(creator.publicKey));
+    assert(v.metadataTemplate.equals(metadataTemplate.publicKey));
+    assert.equal(v.maxSupply, maxSupply);
+    assert.equal(v.mintPriceLamports, mintPriceLamports);
   });
 });
