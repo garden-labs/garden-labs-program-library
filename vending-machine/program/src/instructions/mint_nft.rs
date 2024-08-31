@@ -3,8 +3,8 @@ use {
         constants::{MEMBER_PDA_SEED, PROTOCOL_FEE_LAMPORTS, VENDING_MACHINE_PDA_SEED},
         errors::VendingMachineError,
         helpers::{
-            get_advanced_token_metadata_program_id, get_member_metadata_init_space,
-            get_treasury_pubkey,
+            get_advanced_token_metadata_program_id, get_metadata_init_space,
+            get_metadata_init_vals, get_treasury_pubkey,
         },
         state::{MemberPda, VendingMachineData},
     },
@@ -86,7 +86,7 @@ pub struct MintNft<'info> {
         init,
         signer,
         payer = payer,
-        space = get_member_metadata_init_space(index, metadata_template.to_account_info()),
+        space = get_metadata_init_space(index, mint.key(), metadata_template.to_account_info())?,
         owner = metadata_program.key(),
     )]
     pub metadata: UncheckedAccount<'info>,
@@ -166,39 +166,35 @@ fn pay_mint_fee(ctx: &Context<MintNft>) -> Result<()> {
 
 fn init_metadata(ctx: &Context<MintNft>, index: u64) -> Result<()> {
     // Initialize metadata based on template metadata
-    let buffer = ctx.accounts.metadata_template.data.borrow();
-    let state = TlvStateBorrowed::unpack(&buffer)?;
-    let metadata_template_vals = state.get_first_variable_len_value::<TokenMetadata>()?;
+    let token_metadata = get_metadata_init_vals(
+        index,
+        ctx.accounts.mint.key(),
+        ctx.accounts.metadata_template.to_account_info(),
+    )?;
 
-    // let token_metadata = get_member_metadata_init_vals(
-    //     index,
-    //     ctx.accounts.mint.key(),
-    //     (**ctx.accounts.vending_machine_data).clone(),
-    // );
-
-    // let accounts = TokenMetadataInitialize {
-    //     token_program_id: ctx.accounts.metadata_program.to_account_info(),
-    //     mint: ctx.accounts.mint.to_account_info(),
-    //     metadata: ctx.accounts.metadata.to_account_info(),
-    //     mint_authority: ctx.accounts.vending_machine_pda.to_account_info(),
-    //     update_authority: ctx.accounts.vending_machine_pda.to_account_info(),
-    // };
-    // let vending_machine_pda_seeds: &[&[u8]; 2] = &[
-    //     VENDING_MACHINE_PDA_SEED.as_bytes(),
-    //     &[ctx.bumps.vending_machine_pda],
-    // ];
-    // let signer_seeds = &[&vending_machine_pda_seeds[..]];
-    // let cpi_ctx = CpiContext::new_with_signer(
-    //     ctx.accounts.metadata_program.to_account_info(),
-    //     accounts,
-    //     signer_seeds,
-    // );
-    // token_metadata_initialize(
-    //     cpi_ctx,
-    //     token_metadata.name,
-    //     token_metadata.symbol,
-    //     token_metadata.uri,
-    // )?;
+    let accounts = TokenMetadataInitialize {
+        token_program_id: ctx.accounts.metadata_program.to_account_info(),
+        mint: ctx.accounts.mint.to_account_info(),
+        metadata: ctx.accounts.metadata.to_account_info(),
+        mint_authority: ctx.accounts.vending_machine_pda.to_account_info(),
+        update_authority: ctx.accounts.vending_machine_pda.to_account_info(),
+    };
+    let vending_machine_pda_seeds: &[&[u8]; 2] = &[
+        VENDING_MACHINE_PDA_SEED.as_bytes(),
+        &[ctx.bumps.vending_machine_pda],
+    ];
+    let signer_seeds = &[&vending_machine_pda_seeds[..]];
+    let cpi_ctx = CpiContext::new_with_signer(
+        ctx.accounts.metadata_program.to_account_info(),
+        accounts,
+        signer_seeds,
+    );
+    token_metadata_initialize(
+        cpi_ctx,
+        token_metadata.name,
+        token_metadata.symbol,
+        token_metadata.uri,
+    )?;
 
     Ok(())
 }

@@ -58,7 +58,15 @@ describe("Vending Machine", () => {
     mint: mintTemplate.publicKey,
     additionalMetadata: [],
   };
+
   const vendingMachineData = Keypair.generate();
+  const [vendingMachinePda] = PublicKey.findProgramAddressSync(
+    [Buffer.from(VENDING_MACHINE_PDA_SEED)],
+    setPayer<VendingMachine>(ANCHOR_WALLET_KEYPAIR, workspace.VendingMachine)
+      .program.programId
+  );
+
+  const holder = Keypair.generate();
 
   it("Init", async () => {
     const { program } = setPayer<VendingMachine>(
@@ -95,6 +103,25 @@ describe("Vending Machine", () => {
     await setupMintMetadata(mintTemplate, metadataTemplate, metadataVals);
   });
 
+  it("Setup holder for next test", async () => {
+    if (process.env.TEST_ENV !== "localnet") {
+      throw new Error("Test unsupported on non-localnet");
+    }
+
+    // Give holder some lamports
+    const amount = 10 * LAMPORTS_PER_SOL;
+    const tx = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: ANCHOR_WALLET_KEYPAIR.publicKey,
+        toPubkey: holder.publicKey,
+        lamports: amount,
+      })
+    );
+    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    const holderBalance = await CONNECTION.getBalance(holder.publicKey);
+    assert.equal(holderBalance, amount);
+  });
+
   it("Mint NFT", async () => {
     const { program } = setPayer<VendingMachine>(
       ANCHOR_WALLET_KEYPAIR,
@@ -104,6 +131,9 @@ describe("Vending Machine", () => {
     const index = 1;
     const mint = Keypair.generate();
     const metadata = Keypair.generate();
+
+    const preTreasuryBalance = await CONNECTION.getBalance(TREASURY_PUBLIC_KEY);
+    const preCreatorBalance = await CONNECTION.getBalance(creator.publicKey);
 
     await program.methods
       .mintNft(new BN(index.toString()))
@@ -119,5 +149,82 @@ describe("Vending Machine", () => {
       })
       .signers([mint, metadata])
       .rpc();
+
+    // Get mint info
+    const mintInfo = await getMint(
+      CONNECTION,
+      mint.publicKey,
+      undefined,
+      TOKEN_2022_PROGRAM_ID
+    );
+
+    // Check metadata pointer
+    const metadataPointerState = getMetadataPointerState(mintInfo);
+    assert(metadataPointerState);
+    assert(metadataPointerState.metadataAddress);
+    assert(metadataPointerState.metadataAddress.equals(metadata.publicKey));
+
+    // Check group member pointer
+    const groupMemberPointerState = getGroupMemberPointerState(mintInfo);
+    assert(groupMemberPointerState?.authority?.equals(vendingMachinePda));
+    assert(groupMemberPointerState?.memberAddress?.equals(mint.publicKey));
+
+    // Check transfer hook
+    const transferHook = getTransferHook(mintInfo);
+    assert(transferHook?.authority?.equals(vendingMachinePda));
+    assert(transferHook?.programId.equals(PublicKey.default));
+
+    // Check permanent delegate
+    const permanentDelegate = getPermanentDelegate(mintInfo);
+    assert(permanentDelegate?.delegate?.equals(vendingMachinePda));
+
+    // Check token balance
+    const holderAta = await getAssociatedTokenAddress(
+      mint.publicKey,
+      ANCHOR_WALLET_KEYPAIR.publicKey,
+      undefined,
+      TOKEN_2022_PROGRAM_ID
+    );
+    const holderAtaBalance = await CONNECTION.getTokenAccountBalance(holderAta);
+    assert.equal(holderAtaBalance.value.amount, 1);
+
+    // Check protocol fees
+    const postTreasuryBalance = await CONNECTION.getBalance(
+      TREASURY_PUBLIC_KEY
+    );
+    assert.equal(postTreasuryBalance - preTreasuryBalance, 1_000_000);
+
+    // Check mint price
+    const postCreatorBalance = await CONNECTION.getBalance(creator.publicKey);
+    assert.equal(postCreatorBalance - preCreatorBalance, mintPriceLamports);
+
+    // // Check metadata
+    // const emittedMetadata = await getEmittedMetadata(
+    //   ATM_PROGRAM_ID,
+    //   metadata.publicKey
+    // );
+    // const metadataVals = getMemberMetadataVals(1);
+    // metadataVals.additionalMetadata.push([
+    //   holderFieldKey,
+    //   holderFieldDefaultVal,
+    // ]);
+    // assert.deepStrictEqual(emittedMetadata, metadataVals);
+
+    // // Check mint authority is None
+    // assert.equal(mintInfo.mintAuthority, null);
+
+    // // Check member PDA data
+    // const [memberPda] = PublicKey.findProgramAddressSync(
+    //   [
+    //     Buffer.from(MEMBER_PDA_SEED),
+    //     colMint.publicKey.toBuffer(),
+    //     indexToSeed(new BN(index.toString())),
+    //   ],
+    //   program.programId
+    // );
+    // const memberPdaData = await program.account.memberPda.fetch(memberPda);
+    // assert(memberPdaData.mint.equals(mint.publicKey));
+
+    // TODO: Check actual member once group is enabled in token-2022
   });
 });

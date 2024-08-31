@@ -6,4 +6,6 @@ pub enum VendingMachineError {
     InvalidPublicKey,
     #[msg("Index out of bounds")]
     IndexOutOfBounds,
+    #[msg("Invalid metadata template")]
+    InvalidMetadataTemplate,
 }
