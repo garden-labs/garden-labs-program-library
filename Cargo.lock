@@ -6165,6 +6165,7 @@ dependencies = [
  "gpl-util",
  "holder-metadata-plugin",
  "spl-token-metadata-interface 0.3.3",
+ "spl-type-length-value 0.4.3",
 ]
 
 [[package]]

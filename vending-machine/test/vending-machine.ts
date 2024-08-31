@@ -28,6 +28,7 @@ import {
   randomStr,
   getEmittedMetadata,
   fieldToAnchorParam,
+  setupMintMetadata,
 } from "../../util/js/helpers";
 import { interpretTxErr } from "../../util/js/tx";
 import {
@@ -47,7 +48,16 @@ describe("Vending Machine", () => {
   const maxSupply = 10000;
   const mintPriceLamports = 0.1 * LAMPORTS_PER_SOL;
 
+  const mintTemplate = Keypair.generate();
   const metadataTemplate = Keypair.generate();
+  const metadataVals: TokenMetadata = {
+    name: randomStr(10),
+    symbol: randomStr(10),
+    uri: randomStr(10),
+    updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
+    mint: mintTemplate.publicKey,
+    additionalMetadata: [],
+  };
   const vendingMachineData = Keypair.generate();
 
   it("Init", async () => {
@@ -79,5 +89,35 @@ describe("Vending Machine", () => {
     assert(v.metadataTemplate.equals(metadataTemplate.publicKey));
     assert.equal(v.maxSupply, maxSupply);
     assert.equal(v.mintPriceLamports, mintPriceLamports);
+  });
+
+  it("Create template metadata", async () => {
+    await setupMintMetadata(mintTemplate, metadataTemplate, metadataVals);
+  });
+
+  it("Mint NFT", async () => {
+    const { program } = setPayer<VendingMachine>(
+      ANCHOR_WALLET_KEYPAIR,
+      workspace.VendingMachine
+    );
+
+    const index = 1;
+    const mint = Keypair.generate();
+    const metadata = Keypair.generate();
+
+    await program.methods
+      .mintNft(new BN(index.toString()))
+      .accounts({
+        treasury: TREASURY_PUBLIC_KEY,
+        creator: creator.publicKey,
+        mint: mint.publicKey,
+        metadata: metadata.publicKey,
+        receiver: ANCHOR_WALLET_KEYPAIR.publicKey,
+        metadataProgram: ATM_PROGRAM_ID,
+        vendingMachineData: vendingMachineData.publicKey,
+        metadataTemplate: metadataTemplate.publicKey,
+      })
+      .signers([mint, metadata])
+      .rpc();
   });
 });

@@ -23,3 +23,4 @@ spl-token-metadata-interface = { workspace = true }
 holder-metadata-plugin = { version = "0.3.0", path = "../../holder-metadata-plugin/program", features = ["cpi"]}
 field-authority-interface = { version = "0.3.3", path = "../../field-authority-interface/interface" }
 gpl-util = { version = "0.1.0", path = "../../util/rust" }
+spl-type-length-value = { workspace = true }

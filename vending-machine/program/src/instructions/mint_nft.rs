@@ -30,6 +30,8 @@ use {
     },
     gpl_util::reach_minimum_rent,
     holder_metadata_plugin::HOLDER_METADATA_PDA_SEED,
+    spl_token_metadata_interface::state::TokenMetadata,
+    spl_type_length_value::state::{TlvState, TlvStateBorrowed},
 };
 
 #[derive(Accounts)]
@@ -49,6 +51,7 @@ pub struct MintNft<'info> {
     /// CHECK: Account checked in constraints
     #[account(mut, constraint = creator.key() == vending_machine_data.creator)]
     pub creator: UncheckedAccount<'info>,
+
     #[account(
         init,
         signer,
@@ -162,7 +165,10 @@ fn pay_mint_fee(ctx: &Context<MintNft>) -> Result<()> {
 }
 
 fn init_metadata(ctx: &Context<MintNft>, index: u64) -> Result<()> {
-    // TODO: Initialize metadata based on template metadata
+    // Initialize metadata based on template metadata
+    let buffer = ctx.accounts.metadata_template.data.borrow();
+    let state = TlvStateBorrowed::unpack(&buffer)?;
+    let metadata_template_vals = state.get_first_variable_len_value::<TokenMetadata>()?;
 
     // let token_metadata = get_member_metadata_init_vals(
     //     index,
