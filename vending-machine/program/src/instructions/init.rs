@@ -1,7 +1,10 @@
-use crate::constants::VENDING_MACHINE_PDA_SEED;
-use crate::state::VendingMachineData;
-
-use anchor_lang::prelude::*;
+use {
+    crate::{
+        constants::VENDING_MACHINE_PDA_SEED,
+        state::{VendingMachineData, VendingMachinePda},
+    },
+    anchor_lang::prelude::*,
+};
 
 #[derive(Accounts)]
 #[instruction(data: VendingMachineData)]
@@ -9,10 +12,8 @@ pub struct Init<'info> {
     #[account(mut)]
     pub payer: Signer<'info>,
 
-    #[account(
-      seeds = [VENDING_MACHINE_PDA_SEED.as_bytes()],
-      bump
-    )]
+    /// CHECK: Account checked in constraints
+    #[account(seeds = [VENDING_MACHINE_PDA_SEED.as_bytes()], bump)]
     pub vending_machine_pda: UncheckedAccount<'info>,
 
     #[account(init, payer = payer, space = VendingMachineData::INIT_SPACE + 8)]

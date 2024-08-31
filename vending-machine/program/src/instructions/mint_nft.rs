@@ -1,36 +1,37 @@
-use crate::{
-    constants::{MEMBER_PDA_SEED, PROTOCOL_FEE_LAMPORTS, VENDING_MACHINE_PDA_SEED},
-    errors::VendingMachineError,
-    helpers::{
-        get_advanced_token_metadata_program_id, get_member_metadata_init_space, get_treasury_pubkey,
-    },
-    state::{MemberPda, VendingMachineData},
-};
-
-use anchor_lang::{prelude::*, solana_program::program::invoke_signed};
-use anchor_spl::{
-    associated_token::AssociatedToken,
-    token_2022::spl_token_2022::{
-        extension::{
-            // Needed for contraints (?)
-            group_member_pointer::GroupMemberPointer,
-            metadata_pointer::MetadataPointer,
-            mint_close_authority::MintCloseAuthority,
-            permanent_delegate::PermanentDelegate,
-            transfer_hook::TransferHook,
+use {
+    crate::{
+        constants::{MEMBER_PDA_SEED, PROTOCOL_FEE_LAMPORTS, VENDING_MACHINE_PDA_SEED},
+        errors::VendingMachineError,
+        helpers::{
+            get_advanced_token_metadata_program_id, get_member_metadata_init_space,
+            get_treasury_pubkey,
         },
-        instruction::AuthorityType,
+        state::{MemberPda, VendingMachineData, VendingMachinePda},
     },
-    token_interface::{
-        mint_to, set_authority, token_metadata_initialize, token_metadata_update_field, Mint,
-        MintTo, SetAuthority, Token2022, TokenAccount, TokenMetadataInitialize,
-        TokenMetadataUpdateField,
+    anchor_lang::{prelude::*, solana_program::program::invoke_signed},
+    anchor_spl::{
+        associated_token::AssociatedToken,
+        token_2022::spl_token_2022::{
+            extension::{
+                // Needed for contraints (?)
+                group_member_pointer::GroupMemberPointer,
+                metadata_pointer::MetadataPointer,
+                mint_close_authority::MintCloseAuthority,
+                permanent_delegate::PermanentDelegate,
+                transfer_hook::TransferHook,
+            },
+            instruction::AuthorityType,
+        },
+        token_interface::{
+            mint_to, set_authority, token_metadata_initialize, token_metadata_update_field, Mint,
+            MintTo, SetAuthority, Token2022, TokenAccount, TokenMetadataInitialize,
+            TokenMetadataUpdateField,
+        },
     },
+    gpl_util::reach_minimum_rent,
+    holder_metadata_plugin::HOLDER_METADATA_PDA_SEED,
 };
-use gpl_util::reach_minimum_rent;
-use holder_metadata_plugin::HOLDER_METADATA_PDA_SEED;
 
-// TODO: Store / use name, symbol, uri, in collection mint only
 #[derive(Accounts)]
 #[instruction(index: u64)]
 pub struct MintNft<'info> {
