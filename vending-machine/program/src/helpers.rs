@@ -1,8 +1,5 @@
-use crate::{
-    constants::{
-        ADVANCED_TOKEN_METADATA_PROGRAM_ID_STR, TREASURY_PUBKEY_STR, VENDING_MACHINE_PDA_SEED,
-    },
-    state::VendingMachineData,
+use crate::constants::{
+    ADVANCED_TOKEN_METADATA_PROGRAM_ID_STR, TREASURY_PUBKEY_STR, VENDING_MACHINE_PDA_SEED,
 };
 
 use anchor_lang::prelude::*;
@@ -15,39 +12,13 @@ fn get_vending_machine_pda() -> Pubkey {
     return pda;
 }
 
-pub fn get_col_metadata_init_vals(mint: Pubkey, data: VendingMachineData) -> TokenMetadata {
-    let token_metadata = TokenMetadata {
-        name: data.name,
-        symbol: data.symbol,
-        uri: format!("{}{}.json", data.uri, "collection"),
-        update_authority: Some(get_vending_machine_pda()).try_into().unwrap(),
-        mint,
-        ..Default::default()
-    };
-    return token_metadata;
-}
-
-pub fn get_member_metadata_init_vals(
-    index: u64,
-    mint: Pubkey,
-    data: VendingMachineData,
-) -> TokenMetadata {
-    let token_metadata = TokenMetadata {
-        name: format!("{} #{}", data.name, index),
-        symbol: data.symbol,
-        uri: format!("{}{}.json", data.uri, index),
-        update_authority: Some(get_vending_machine_pda()).try_into().unwrap(),
-        mint,
-        ..Default::default()
-    };
-    return token_metadata;
-}
-
 // We need to start with this because setting a new field always creates space
-pub fn get_member_metadata_init_space(index: u64, data: VendingMachineData) -> usize {
-    let dummy_pubkey: Pubkey = get_dummy_pubkey();
-    let dummy_token_metadata = get_member_metadata_init_vals(index, dummy_pubkey, data);
-    return dummy_token_metadata.tlv_size_of().unwrap();
+pub fn get_member_metadata_init_space(index: u64, metadata_template: AccountInfo) -> usize {
+    // TODO: Deserialize template metadata, append data, calculate space
+
+    // let dummy_pubkey: Pubkey = get_dummy_pubkey();
+    // let dummy_token_metadata = get_member_metadata_init_vals(index, dummy_pubkey, data);
+    return 0;
 }
 
 // TODO: Export this out of crate

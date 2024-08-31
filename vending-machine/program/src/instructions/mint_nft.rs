@@ -2,8 +2,7 @@ use crate::{
     constants::{MEMBER_PDA_SEED, PROTOCOL_FEE_LAMPORTS, VENDING_MACHINE_PDA_SEED},
     errors::VendingMachineError,
     helpers::{
-        get_advanced_token_metadata_program_id, get_member_metadata_init_space,
-        get_member_metadata_init_vals, get_treasury_pubkey,
+        get_advanced_token_metadata_program_id, get_member_metadata_init_space, get_treasury_pubkey,
     },
     state::{MemberPda, VendingMachineData},
 };
@@ -83,8 +82,7 @@ pub struct MintNft<'info> {
         init,
         signer,
         payer = payer,
-        // TODO: Remove this and just rely on reach_minimum_balance() ?
-        space = get_member_metadata_init_space(index, (**vending_machine_data).clone()),
+        space = get_member_metadata_init_space(index, metadata_template.to_account_info()),
         owner = metadata_program.key(),
     )]
     pub metadata: UncheckedAccount<'info>,
@@ -93,7 +91,7 @@ pub struct MintNft<'info> {
         init,
         payer = payer,
         space = MemberPda::INIT_SPACE + 8,
-        seeds = [MEMBER_PDA_SEED.as_bytes(), vending_machine_data.col_mint.as_ref(), &index.to_le_bytes()],
+        seeds = [MEMBER_PDA_SEED.as_bytes(), vending_machine_data.key().as_ref(), &index.to_le_bytes()],
         bump,
     )]
     pub member_pda: Account<'info, MemberPda>,
@@ -107,9 +105,9 @@ pub struct MintNft<'info> {
 
     pub vending_machine_data: Box<Account<'info, VendingMachineData>>,
 
-    /// CHECK: Account checked in CPI
-    #[account(mut)]
-    pub field_pda: Option<UncheckedAccount<'info>>,
+    /// CHECK: Account checked in function
+    #[account(constraint = metadata_template.key() == vending_machine_data.metadata_template)]
+    pub metadata_template: UncheckedAccount<'info>,
 
     // Need to keep on one line to not break rust-analyzer formatting
     /// CHECK: Account checked in constraints
@@ -163,35 +161,37 @@ fn pay_mint_fee(ctx: &Context<MintNft>) -> Result<()> {
 }
 
 fn init_metadata(ctx: &Context<MintNft>, index: u64) -> Result<()> {
-    let token_metadata = get_member_metadata_init_vals(
-        index,
-        ctx.accounts.mint.key(),
-        (**ctx.accounts.vending_machine_data).clone(),
-    );
+    // TODO: Initialize metadata based on template metadata
 
-    let accounts = TokenMetadataInitialize {
-        token_program_id: ctx.accounts.metadata_program.to_account_info(),
-        mint: ctx.accounts.mint.to_account_info(),
-        metadata: ctx.accounts.metadata.to_account_info(),
-        mint_authority: ctx.accounts.vending_machine_pda.to_account_info(),
-        update_authority: ctx.accounts.vending_machine_pda.to_account_info(),
-    };
-    let vending_machine_pda_seeds: &[&[u8]; 2] = &[
-        VENDING_MACHINE_PDA_SEED.as_bytes(),
-        &[ctx.bumps.vending_machine_pda],
-    ];
-    let signer_seeds = &[&vending_machine_pda_seeds[..]];
-    let cpi_ctx = CpiContext::new_with_signer(
-        ctx.accounts.metadata_program.to_account_info(),
-        accounts,
-        signer_seeds,
-    );
-    token_metadata_initialize(
-        cpi_ctx,
-        token_metadata.name,
-        token_metadata.symbol,
-        token_metadata.uri,
-    )?;
+    // let token_metadata = get_member_metadata_init_vals(
+    //     index,
+    //     ctx.accounts.mint.key(),
+    //     (**ctx.accounts.vending_machine_data).clone(),
+    // );
+
+    // let accounts = TokenMetadataInitialize {
+    //     token_program_id: ctx.accounts.metadata_program.to_account_info(),
+    //     mint: ctx.accounts.mint.to_account_info(),
+    //     metadata: ctx.accounts.metadata.to_account_info(),
+    //     mint_authority: ctx.accounts.vending_machine_pda.to_account_info(),
+    //     update_authority: ctx.accounts.vending_machine_pda.to_account_info(),
+    // };
+    // let vending_machine_pda_seeds: &[&[u8]; 2] = &[
+    //     VENDING_MACHINE_PDA_SEED.as_bytes(),
+    //     &[ctx.bumps.vending_machine_pda],
+    // ];
+    // let signer_seeds = &[&vending_machine_pda_seeds[..]];
+    // let cpi_ctx = CpiContext::new_with_signer(
+    //     ctx.accounts.metadata_program.to_account_info(),
+    //     accounts,
+    //     signer_seeds,
+    // );
+    // token_metadata_initialize(
+    //     cpi_ctx,
+    //     token_metadata.name,
+    //     token_metadata.symbol,
+    //     token_metadata.uri,
+    // )?;
 
     Ok(())
 }
@@ -248,81 +248,83 @@ fn init_member(ctx: &mut Context<MintNft>) -> Result<()> {
 }
 
 fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
-    // Return if holder field key and field PDA are not set, otherwise check that they are both set
-    let holder_field_key = &ctx.accounts.vending_machine_data.holder_field_key;
-    let field_pda = &ctx.accounts.field_pda;
-    match (holder_field_key, field_pda) {
-        (Some(_), Some(_)) => {}
-        (None, None) => return Ok(()),
-        _ => return Err(VendingMachineError::FieldPdaMismatch.into()),
-    }
-    let holder_field_key = holder_field_key.as_ref().unwrap();
-    let field_pda = field_pda.as_ref().unwrap();
+    // TODO: Add field authorities based on template
 
-    // Grab holder metadata plugin PDA
-    let holder_metadata_pda_seeds = [HOLDER_METADATA_PDA_SEED.as_bytes()];
-    let (holder_metadata_pda, _bump) =
-        Pubkey::find_program_address(&holder_metadata_pda_seeds, &holder_metadata_plugin::id());
+    // // Return if holder field key and field PDA are not set, otherwise check that they are both set
+    // let holder_field_key = &ctx.accounts.vending_machine_data.holder_field_key;
+    // let field_pda = &ctx.accounts.field_pda;
+    // match (holder_field_key, field_pda) {
+    //     (Some(_), Some(_)) => {}
+    //     (None, None) => return Ok(()),
+    //     _ => return Err(VendingMachineError::FieldPdaMismatch.into()),
+    // }
+    // let holder_field_key = holder_field_key.as_ref().unwrap();
+    // let field_pda = field_pda.as_ref().unwrap();
 
-    // Add holder field
-    let ix = &field_authority_interface::instructions::add_field_authority(
-        ctx.accounts.metadata_program.key,
-        &ctx.accounts.payer.key(),
-        &ctx.accounts.metadata.key(),
-        &ctx.accounts.vending_machine_pda.key(),
-        spl_token_metadata_interface::state::Field::Key(holder_field_key.clone()),
-        &holder_metadata_pda,
-    );
-    let accounts = &[
-        ctx.accounts.payer.to_account_info(),
-        ctx.accounts.metadata.to_account_info(),
-        ctx.accounts.vending_machine_pda.to_account_info(),
-        field_pda.to_account_info(),
-        ctx.accounts.system_program.to_account_info(),
-    ];
-    let vending_machine_pda_seeds: &[&[u8]; 2] = &[
-        VENDING_MACHINE_PDA_SEED.as_bytes(),
-        &[ctx.bumps.vending_machine_pda],
-    ];
-    let signer_seeds = &[&vending_machine_pda_seeds[..]];
-    invoke_signed(ix, accounts, signer_seeds)?;
+    // // Grab holder metadata plugin PDA
+    // let holder_metadata_pda_seeds = [HOLDER_METADATA_PDA_SEED.as_bytes()];
+    // let (holder_metadata_pda, _bump) =
+    //     Pubkey::find_program_address(&holder_metadata_pda_seeds, &holder_metadata_plugin::id());
 
-    // Grab default value if it exists
-    let holder_field_default_val = match &ctx.accounts.vending_machine_data.holder_field_default_val
-    {
-        Some(key) => key.clone(),
-        None => return Ok(()),
-    };
+    // // Add holder field
+    // let ix = &field_authority_interface::instructions::add_field_authority(
+    //     ctx.accounts.metadata_program.key,
+    //     &ctx.accounts.payer.key(),
+    //     &ctx.accounts.metadata.key(),
+    //     &ctx.accounts.vending_machine_pda.key(),
+    //     spl_token_metadata_interface::state::Field::Key(holder_field_key.clone()),
+    //     &holder_metadata_pda,
+    // );
+    // let accounts = &[
+    //     ctx.accounts.payer.to_account_info(),
+    //     ctx.accounts.metadata.to_account_info(),
+    //     ctx.accounts.vending_machine_pda.to_account_info(),
+    //     field_pda.to_account_info(),
+    //     ctx.accounts.system_program.to_account_info(),
+    // ];
+    // let vending_machine_pda_seeds: &[&[u8]; 2] = &[
+    //     VENDING_MACHINE_PDA_SEED.as_bytes(),
+    //     &[ctx.bumps.vending_machine_pda],
+    // ];
+    // let signer_seeds = &[&vending_machine_pda_seeds[..]];
+    // invoke_signed(ix, accounts, signer_seeds)?;
 
-    // Set default value if it exists
-    if !holder_field_default_val.is_empty() {
-        let accounts = TokenMetadataUpdateField {
-            token_program_id: ctx.accounts.metadata_program.to_account_info(),
-            metadata: ctx.accounts.metadata.to_account_info(),
-            update_authority: ctx.accounts.vending_machine_pda.to_account_info(),
-        };
-        let vending_machine_pda_seeds: &[&[u8]; 2] = &[
-            VENDING_MACHINE_PDA_SEED.as_bytes(),
-            &[ctx.bumps.vending_machine_pda],
-        ];
-        let signer_seeds = &[&vending_machine_pda_seeds[..]];
-        let cpi_ctx = CpiContext::new_with_signer(
-            ctx.accounts.metadata_program.to_account_info(),
-            accounts,
-            signer_seeds,
-        );
-        token_metadata_update_field(
-            cpi_ctx,
-            spl_token_metadata_interface::state::Field::Key(holder_field_key.clone()),
-            holder_field_default_val,
-        )?;
-    }
+    // // Grab default value if it exists
+    // let holder_field_default_val = match &ctx.accounts.vending_machine_data.holder_field_default_val
+    // {
+    //     Some(key) => key.clone(),
+    //     None => return Ok(()),
+    // };
 
-    // Add rent if needed
-    reach_minimum_rent(
-        ctx.accounts.payer.clone(),
-        ctx.accounts.metadata.to_account_info(),
-    )?;
+    // // Set default value if it exists
+    // if !holder_field_default_val.is_empty() {
+    //     let accounts = TokenMetadataUpdateField {
+    //         token_program_id: ctx.accounts.metadata_program.to_account_info(),
+    //         metadata: ctx.accounts.metadata.to_account_info(),
+    //         update_authority: ctx.accounts.vending_machine_pda.to_account_info(),
+    //     };
+    //     let vending_machine_pda_seeds: &[&[u8]; 2] = &[
+    //         VENDING_MACHINE_PDA_SEED.as_bytes(),
+    //         &[ctx.bumps.vending_machine_pda],
+    //     ];
+    //     let signer_seeds = &[&vending_machine_pda_seeds[..]];
+    //     let cpi_ctx = CpiContext::new_with_signer(
+    //         ctx.accounts.metadata_program.to_account_info(),
+    //         accounts,
+    //         signer_seeds,
+    //     );
+    //     token_metadata_update_field(
+    //         cpi_ctx,
+    //         spl_token_metadata_interface::state::Field::Key(holder_field_key.clone()),
+    //         holder_field_default_val,
+    //     )?;
+    // }
+
+    // // Add rent if needed
+    // reach_minimum_rent(
+    //     ctx.accounts.payer.clone(),
+    //     ctx.accounts.metadata.to_account_info(),
+    // )?;
 
     Ok(())
 }
