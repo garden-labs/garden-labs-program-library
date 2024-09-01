@@ -9,7 +9,7 @@ use {
     spl_token_metadata_interface::state::Field,
     spl_type_length_value::{
         // TlvState needs to be imported for get_base_len() method
-        state::TlvState,
+        state::{TlvState, TlvStateBorrowed},
         variable_len_pack::VariableLenPack,
     },
 };
@@ -39,6 +39,13 @@ impl VariableLenPack for FieldAuthorities {
     }
 }
 impl FieldAuthorities {
+    /// Gives the total size of this struct as a TLV entry in an account
+    pub fn tlv_size_of(&self) -> Result<usize, ProgramError> {
+        TlvStateBorrowed::get_base_len()
+            .checked_add(get_instance_packed_len(self)?)
+            .ok_or(ProgramError::InvalidAccountData)
+    }
+
     /// Adds a field authority. Returns true if the field authority was added (and wasn't found).
     pub fn add_field_authority(&mut self, field_authority: FieldAuthority) -> bool {
         for fa in &self.authorities {

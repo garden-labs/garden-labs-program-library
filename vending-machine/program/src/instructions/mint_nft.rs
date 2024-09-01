@@ -3,8 +3,8 @@ use {
         constants::{MEMBER_PDA_SEED, PROTOCOL_FEE_LAMPORTS, VENDING_MACHINE_PDA_SEED},
         errors::VendingMachineError,
         helpers::{
-            get_advanced_token_metadata_program_id, get_metadata_init_space,
-            get_metadata_init_vals, get_treasury_pubkey,
+            get_advanced_token_metadata_program_id, get_init_space, get_metadata_init_vals,
+            get_treasury_pubkey,
         },
         state::{MemberPda, VendingMachineData},
     },
@@ -89,7 +89,7 @@ pub struct MintNft<'info> {
         init,
         signer,
         payer = payer,
-        space = get_metadata_init_space(index, mint.key(), metadata_template.to_account_info())?,
+        space = get_init_space(index, mint.key(), metadata_template.to_account_info())?,
         owner = metadata_program.key(),
     )]
     pub metadata: UncheckedAccount<'info>,
@@ -180,7 +180,7 @@ fn init_metadata(ctx: &Context<MintNft>, index: u64) -> Result<()> {
         mint: ctx.accounts.mint.to_account_info(),
         metadata: ctx.accounts.metadata.to_account_info(),
         mint_authority: ctx.accounts.vending_machine_pda.to_account_info(),
-        update_authority: ctx.accounts.vending_machine_pda.to_account_info(),
+        update_authority: ctx.accounts.vending_machine_pda.to_account_info(), // Different from template
     };
     let vending_machine_pda_seeds: &[&[u8]; 2] = &[
         VENDING_MACHINE_PDA_SEED.as_bytes(),
@@ -198,6 +198,33 @@ fn init_metadata(ctx: &Context<MintNft>, index: u64) -> Result<()> {
         token_metadata.symbol,
         token_metadata.uri,
     )?;
+
+    Ok(())
+}
+
+fn add_field_authorities(ctx: &Context<MintNft>) -> Result<()> {
+    // Add field authorities to metadata
+    let field_authorities_buffer = ctx.accounts.metadata_template.try_borrow_data()?;
+    let field_authorities_state = TlvStateBorrowed::unpack(&field_authorities_buffer)?;
+    let field_authorities =
+        field_authorities_state.get_first_variable_len_value::<FieldAuthorities>()?;
+
+    let ix = &initialize_field_authorities(
+        ctx.accounts.metadata_program.key,
+        ctx.accounts.metadata.key,
+        ctx.accounts.vending_machine_pda.key,
+        field_authorities.authorities,
+    );
+    let accounts = &[
+        ctx.accounts.metadata.to_account_info(),
+        ctx.accounts.vending_machine_pda.to_account_info(),
+    ];
+    let vending_machine_pda_seeds: &[&[u8]; 2] = &[
+        VENDING_MACHINE_PDA_SEED.as_bytes(),
+        &[ctx.bumps.vending_machine_pda],
+    ];
+    let signer_seeds = &[&vending_machine_pda_seeds[..]];
+    invoke_signed(ix, accounts, signer_seeds)?;
 
     Ok(())
 }
@@ -253,105 +280,6 @@ fn init_member(ctx: &mut Context<MintNft>) -> Result<()> {
     Ok(())
 }
 
-fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
-    // TODO: Add field authorities based on template
-
-    let metadata_template_buffer = ctx.accounts.metadata_template.try_borrow_data()?;
-    let metadata_template_state = TlvStateBorrowed::unpack(&metadata_template_buffer)?;
-    let metadata_template_vals =
-        metadata_template_state.get_first_variable_len_value::<TokenMetadata>()?;
-
-    let field_authorities_buffer = ctx.accounts.metadata_template.try_borrow_data()?;
-    let field_authorities_state = TlvStateBorrowed::unpack(&field_authorities_buffer)?;
-    let field_authorities =
-        field_authorities_state.get_first_variable_len_value::<FieldAuthorities>()?;
-
-    let ix = &initialize_field_authorities(
-        ctx.accounts.metadata_program.key,
-        ctx.accounts.metadata.key,
-        ctx.accounts.vending_machine_pda.key,
-        field_authorities.authorities,
-    );
-
-    // // Return if holder field key and field PDA are not set, otherwise check that they are both set
-    // let holder_field_key = &ctx.accounts.vending_machine_data.holder_field_key;
-    // let field_pda = &ctx.accounts.field_pda;
-    // match (holder_field_key, field_pda) {
-    //     (Some(_), Some(_)) => {}
-    //     (None, None) => return Ok(()),
-    //     _ => return Err(VendingMachineError::FieldPdaMismatch.into()),
-    // }
-    // let holder_field_key = holder_field_key.as_ref().unwrap();
-    // let field_pda = field_pda.as_ref().unwrap();
-
-    // // Grab holder metadata plugin PDA
-    // let holder_metadata_pda_seeds = [HOLDER_METADATA_PDA_SEED.as_bytes()];
-    // let (holder_metadata_pda, _bump) =
-    //     Pubkey::find_program_address(&holder_metadata_pda_seeds, &holder_metadata_plugin::id());
-
-    // // Add holder field
-    // let ix = &field_authority_interface::instructions::add_field_authority(
-    //     ctx.accounts.metadata_program.key,
-    //     &ctx.accounts.payer.key(),
-    //     &ctx.accounts.metadata.key(),
-    //     &ctx.accounts.vending_machine_pda.key(),
-    //     spl_token_metadata_interface::state::Field::Key(holder_field_key.clone()),
-    //     &holder_metadata_pda,
-    // );
-    // let accounts = &[
-    //     ctx.accounts.payer.to_account_info(),
-    //     ctx.accounts.metadata.to_account_info(),
-    //     ctx.accounts.vending_machine_pda.to_account_info(),
-    //     field_pda.to_account_info(),
-    //     ctx.accounts.system_program.to_account_info(),
-    // ];
-    // let vending_machine_pda_seeds: &[&[u8]; 2] = &[
-    //     VENDING_MACHINE_PDA_SEED.as_bytes(),
-    //     &[ctx.bumps.vending_machine_pda],
-    // ];
-    // let signer_seeds = &[&vending_machine_pda_seeds[..]];
-    // invoke_signed(ix, accounts, signer_seeds)?;
-
-    // // Grab default value if it exists
-    // let holder_field_default_val = match &ctx.accounts.vending_machine_data.holder_field_default_val
-    // {
-    //     Some(key) => key.clone(),
-    //     None => return Ok(()),
-    // };
-
-    // // Set default value if it exists
-    // if !holder_field_default_val.is_empty() {
-    //     let accounts = TokenMetadataUpdateField {
-    //         token_program_id: ctx.accounts.metadata_program.to_account_info(),
-    //         metadata: ctx.accounts.metadata.to_account_info(),
-    //         update_authority: ctx.accounts.vending_machine_pda.to_account_info(),
-    //     };
-    //     let vending_machine_pda_seeds: &[&[u8]; 2] = &[
-    //         VENDING_MACHINE_PDA_SEED.as_bytes(),
-    //         &[ctx.bumps.vending_machine_pda],
-    //     ];
-    //     let signer_seeds = &[&vending_machine_pda_seeds[..]];
-    //     let cpi_ctx = CpiContext::new_with_signer(
-    //         ctx.accounts.metadata_program.to_account_info(),
-    //         accounts,
-    //         signer_seeds,
-    //     );
-    //     token_metadata_update_field(
-    //         cpi_ctx,
-    //         spl_token_metadata_interface::state::Field::Key(holder_field_key.clone()),
-    //         holder_field_default_val,
-    //     )?;
-    // }
-
-    // // Add rent if needed
-    // reach_minimum_rent(
-    //     ctx.accounts.payer.clone(),
-    //     ctx.accounts.metadata.to_account_info(),
-    // )?;
-
-    Ok(())
-}
-
 pub fn handle_mint_nft(mut ctx: Context<MintNft>, index: u64) -> Result<()> {
     check_max_supply(&ctx, index)?;
 
@@ -366,9 +294,7 @@ pub fn handle_mint_nft(mut ctx: Context<MintNft>, index: u64) -> Result<()> {
 
     init_member(&mut ctx)?;
 
-    // TODO: Add multiple holder fields once field authority interface is
-    // switched from PDA model to single tlv account
-    add_holder_field(&ctx)?;
+    add_field_authorities(&ctx)?;
 
     Ok(())
 }

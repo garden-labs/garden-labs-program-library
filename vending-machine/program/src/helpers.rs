@@ -1,12 +1,10 @@
 use {
-    crate::{
-        constants::{
-            ADVANCED_TOKEN_METADATA_PROGRAM_ID_STR, TREASURY_PUBKEY_STR, VENDING_MACHINE_PDA_SEED,
-        },
-        errors::VendingMachineError,
+    crate::constants::{
+        ADVANCED_TOKEN_METADATA_PROGRAM_ID_STR, TREASURY_PUBKEY_STR, VENDING_MACHINE_PDA_SEED,
     },
     anchor_lang::prelude::*,
-    gpl_util::{get_dummy_pubkey, get_pubkey},
+    field_authority_interface::state::FieldAuthorities,
+    gpl_util::get_pubkey,
     spl_token_metadata_interface::state::TokenMetadata,
     spl_type_length_value::state::{TlvState, TlvStateBorrowed},
 };
@@ -17,35 +15,48 @@ fn get_vending_machine_pda() -> Pubkey {
     return pda;
 }
 
+pub fn parse_token_metadata(metadata_account: AccountInfo) -> Result<TokenMetadata> {
+    let buffer = metadata_account.try_borrow_data()?;
+    let state = TlvStateBorrowed::unpack(&buffer)?;
+    let metadata = state.get_first_variable_len_value::<TokenMetadata>()?;
+    return Ok(metadata);
+}
+
+pub fn parse_field_authorities(metadata_account: AccountInfo) -> Result<FieldAuthorities> {
+    let buffer = metadata_account.try_borrow_data()?;
+    let state = TlvStateBorrowed::unpack(&buffer)?;
+    let field_authorities = state.get_first_variable_len_value::<FieldAuthorities>()?;
+    return Ok(field_authorities);
+}
+
+// NOTE: We don't copy the `update_authority` value because using the vending machine PDA would
+// require us to implement the metadata initialization in this program.
 pub fn get_metadata_init_vals(
     index: u64,
     mint: Pubkey,
     metadata_template: AccountInfo,
 ) -> Result<TokenMetadata> {
-    let buffer = metadata_template.try_borrow_data()?;
-    let state = TlvStateBorrowed::unpack(&buffer)?;
-    let metadata_template_vals = state.get_first_variable_len_value::<TokenMetadata>()?;
+    let template_vals = parse_token_metadata(metadata_template)?;
 
-    let token_metadata = TokenMetadata {
-        name: format!("{} #{}", metadata_template_vals.name, index),
-        symbol: metadata_template_vals.symbol,
-        uri: format!("{}{}.json", metadata_template_vals.uri, index),
+    let init_vals = TokenMetadata {
+        name: format!("{} #{}", template_vals.name, index),
+        symbol: template_vals.symbol,
+        uri: format!("{}{}.json", template_vals.uri, index),
         update_authority: Some(get_vending_machine_pda()).try_into().unwrap(),
         mint,
         ..Default::default()
     };
-    return Ok(token_metadata);
+    return Ok(init_vals);
 }
 
-pub fn get_metadata_init_space(
-    index: u64,
-    mint: Pubkey,
-    metadata_template: AccountInfo,
-) -> Result<usize> {
-    let token_metadata = get_metadata_init_vals(index, mint, metadata_template)?;
-    return token_metadata
-        .tlv_size_of()
-        .map_err(|_| error!(VendingMachineError::InvalidMetadataTemplate));
+pub fn get_init_space(index: u64, mint: Pubkey, metadata_template: AccountInfo) -> Result<usize> {
+    let init_vals = get_metadata_init_vals(index, mint, metadata_template.clone())?;
+    let field_authorities = parse_field_authorities(metadata_template)?;
+
+    let init_vals_space = init_vals.tlv_size_of()?;
+    let field_authorities_space = field_authorities.tlv_size_of()?;
+
+    return Ok(init_vals_space + field_authorities_space);
 }
 
 // TODO: Export this out of crate

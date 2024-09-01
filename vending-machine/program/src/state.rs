@@ -3,6 +3,7 @@ use anchor_lang::prelude::*;
 #[account]
 #[derive(Debug, InitSpace)]
 pub struct VendingMachineData {
+    pub admin: Pubkey,
     pub creator: Pubkey,
     pub metadata_template: Pubkey,
     pub max_supply: u64,

@@ -1,6 +1,6 @@
 import assert from "assert";
 
-import { workspace, BN, AnchorError } from "@coral-xyz/anchor";
+import { workspace, BN, AnchorError, Program } from "@coral-xyz/anchor";
 import {
   Keypair,
   LAMPORTS_PER_SOL,
@@ -50,9 +50,15 @@ import {
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 
 describe("Vending Machine", () => {
+  const admin = Keypair.generate();
   const creator = Keypair.generate();
   const maxSupply = 100;
   const mintPriceLamports = 1 * LAMPORTS_PER_SOL;
+
+  const [vendingMachinePda] = PublicKey.findProgramAddressSync(
+    [Buffer.from(VENDING_MACHINE_PDA_SEED)],
+    new Program<VendingMachine>(workspace.VendingMachine.idl).programId
+  );
 
   const mintTemplate = Keypair.generate();
   const metadataTemplate = Keypair.generate();
@@ -60,24 +66,22 @@ describe("Vending Machine", () => {
     name: "the100",
     symbol: "THE100",
     uri: "https://arweave.net/",
-    updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
+    updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey, // Not used
     mint: mintTemplate.publicKey,
     additionalMetadata: [],
   };
+
   const holderField: FieldAuthority = {
     field: "streamUrl",
-    authority: ANCHOR_WALLET_KEYPAIR.publicKey,
+    authority: new Program<HolderMetadataPlugin>(
+      workspace.HolderMetadataPlugin.idl
+    ).programId,
   };
   const fieldAuthorities: FieldAuthorities = {
     authorities: [holderField],
   };
 
   const vendingMachineData = Keypair.generate();
-  const [vendingMachinePda] = PublicKey.findProgramAddressSync(
-    [Buffer.from(VENDING_MACHINE_PDA_SEED)],
-    setPayer<VendingMachine>(ANCHOR_WALLET_KEYPAIR, workspace.VendingMachine)
-      .program.programId
-  );
 
   const holder = Keypair.generate();
 
@@ -88,6 +92,7 @@ describe("Vending Machine", () => {
     );
 
     const data = {
+      admin: admin.publicKey,
       creator: creator.publicKey,
       metadataTemplate: metadataTemplate.publicKey,
       maxSupply: new BN(maxSupply.toString()),
@@ -120,7 +125,7 @@ describe("Vending Machine", () => {
       fieldAuthorities
     );
 
-    // TODO: Modularize this in helpers
+    // TODO: Modularize this in helpers, perhaps after SDK is updated
     // Init ix
     const ix = createInitializeFieldAuthoritiesIx({
       programId: ATM_PROGRAM_ID,
@@ -290,6 +295,15 @@ describe("Vending Machine", () => {
     const memberPdaData = await program.account.memberPda.fetch(memberPda);
     assert(memberPdaData.mint.equals(mint.publicKey));
 
+    // Check field authorities
+    const accountFieldAuthorities = await getFieldAuthorities(
+      CONNECTION,
+      metadataTemplate.publicKey
+    );
+    assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
+
     // TODO: Check actual member once group is enabled in token-2022
   });
+
+  // TODO: Test wrong metadata template values, specifically the wrong update authority
 });
