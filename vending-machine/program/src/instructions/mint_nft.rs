@@ -28,6 +28,9 @@ use {
             TokenMetadataUpdateField,
         },
     },
+    field_authority_interface::{
+        instructions_v2::initialize_field_authorities, state::FieldAuthorities,
+    },
     gpl_util::reach_minimum_rent,
     holder_metadata_plugin::HOLDER_METADATA_PDA_SEED,
     spl_token_metadata_interface::state::TokenMetadata,
@@ -252,6 +255,23 @@ fn init_member(ctx: &mut Context<MintNft>) -> Result<()> {
 
 fn add_holder_field(ctx: &Context<MintNft>) -> Result<()> {
     // TODO: Add field authorities based on template
+
+    let metadata_template_buffer = ctx.accounts.metadata_template.try_borrow_data()?;
+    let metadata_template_state = TlvStateBorrowed::unpack(&metadata_template_buffer)?;
+    let metadata_template_vals =
+        metadata_template_state.get_first_variable_len_value::<TokenMetadata>()?;
+
+    let field_authorities_buffer = ctx.accounts.metadata_template.try_borrow_data()?;
+    let field_authorities_state = TlvStateBorrowed::unpack(&field_authorities_buffer)?;
+    let field_authorities =
+        field_authorities_state.get_first_variable_len_value::<FieldAuthorities>()?;
+
+    let ix = &initialize_field_authorities(
+        ctx.accounts.metadata_program.key,
+        ctx.accounts.metadata.key,
+        ctx.accounts.vending_machine_pda.key,
+        field_authorities.authorities,
+    );
 
     // // Return if holder field key and field PDA are not set, otherwise check that they are both set
     // let holder_field_key = &ctx.accounts.vending_machine_data.holder_field_key;

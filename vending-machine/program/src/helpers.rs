@@ -22,12 +22,9 @@ pub fn get_metadata_init_vals(
     mint: Pubkey,
     metadata_template: AccountInfo,
 ) -> Result<TokenMetadata> {
-    let buffer = metadata_template.data.borrow();
-    let state = TlvStateBorrowed::unpack(&buffer)
-        .map_err(|_| error!(VendingMachineError::InvalidMetadataTemplate))?;
-    let metadata_template_vals = state
-        .get_first_variable_len_value::<TokenMetadata>()
-        .map_err(|_| error!(VendingMachineError::InvalidMetadataTemplate))?;
+    let buffer = metadata_template.try_borrow_data()?;
+    let state = TlvStateBorrowed::unpack(&buffer)?;
+    let metadata_template_vals = state.get_first_variable_len_value::<TokenMetadata>()?;
 
     let token_metadata = TokenMetadata {
         name: format!("{} #{}", metadata_template_vals.name, index),

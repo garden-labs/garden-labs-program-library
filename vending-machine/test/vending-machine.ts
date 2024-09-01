@@ -29,6 +29,8 @@ import {
   getEmittedMetadata,
   fieldToAnchorParam,
   setupMintMetadata,
+  getSpaceRent,
+  getEnsureRentMinTx,
 } from "../../util/js/helpers";
 import { interpretTxErr } from "../../util/js/tx";
 import {
@@ -38,25 +40,36 @@ import {
   indexToSeed,
 } from "../js/vending-machine";
 import {
+  createInitializeFieldAuthoritiesIx,
   FIELD_AUTHORITY_PDA_SEED,
+  FieldAuthorities,
+  FieldAuthority,
   fieldToSeedStr,
+  getFieldAuthorities,
 } from "../../field-authority-interface/js";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 
 describe("Vending Machine", () => {
   const creator = Keypair.generate();
-  const maxSupply = 10000;
-  const mintPriceLamports = 0.1 * LAMPORTS_PER_SOL;
+  const maxSupply = 100;
+  const mintPriceLamports = 1 * LAMPORTS_PER_SOL;
 
   const mintTemplate = Keypair.generate();
   const metadataTemplate = Keypair.generate();
   const metadataTemplateVals: TokenMetadata = {
-    name: randomStr(10),
-    symbol: randomStr(10),
-    uri: randomStr(10),
+    name: "the100",
+    symbol: "THE100",
+    uri: "https://arweave.net/",
     updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey,
     mint: mintTemplate.publicKey,
     additionalMetadata: [],
+  };
+  const holderField: FieldAuthority = {
+    field: "streamUrl",
+    authority: ANCHOR_WALLET_KEYPAIR.publicKey,
+  };
+  const fieldAuthorities: FieldAuthorities = {
+    authorities: [holderField],
   };
 
   const vendingMachineData = Keypair.generate();
@@ -99,12 +112,48 @@ describe("Vending Machine", () => {
     assert.equal(v.mintPriceLamports, mintPriceLamports);
   });
 
-  it("Create template metadata", async () => {
+  it("Create metadata template and field authorities", async () => {
     await setupMintMetadata(
       mintTemplate,
       metadataTemplate,
-      metadataTemplateVals
+      metadataTemplateVals,
+      fieldAuthorities
     );
+
+    // TODO: Modularize this in helpers
+    // Init ix
+    const ix = createInitializeFieldAuthoritiesIx({
+      programId: ATM_PROGRAM_ID,
+      metadata: metadataTemplate.publicKey,
+      updateAuthority: metadataTemplateVals.updateAuthority as PublicKey,
+      fieldAuthorities,
+    });
+    const tx = new Transaction().add(ix);
+
+    // Ensure rent minimum
+    const { rent } = await getSpaceRent(
+      CONNECTION,
+      metadataTemplateVals,
+      fieldAuthorities
+    );
+    const rentIx = await getEnsureRentMinTx(
+      CONNECTION,
+      ANCHOR_WALLET_KEYPAIR.publicKey,
+      metadataTemplate.publicKey,
+      rent
+    );
+    if (rentIx) {
+      tx.add(rentIx);
+    }
+
+    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+
+    // Check field authorities
+    const accountFieldAuthorities = await getFieldAuthorities(
+      CONNECTION,
+      metadataTemplate.publicKey
+    );
+    assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
   });
 
   it("Setup holder for next test", async () => {
