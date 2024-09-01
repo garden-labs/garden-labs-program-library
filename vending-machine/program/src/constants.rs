@@ -1,12 +1,3 @@
-pub const MAX_NAME_LEN: usize = 32;
-pub const MAX_SYMBOL_LEN: usize = 10;
-pub const MAX_URI_LEN: usize = 200;
-// TODO: Move to Vec once field authority interface is switched from
-// PDA model to single tlv account
-// pub const MAX_HOLDER_FIELDS: usize = 10;
-pub const MAX_HOLDER_FIELD_KEY_LEN: usize = 28; // Max seed length is 32 bytes. We append "key:"
-pub const MAX_HOLDER_FIELD_VAL_LEN: usize = 200;
-
 pub const VENDING_MACHINE_PDA_SEED: &str = "vending-machine-pda";
 
 // TODO: Export this out of crate

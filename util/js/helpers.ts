@@ -187,14 +187,12 @@ export async function createMetadataAccount(
   assert.equal(balance, rent);
 }
 
-// TODO: Create realloc instruction to metadata program so we don't need to
-// preallocate field authority space
-export async function setupMintMetadataToken(
+export async function setupMintMetadata(
   mintKeypair: Keypair,
   metadataKeypair: Keypair,
   metadataVals: TokenMetadata,
   futureFieldAuthorities?: FieldAuthorities
-): Promise<PublicKey> {
+): Promise<void> {
   // Create mint
   await createMint(
     CONNECTION,
@@ -203,22 +201,6 @@ export async function setupMintMetadataToken(
     null,
     0, // NFT
     mintKeypair
-  );
-
-  // Mint token
-  const tokenAddress = await createAssociatedTokenAccount(
-    CONNECTION,
-    ANCHOR_WALLET_KEYPAIR,
-    mintKeypair.publicKey,
-    ANCHOR_WALLET_KEYPAIR.publicKey
-  );
-  await mintTo(
-    CONNECTION,
-    ANCHOR_WALLET_KEYPAIR,
-    mintKeypair.publicKey,
-    tokenAddress,
-    ANCHOR_WALLET_KEYPAIR,
-    1
   );
 
   await createMetadataAccount(
@@ -251,6 +233,39 @@ export async function setupMintMetadataToken(
   // Check account metadata
   const accountMetadata = await getAccountMetadata(metadataKeypair.publicKey);
   assert.deepStrictEqual(accountMetadata, metadataVals);
+}
+
+// TODO: Create realloc instruction to metadata program so we don't need to
+// preallocate field authority space
+export async function setupMintMetadataToken(
+  mintKeypair: Keypair,
+  metadataKeypair: Keypair,
+  metadataVals: TokenMetadata,
+  futureFieldAuthorities?: FieldAuthorities
+): Promise<PublicKey> {
+  // Create mint and metadata accounts
+  await setupMintMetadata(
+    mintKeypair,
+    metadataKeypair,
+    metadataVals,
+    futureFieldAuthorities
+  );
+
+  // Mint token
+  const tokenAddress = await createAssociatedTokenAccount(
+    CONNECTION,
+    ANCHOR_WALLET_KEYPAIR,
+    mintKeypair.publicKey,
+    ANCHOR_WALLET_KEYPAIR.publicKey
+  );
+  await mintTo(
+    CONNECTION,
+    ANCHOR_WALLET_KEYPAIR,
+    mintKeypair.publicKey,
+    tokenAddress,
+    ANCHOR_WALLET_KEYPAIR,
+    1
+  );
 
   return tokenAddress;
 }

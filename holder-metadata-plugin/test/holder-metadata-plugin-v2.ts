@@ -67,8 +67,6 @@ describe("Holder Metadata Plugin", () => {
     authorities: [fieldAuthority],
   };
 
-  const additionalFieldKey = "additional field key";
-
   it("Setup mint, metadata, and token", async () => {
     const mintKeypair = Keypair.generate();
     const metadataKeypair = Keypair.generate();
