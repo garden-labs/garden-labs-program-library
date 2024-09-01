@@ -1,6 +1,6 @@
 import assert from "assert";
 
-import { workspace, BN, AnchorError, Program } from "@coral-xyz/anchor";
+import { workspace, BN, Program } from "@coral-xyz/anchor";
 import {
   Keypair,
   LAMPORTS_PER_SOL,
@@ -16,7 +16,6 @@ import {
   getPermanentDelegate,
   getTransferHook,
   getGroupMemberPointerState,
-  getGroupPointerState,
   getAssociatedTokenAddress,
 } from "@solana/spl-token";
 import { TokenMetadata } from "@solana/spl-token-metadata";
@@ -32,7 +31,6 @@ import {
   getSpaceRent,
   getEnsureRentMinTx,
 } from "../../util/js/helpers";
-import { interpretTxErr } from "../../util/js/tx";
 import {
   VENDING_MACHINE_PDA_SEED,
   TREASURY_PUBLIC_KEY,
@@ -41,13 +39,12 @@ import {
 } from "../js/vending-machine";
 import {
   createInitializeFieldAuthoritiesIx,
-  FIELD_AUTHORITY_PDA_SEED,
   FieldAuthorities,
   FieldAuthority,
-  fieldToSeedStr,
   getFieldAuthorities,
 } from "../../field-authority-interface/js";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
+import { HOLDER_METADATA_PDA_SEED } from "../../holder-metadata-plugin/js/holder-metadata-plugin";
 
 describe("Vending Machine", () => {
   const admin = Keypair.generate();
@@ -71,11 +68,14 @@ describe("Vending Machine", () => {
     additionalMetadata: [],
   };
 
+  const [holderMetadataPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from(HOLDER_METADATA_PDA_SEED)],
+    new Program<HolderMetadataPlugin>(workspace.HolderMetadataPlugin.idl)
+      .programId
+  );
   const holderField: FieldAuthority = {
     field: "streamUrl",
-    authority: new Program<HolderMetadataPlugin>(
-      workspace.HolderMetadataPlugin.idl
-    ).programId,
+    authority: holderMetadataPda,
   };
   const fieldAuthorities: FieldAuthorities = {
     authorities: [holderField],
@@ -84,6 +84,9 @@ describe("Vending Machine", () => {
   const vendingMachineData = Keypair.generate();
 
   const holder = Keypair.generate();
+
+  const mints: Keypair[] = [];
+  const metadatas: Keypair[] = [];
 
   it("Init", async () => {
     const { program } = setPayer<VendingMachine>(
@@ -161,7 +164,7 @@ describe("Vending Machine", () => {
     assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
   });
 
-  it("Setup holder for next test", async () => {
+  it("Setup holder for next tests", async () => {
     if (process.env.TEST_ENV !== "localnet") {
       throw new Error("Test unsupported on non-localnet");
     }
@@ -180,7 +183,7 @@ describe("Vending Machine", () => {
     assert.equal(holderBalance, amount);
   });
 
-  function getMetadataVals(index: number, mint: PublicKey): TokenMetadata {
+  function getInitMetadataVals(index: number, mint: PublicKey): TokenMetadata {
     const metadata: TokenMetadata = {
       name: `${metadataTemplateVals.name} #${index}`,
       symbol: metadataTemplateVals.symbol,
@@ -194,13 +197,17 @@ describe("Vending Machine", () => {
 
   it("Mint NFT", async () => {
     const { program } = setPayer<VendingMachine>(
-      ANCHOR_WALLET_KEYPAIR,
+      holder,
       workspace.VendingMachine
     );
 
     const index = 1;
+
     const mint = Keypair.generate();
+    mints.push(mint);
+
     const metadata = Keypair.generate();
+    metadatas.push(metadata);
 
     const preTreasuryBalance = await CONNECTION.getBalance(TREASURY_PUBLIC_KEY);
     const preCreatorBalance = await CONNECTION.getBalance(creator.publicKey);
@@ -212,7 +219,7 @@ describe("Vending Machine", () => {
         creator: creator.publicKey,
         mint: mint.publicKey,
         metadata: metadata.publicKey,
-        receiver: ANCHOR_WALLET_KEYPAIR.publicKey,
+        receiver: holder.publicKey,
         metadataProgram: ATM_PROGRAM_ID,
         vendingMachineData: vendingMachineData.publicKey,
         metadataTemplate: metadataTemplate.publicKey,
@@ -251,7 +258,7 @@ describe("Vending Machine", () => {
     // Check token balance
     const holderAta = await getAssociatedTokenAddress(
       mint.publicKey,
-      ANCHOR_WALLET_KEYPAIR.publicKey,
+      holder.publicKey,
       undefined,
       TOKEN_2022_PROGRAM_ID
     );
@@ -273,11 +280,7 @@ describe("Vending Machine", () => {
       ATM_PROGRAM_ID,
       metadata.publicKey
     );
-    const vals = getMetadataVals(1, mint.publicKey);
-    // metadataVals.additionalMetadata.push([
-    //   holderFieldKey,
-    //   holderFieldDefaultVal,
-    // ]);
+    const vals = getInitMetadataVals(1, mint.publicKey);
     assert.deepStrictEqual(emittedMetadata, vals);
 
     // Check mint authority is None
@@ -303,6 +306,41 @@ describe("Vending Machine", () => {
     assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
 
     // TODO: Check actual member once group is enabled in token-2022
+  });
+
+  it("Update holder field with holder", async () => {
+    const { program } = setPayer<HolderMetadataPlugin>(
+      holder,
+      workspace.HolderMetadataPlugin
+    );
+
+    const index = 1;
+    const mint = mints[index - 1];
+    const metadata = metadatas[index - 1];
+
+    const param = fieldToAnchorParam(holderField.field);
+    const newHolderFieldVal = randomStr(10);
+
+    await program.methods
+      .updateHolderFieldV2(param, newHolderFieldVal)
+      .accounts({
+        mint: mint.publicKey,
+        metadata: metadata.publicKey,
+        fieldAuthorityProgram: ATM_PROGRAM_ID,
+        tokenProgram: TOKEN_2022_PROGRAM_ID,
+      })
+      .rpc();
+
+    const vals = getInitMetadataVals(index, mint.publicKey);
+    vals.additionalMetadata.push([
+      holderField.field as string,
+      newHolderFieldVal,
+    ]);
+    const emittedMetadata = await getEmittedMetadata(
+      ATM_PROGRAM_ID,
+      metadata.publicKey
+    );
+    assert.deepStrictEqual(emittedMetadata, vals);
   });
 
   // TODO: Test wrong metadata template values, specifically the wrong update authority
