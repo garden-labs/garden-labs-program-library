@@ -32,7 +32,7 @@ pub fn get_metadata_init_vals(
     let token_metadata = TokenMetadata {
         name: format!("{} #{}", metadata_template_vals.name, index),
         symbol: metadata_template_vals.symbol,
-        uri: format!("{}{}.json", metadata_template_vals.uri, "collection"),
+        uri: format!("{}{}.json", metadata_template_vals.uri, index),
         update_authority: Some(get_vending_machine_pda()).try_into().unwrap(),
         mint,
         ..Default::default()

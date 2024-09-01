@@ -50,7 +50,7 @@ describe("Vending Machine", () => {
 
   const mintTemplate = Keypair.generate();
   const metadataTemplate = Keypair.generate();
-  const metadataVals: TokenMetadata = {
+  const metadataTemplateVals: TokenMetadata = {
     name: randomStr(10),
     symbol: randomStr(10),
     uri: randomStr(10),
@@ -100,7 +100,11 @@ describe("Vending Machine", () => {
   });
 
   it("Create template metadata", async () => {
-    await setupMintMetadata(mintTemplate, metadataTemplate, metadataVals);
+    await setupMintMetadata(
+      mintTemplate,
+      metadataTemplate,
+      metadataTemplateVals
+    );
   });
 
   it("Setup holder for next test", async () => {
@@ -121,6 +125,18 @@ describe("Vending Machine", () => {
     const holderBalance = await CONNECTION.getBalance(holder.publicKey);
     assert.equal(holderBalance, amount);
   });
+
+  function getMetadataVals(index: number, mint: PublicKey): TokenMetadata {
+    const metadata: TokenMetadata = {
+      name: `${metadataTemplateVals.name} #${index}`,
+      symbol: metadataTemplateVals.symbol,
+      uri: `${metadataTemplateVals.uri}${index}.json`,
+      updateAuthority: vendingMachinePda,
+      mint,
+      additionalMetadata: [],
+    };
+    return metadata;
+  }
 
   it("Mint NFT", async () => {
     const { program } = setPayer<VendingMachine>(
@@ -198,32 +214,32 @@ describe("Vending Machine", () => {
     const postCreatorBalance = await CONNECTION.getBalance(creator.publicKey);
     assert.equal(postCreatorBalance - preCreatorBalance, mintPriceLamports);
 
-    // // Check metadata
-    // const emittedMetadata = await getEmittedMetadata(
-    //   ATM_PROGRAM_ID,
-    //   metadata.publicKey
-    // );
-    // const metadataVals = getMemberMetadataVals(1);
+    // Check metadata
+    const emittedMetadata = await getEmittedMetadata(
+      ATM_PROGRAM_ID,
+      metadata.publicKey
+    );
+    const vals = getMetadataVals(1, mint.publicKey);
     // metadataVals.additionalMetadata.push([
     //   holderFieldKey,
     //   holderFieldDefaultVal,
     // ]);
-    // assert.deepStrictEqual(emittedMetadata, metadataVals);
+    assert.deepStrictEqual(emittedMetadata, vals);
 
-    // // Check mint authority is None
-    // assert.equal(mintInfo.mintAuthority, null);
+    // Check mint authority is None
+    assert.equal(mintInfo.mintAuthority, null);
 
-    // // Check member PDA data
-    // const [memberPda] = PublicKey.findProgramAddressSync(
-    //   [
-    //     Buffer.from(MEMBER_PDA_SEED),
-    //     colMint.publicKey.toBuffer(),
-    //     indexToSeed(new BN(index.toString())),
-    //   ],
-    //   program.programId
-    // );
-    // const memberPdaData = await program.account.memberPda.fetch(memberPda);
-    // assert(memberPdaData.mint.equals(mint.publicKey));
+    // Check member PDA data
+    const [memberPda] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from(MEMBER_PDA_SEED),
+        vendingMachineData.publicKey.toBuffer(),
+        indexToSeed(new BN(index.toString())),
+      ],
+      program.programId
+    );
+    const memberPdaData = await program.account.memberPda.fetch(memberPda);
+    assert(memberPdaData.mint.equals(mint.publicKey));
 
     // TODO: Check actual member once group is enabled in token-2022
   });
