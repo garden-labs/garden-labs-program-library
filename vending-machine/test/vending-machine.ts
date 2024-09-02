@@ -1,6 +1,6 @@
 import assert from "assert";
 
-import { workspace, BN, Program } from "@coral-xyz/anchor";
+import { workspace, BN, Program, AnchorError } from "@coral-xyz/anchor";
 import {
   Keypair,
   LAMPORTS_PER_SOL,
@@ -8,6 +8,7 @@ import {
   Transaction,
   SystemProgram,
   sendAndConfirmTransaction,
+  SendTransactionError,
 } from "@solana/web3.js";
 import {
   getMint,
@@ -306,6 +307,105 @@ describe("Vending Machine", () => {
     assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
 
     // TODO: Check actual member once group is enabled in token-2022
+  });
+
+  it("Mint NFT index 1 twice fails", async () => {
+    const { program } = setPayer<VendingMachine>(
+      holder,
+      workspace.VendingMachine
+    );
+
+    try {
+      const index = 1;
+      const mint = Keypair.generate();
+      const metadata = Keypair.generate();
+
+      await program.methods
+        .mintNft(new BN(index.toString()))
+        .accounts({
+          treasury: TREASURY_PUBLIC_KEY,
+          creator: creator.publicKey,
+          mint: mint.publicKey,
+          metadata: metadata.publicKey,
+          receiver: holder.publicKey,
+          metadataProgram: ATM_PROGRAM_ID,
+          vendingMachineData: vendingMachineData.publicKey,
+          metadataTemplate: metadataTemplate.publicKey,
+        })
+        .signers([mint, metadata])
+        .rpc();
+      throw new Error("Should have thrown");
+    } catch (err) {
+      assert(err instanceof SendTransactionError);
+    }
+  });
+
+  it("Mint NFT index 0 fails", async () => {
+    const { program } = setPayer<VendingMachine>(
+      holder,
+      workspace.VendingMachine
+    );
+
+    try {
+      const index = 0;
+      const mint = Keypair.generate();
+      const metadata = Keypair.generate();
+
+      await program.methods
+        .mintNft(new BN(index.toString()))
+        .accounts({
+          treasury: TREASURY_PUBLIC_KEY,
+          creator: creator.publicKey,
+          mint: mint.publicKey,
+          metadata: metadata.publicKey,
+          receiver: holder.publicKey,
+          metadataProgram: ATM_PROGRAM_ID,
+          vendingMachineData: vendingMachineData.publicKey,
+          metadataTemplate: metadataTemplate.publicKey,
+        })
+        .signers([mint, metadata])
+        .rpc();
+      throw new Error("Should have thrown");
+    } catch (err) {
+      assert(
+        err instanceof AnchorError &&
+          err.error.errorCode.code === "IndexOutOfBounds"
+      );
+    }
+  });
+
+  it("Mint NFT index above max supply fails", async () => {
+    const { program } = setPayer<VendingMachine>(
+      holder,
+      workspace.VendingMachine
+    );
+
+    try {
+      const index = maxSupply + 1;
+      const mint = Keypair.generate();
+      const metadata = Keypair.generate();
+
+      await program.methods
+        .mintNft(new BN(index.toString()))
+        .accounts({
+          treasury: TREASURY_PUBLIC_KEY,
+          creator: creator.publicKey,
+          mint: mint.publicKey,
+          metadata: metadata.publicKey,
+          receiver: holder.publicKey,
+          metadataProgram: ATM_PROGRAM_ID,
+          vendingMachineData: vendingMachineData.publicKey,
+          metadataTemplate: metadataTemplate.publicKey,
+        })
+        .signers([mint, metadata])
+        .rpc();
+      throw new Error("Should have thrown");
+    } catch (err) {
+      assert(
+        err instanceof AnchorError &&
+          err.error.errorCode.code === "IndexOutOfBounds"
+      );
+    }
   });
 
   it("Update holder field with holder", async () => {
