@@ -12,5 +12,5 @@
     "declaration": true,
     "outDir": "build"
   },
-  "include": ["sdk/**/*.ts"],
+  "include": ["sdk/**/*.ts"]
 }

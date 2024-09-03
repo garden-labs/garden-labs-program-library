@@ -4,6 +4,11 @@
   "description": "",
   "main": "build/sdk/index.js",
   "types": "build/sdk/index.d.ts",
+  "files": [
+    "build",
+    "target",
+    "Anchor.toml"
+  ],
   "scripts": {
     "build:sdk": "tsc",
     "build:programs": "anchor build && util/bash/build/advanced-token-metadata.sh",
@@ -39,6 +44,7 @@
     "@solana/spl-token-metadata": "0.1.3",
     "@solana/spl-type-length-value": "0.1.0",
     "@solana/web3.js": "^1.87.6",
+    "app-root-path": "^3.1.0",
     "dotenv": "^16.3.1",
     "expand-tilde": "^2.0.2",
     "ts-node": "^10.9.2"
