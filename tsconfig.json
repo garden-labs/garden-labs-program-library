@@ -1,13 +1,16 @@
 {
   "compilerOptions": {
-    "types": ["mocha", "chai"],
-    "typeRoots": ["./node_modules/@types"],
-    "lib": ["es2015"],
     "module": "commonjs",
-    "target": "es6",
+    "target": "es2016",
     "esModuleInterop": true,
     "strict": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "outDir": "build"
   },
-  "exclude": ["tsconfig.json"]
+  "include": ["sdk/**/*.ts"],
 }

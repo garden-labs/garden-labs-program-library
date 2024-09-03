@@ -1,6 +1,12 @@
 {
+  "name": "@garden-labs/sdk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/sdk/index.js",
+  "types": "build/sdk/index.d.ts",
   "scripts": {
-    "build": "anchor build && util/bash/build/advanced-token-metadata.sh",
+    "build:sdk": "tsc",
+    "build:programs": "anchor build && util/bash/build/advanced-token-metadata.sh",
     "set-network:localnet": "solana config set --url http://localhost:8899",
     "set-network:devnet": "solana config set --url https://api.devnet.solana.com",
     "deploy:devnet": "yarn set-network:devnet && util/bash/deploy/devnet/all.sh",
@@ -21,7 +27,7 @@
     "test:localnet:vending-machine": "TEST_INCLUDE_PATH=vending-machine/test/**/*.ts yarn run test:localnet",
     "test:localnet:keep-open": "yarn test:localnet -- --skip-local-validator",
     "test:devnet": "yarn set-network:devnet && TEST_ENV=devnet yarn run vitest run",
-    "test:devnet:redeploy": "yarn build && yarn deploy:devnet && yarn test:devnet",
+    "test:devnet:redeploy": "yarn build:programs && yarn deploy:devnet && yarn test:devnet",
     "lint": "eslint ."
   },
   "dependencies": {
