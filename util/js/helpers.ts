@@ -34,7 +34,8 @@ import {
 } from "@solana/spl-token-metadata";
 import { TlvState } from "@solana/spl-type-length-value";
 
-import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "./constants";
+import { ANCHOR_WALLET_KEYPAIR } from "./constants";
+import { ATM_PROGRAM_ID } from "../../advanced-token-metadata/js";
 import { CONNECTION } from "./config";
 import type { FieldAuthorities } from "../../field-authority-interface/js";
 import {

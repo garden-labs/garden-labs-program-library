@@ -27,7 +27,8 @@ import {
   fieldToAnchorParam,
 } from "../../util/js/helpers";
 import { CONNECTION, setPayer } from "../../util/js/config";
-import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
+import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
+import { ATM_PROGRAM_ID } from "../../advanced-token-metadata/js";
 import {
   FIELD_AUTHORITY_PDA_SEED,
   fieldToSeedStr,

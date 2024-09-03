@@ -15,7 +15,8 @@ import {
   createUpdateFieldInstruction,
 } from "@solana/spl-token-metadata";
 
-import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
+import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
+import { ATM_PROGRAM_ID } from "../js";
 import {
   getEmittedMetadata,
   setupMintMetadataToken,

@@ -13,7 +13,8 @@ import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 import * as borsh from "@coral-xyz/borsh";
 import { workspace } from "@coral-xyz/anchor";
 
-import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
+import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
+import { ATM_PROGRAM_ID } from "../../advanced-token-metadata/js";
 import { HOLDER_METADATA_PDA_SEED } from "../js/holder-metadata-plugin";
 import {
   createAddFieldAuthorityIx,

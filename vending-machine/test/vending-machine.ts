@@ -22,7 +22,8 @@ import {
 import { TokenMetadata } from "@solana/spl-token-metadata";
 
 import { setPayer, CONNECTION } from "../../util/js/config";
-import { ANCHOR_WALLET_KEYPAIR, ATM_PROGRAM_ID } from "../../util/js/constants";
+import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
+import { ATM_PROGRAM_ID } from "../../advanced-token-metadata/js";
 import { VendingMachine } from "../../target/types/vending_machine";
 import {
   randomStr,
