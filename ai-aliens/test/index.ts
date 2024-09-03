@@ -38,7 +38,7 @@ import {
   NFT_MINTED_PDA_SEED,
   NICKNAME_FIELD_KEY,
   indexToSeed,
-} from "../js/ai-aliens";
+} from "../js";
 import { interpretTxErr, InterpretedTxErrType } from "../../util/js/tx";
 import { AiAliens } from "../../target/types/ai_aliens";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";

@@ -38,7 +38,7 @@ import {
   TREASURY_PUBLIC_KEY,
   MEMBER_PDA_SEED,
   indexToSeed,
-} from "../js/vending-machine";
+} from "../js";
 import {
   createInitializeFieldAuthoritiesIx,
   FieldAuthorities,
@@ -46,7 +46,7 @@ import {
   getFieldAuthorities,
 } from "../../field-authority-interface/js";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
-import { HOLDER_METADATA_PDA_SEED } from "../../holder-metadata-plugin/js/holder-metadata-plugin";
+import { HOLDER_METADATA_PDA_SEED } from "../../holder-metadata-plugin/js";
 
 describe("Vending Machine", () => {
   const admin = Keypair.generate();
