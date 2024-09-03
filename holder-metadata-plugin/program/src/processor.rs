@@ -6,7 +6,7 @@ use field_authority_interface::{
     instructions::update_field_with_field_authority,
     instructions_v2::update_field_with_field_authority_v2,
 };
-use gpl_util::{reach_minimum_rent, AnchorField};
+use gpl_common::{reach_minimum_rent, AnchorField};
 
 pub fn handle_update_holder_field(
     ctx: Context<UpdateHolderField>,

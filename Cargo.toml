@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "util/rust",
+    "common/rust",
     "field-authority-interface/interface",
     "advanced-token-metadata/program",
     "holder-metadata-plugin/program",

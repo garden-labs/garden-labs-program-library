@@ -31,7 +31,7 @@ use {
     field_authority_interface::{
         instructions_v2::initialize_field_authorities, state::FieldAuthorities,
     },
-    gpl_util::reach_minimum_rent,
+    gpl_common::reach_minimum_rent,
     holder_metadata_plugin::HOLDER_METADATA_PDA_SEED,
     spl_token_metadata_interface::state::TokenMetadata,
     spl_type_length_value::state::{TlvState, TlvStateBorrowed},

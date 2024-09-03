@@ -4,7 +4,7 @@ use {
     },
     anchor_lang::prelude::*,
     field_authority_interface::state::FieldAuthorities,
-    gpl_util::get_pubkey,
+    gpl_common::get_pubkey,
     spl_token_metadata_interface::state::TokenMetadata,
     spl_type_length_value::state::{TlvState, TlvStateBorrowed},
 };

@@ -120,7 +120,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "field-authority-interface",
- "gpl-util",
+ "gpl-common",
  "holder-metadata-plugin",
  "spl-pod 0.2.2",
  "spl-token-2022 3.0.2",
@@ -1844,7 +1844,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "gpl-util"
+name = "gpl-common"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
@@ -1985,7 +1985,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "field-authority-interface",
- "gpl-util",
+ "gpl-common",
  "spl-pod 0.2.2",
  "spl-token-metadata-interface 0.3.3",
 ]
@@ -6162,7 +6162,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "field-authority-interface",
- "gpl-util",
+ "gpl-common",
  "holder-metadata-plugin",
  "spl-token-metadata-interface 0.3.3",
  "spl-type-length-value 0.4.3",

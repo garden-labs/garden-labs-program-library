@@ -8,7 +8,7 @@ use instructions::*;
 use processor::*;
 
 use anchor_lang::prelude::*;
-use gpl_util::AnchorField;
+use gpl_common::AnchorField;
 
 declare_id!("3DkEmKWuBJbza9ur1BnVVhXrzkuiMCqBuKHdoDBdLpxZ");
 
