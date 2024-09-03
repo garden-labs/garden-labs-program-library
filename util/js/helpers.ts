@@ -1,22 +1,13 @@
-// TODO: Begin adding things like Connection to params, make this a library
-
-/* eslint-disable @typescript-eslint/ban-types */
-
 import "dotenv/config";
 
-import crypto from "crypto";
 import assert from "assert";
 
 import {
   Transaction,
-  TransactionInstruction,
   sendAndConfirmTransaction,
   PublicKey,
   SystemProgram,
   Keypair,
-  TransactionMessage,
-  VersionedTransaction,
-  Connection,
 } from "@solana/web3.js";
 import {
   createMint,
@@ -24,137 +15,17 @@ import {
   createAssociatedTokenAccount,
 } from "@solana/spl-token";
 import {
-  createEmitInstruction,
-  pack,
-  unpack,
-  TOKEN_METADATA_DISCRIMINATOR,
   TokenMetadata,
   createInitializeInstruction,
   Field,
 } from "@solana/spl-token-metadata";
-import { TlvState } from "@solana/spl-type-length-value";
 
 import { ANCHOR_WALLET_KEYPAIR } from "./constants";
 import { ATM_PROGRAM_ID } from "../../advanced-token-metadata/js";
-import { CONNECTION } from "./config";
+import { getConnection } from "./config";
 import type { FieldAuthorities } from "../../field-authority-interface/js";
-import {
-  pack as packFieldAuthorities,
-  FIELD_AUTHORITIES_DISCRIMINATOR,
-} from "../../field-authority-interface/js";
-
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
-export function randomStr(numChars: number): string {
-  return crypto.randomBytes(numChars).toString("hex").slice(0, numChars);
-}
-
-// Alternative Method (assumes tlv account)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function getAccountMetadata(
-  metadataPubkey: PublicKey
-): Promise<TokenMetadata> {
-  const accountInfo = await CONNECTION.getAccountInfo(metadataPubkey);
-  if (!accountInfo) {
-    throw new Error("Account not found");
-  }
-
-  const tlv = new TlvState(
-    accountInfo.data,
-    TOKEN_METADATA_DISCRIMINATOR.length,
-    4 // length
-  );
-  const buffer = tlv.firstBytes(TOKEN_METADATA_DISCRIMINATOR);
-  if (!buffer) {
-    throw new Error("Token metadata not found");
-  }
-
-  return unpack(buffer);
-}
-
-// Primary Method (data structure agnostic, uses simulation)
-export async function getEmittedMetadata(
-  programId: PublicKey,
-  metadataPubkey: PublicKey
-): Promise<TokenMetadata> {
-  const emitIx = createEmitInstruction({
-    programId,
-    metadata: metadataPubkey,
-  });
-  const latestBlockhash = await CONNECTION.getLatestBlockhash();
-  const txMsg = new TransactionMessage({
-    payerKey: ANCHOR_WALLET_KEYPAIR.publicKey,
-    recentBlockhash: latestBlockhash.blockhash,
-    instructions: [emitIx],
-  }).compileToV0Message();
-  const v0Tx = new VersionedTransaction(txMsg);
-  const res = (await CONNECTION.simulateTransaction(v0Tx)).value;
-
-  if (!res.returnData?.data) {
-    throw new Error("Return data is null");
-  }
-
-  const data = Buffer.from(res.returnData.data[0], "base64");
-  return unpack(data);
-}
-
-export async function getSpaceRent(
-  connection: Connection,
-  metadata?: TokenMetadata,
-  fieldAuthorities?: FieldAuthorities
-): Promise<{ space: number; rent: number }> {
-  let space = 0;
-  let rent = 0;
-
-  if (metadata) {
-    space += TOKEN_METADATA_DISCRIMINATOR.length + 4 + pack(metadata).length;
-  }
-
-  if (fieldAuthorities) {
-    space +=
-      FIELD_AUTHORITIES_DISCRIMINATOR.length +
-      4 +
-      packFieldAuthorities(fieldAuthorities).length;
-  }
-
-  if (space === 0) {
-    rent = 0;
-  } else {
-    rent = await connection.getMinimumBalanceForRentExemption(space);
-  }
-
-  return { space, rent };
-}
-
-/**
- * @returns null if min rent reached
- */
-export async function getEnsureRentMinTx(
-  connection: Connection,
-  payer: PublicKey,
-  account: PublicKey,
-  minRent: number
-): Promise<TransactionInstruction | null> {
-  let currentRent = 0;
-  const accountInfo = await connection.getAccountInfo(account);
-  if (accountInfo) {
-    currentRent = accountInfo.lamports;
-  }
-
-  if (currentRent >= minRent) {
-    return null;
-  }
-
-  return SystemProgram.transfer({
-    fromPubkey: payer,
-    toPubkey: account,
-    lamports: minRent - currentRent,
-  });
-}
+import { getAccountMetadata, getEmittedMetadata } from "../../common/js";
+import { getSpaceRent } from "../../field-authority-interface/js";
 
 // TODO: Create realloc instruction to metadata program so we don't need to
 // preallocate field authority space
@@ -164,7 +35,7 @@ export async function createMetadataAccount(
   futureFieldAuthorities?: FieldAuthorities
 ): Promise<void> {
   const { space, rent } = await getSpaceRent(
-    CONNECTION,
+    getConnection(),
     metadataVals,
     futureFieldAuthorities
   );
@@ -178,13 +49,13 @@ export async function createMetadataAccount(
     programId: ATM_PROGRAM_ID,
   });
   const createAccountTx = new Transaction().add(createAccountIx);
-  await sendAndConfirmTransaction(CONNECTION, createAccountTx, [
+  await sendAndConfirmTransaction(getConnection(), createAccountTx, [
     ANCHOR_WALLET_KEYPAIR,
     metadataKeypair,
   ]);
 
   // Check balance
-  const balance = await CONNECTION.getBalance(metadataKeypair.publicKey);
+  const balance = await getConnection().getBalance(metadataKeypair.publicKey);
   assert.equal(balance, rent);
 }
 
@@ -196,7 +67,7 @@ export async function setupMintMetadata(
 ): Promise<void> {
   // Create mint
   await createMint(
-    CONNECTION,
+    getConnection(),
     ANCHOR_WALLET_KEYPAIR,
     ANCHOR_WALLET_KEYPAIR.publicKey,
     null,
@@ -222,17 +93,24 @@ export async function setupMintMetadata(
     uri: metadataVals.uri,
   });
   const initTx = new Transaction().add(initDataIx);
-  await sendAndConfirmTransaction(CONNECTION, initTx, [ANCHOR_WALLET_KEYPAIR]);
+  await sendAndConfirmTransaction(getConnection(), initTx, [
+    ANCHOR_WALLET_KEYPAIR,
+  ]);
 
   // Check emmitted metadata
   const emittedMetadata = await getEmittedMetadata(
+    getConnection(),
     ATM_PROGRAM_ID,
-    metadataKeypair.publicKey
+    metadataKeypair.publicKey,
+    ANCHOR_WALLET_KEYPAIR.publicKey
   );
   assert.deepStrictEqual(emittedMetadata, metadataVals);
 
   // Check account metadata
-  const accountMetadata = await getAccountMetadata(metadataKeypair.publicKey);
+  const accountMetadata = await getAccountMetadata(
+    getConnection(),
+    metadataKeypair.publicKey
+  );
   assert.deepStrictEqual(accountMetadata, metadataVals);
 }
 
@@ -254,13 +132,13 @@ export async function setupMintMetadataToken(
 
   // Mint token
   const tokenAddress = await createAssociatedTokenAccount(
-    CONNECTION,
+    getConnection(),
     ANCHOR_WALLET_KEYPAIR,
     mintKeypair.publicKey,
     ANCHOR_WALLET_KEYPAIR.publicKey
   );
   await mintTo(
-    CONNECTION,
+    getConnection(),
     ANCHOR_WALLET_KEYPAIR,
     mintKeypair.publicKey,
     tokenAddress,
@@ -271,26 +149,9 @@ export async function setupMintMetadataToken(
   return tokenAddress;
 }
 
-type AnchorFieldParam =
-  | { name: {} }
-  | { symbol: {} }
-  | { uri: {} }
-  | { key: [string] };
-
-export function fieldToAnchorParam(field: Field | string): AnchorFieldParam {
-  switch (field) {
-    case Field.Name:
-      return { name: {} };
-    case Field.Symbol:
-      return { symbol: {} };
-    case Field.Uri:
-      return { uri: {} };
-    // String
-    default:
-      return { key: [field] };
-  }
-}
-
+/**
+ * @returns new TokenMetadata object with updated field
+ */
 export function updateField(
   tokenMetadata: TokenMetadata,
   field: Field | string,

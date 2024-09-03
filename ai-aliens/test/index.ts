@@ -21,13 +21,14 @@ import {
 } from "@solana/spl-token";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 
+import { getConnection, setPayer, ANCHOR_WALLET_KEYPAIR } from "../../util/js";
 import {
+  interpretTxErr,
+  InterpretedTxErrType,
   getEmittedMetadata,
   randomStr,
   fieldToAnchorParam,
-} from "../../util/js/helpers";
-import { CONNECTION, setPayer } from "../../util/js/config";
-import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
+} from "../../common/js";
 import { ATM_PROGRAM_ID } from "../../advanced-token-metadata/js";
 import {
   FIELD_AUTHORITY_PDA_SEED,
@@ -39,7 +40,6 @@ import {
   NICKNAME_FIELD_KEY,
   indexToSeed,
 } from "../js";
-import { interpretTxErr, InterpretedTxErrType } from "../../util/js/tx";
 import { AiAliens } from "../../target/types/ai_aliens";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 
@@ -148,7 +148,7 @@ describe("AI Aliens Program", () => {
       ATM_PROGRAM_ID
     );
 
-    const treasuryBalanceBefore = await CONNECTION.getBalance(treasury);
+    const treasuryBalanceBefore = await getConnection().getBalance(treasury);
 
     await program.methods
       .createMint(index)
@@ -162,7 +162,7 @@ describe("AI Aliens Program", () => {
       .signers([mintKeypair, metadataKeypair])
       .rpc();
 
-    const treasuryBalanceAfter = await CONNECTION.getBalance(treasury);
+    const treasuryBalanceAfter = await getConnection().getBalance(treasury);
 
     // Check mint price transfer
     assert.equal(
@@ -178,7 +178,7 @@ describe("AI Aliens Program", () => {
 
     // Check metadata pointer
     const mintInfo = await getMint(
-      CONNECTION,
+      getConnection(),
       mintKeypair.publicKey,
       undefined,
       TOKEN_2022_PROGRAM_ID
@@ -234,14 +234,14 @@ describe("AI Aliens Program", () => {
       .rpc();
 
     // Check destination ATA
-    const anchorWalletAtaBalance = await CONNECTION.getTokenAccountBalance(
+    const anchorWalletAtaBalance = await getConnection().getTokenAccountBalance(
       anchorWalletAta
     );
     assert.equal(anchorWalletAtaBalance.value.amount, 1);
 
     // Check mint
     const mintInfo = await getMint(
-      CONNECTION,
+      getConnection(),
       mint,
       undefined,
       TOKEN_2022_PROGRAM_ID
@@ -290,7 +290,9 @@ describe("AI Aliens Program", () => {
       lamports: mintPriceLamports, // With fees and rent this will be slightly under
     });
     const tx = new Transaction().add(ix);
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    await sendAndConfirmTransaction(getConnection(), tx, [
+      ANCHOR_WALLET_KEYPAIR,
+    ]);
   });
 
   it("Create mint fails with insufficient funds", async () => {
@@ -360,7 +362,12 @@ describe("AI Aliens Program", () => {
     // Check metadata
     const metadataVals = getMetadataVals(index);
     metadataVals.additionalMetadata.push([field, val]);
-    const emittedMetadata = await getEmittedMetadata(ATM_PROGRAM_ID, metadata);
+    const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
+      ATM_PROGRAM_ID,
+      metadata,
+      ANCHOR_WALLET_KEYPAIR.publicKey
+    );
     assert.deepStrictEqual(emittedMetadata, metadataVals);
   }
 
@@ -399,7 +406,12 @@ describe("AI Aliens Program", () => {
     // Check emmitted metadata
     const metadataVals = getMetadataVals(index);
     metadataVals.uri = uri;
-    const emittedMetadata = await getEmittedMetadata(ATM_PROGRAM_ID, metadata);
+    const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
+      ATM_PROGRAM_ID,
+      metadata,
+      ANCHOR_WALLET_KEYPAIR.publicKey
+    );
     assert.deepStrictEqual(emittedMetadata, metadataVals);
   }
 
@@ -430,7 +442,7 @@ describe("AI Aliens Program", () => {
 
     // Check mint authority
     const mintInfo = await getMint(
-      CONNECTION,
+      getConnection(),
       mint,
       undefined,
       TOKEN_2022_PROGRAM_ID

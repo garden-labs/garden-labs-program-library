@@ -21,17 +21,17 @@ import {
   FieldAuthorities,
   FieldAuthority,
   getFieldAuthorities,
+  getSpaceRent,
 } from "../../field-authority-interface/js";
+import { setupMintMetadataToken } from "../../util/js/helpers";
 import {
   getEmittedMetadata,
   randomStr,
-  setupMintMetadataToken,
   fieldToAnchorParam,
-  getSpaceRent,
   getEnsureRentMinTx,
   getAccountMetadata,
-} from "../../util/js/helpers";
-import { CONNECTION, setPayer } from "../../util/js/config";
+} from "../../common/js";
+import { getConnection, setPayer } from "../../util/js/config";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 
 describe("Holder Metadata Plugin", () => {
@@ -97,12 +97,12 @@ describe("Holder Metadata Plugin", () => {
 
     // Ensure rent minimum
     const { rent } = await getSpaceRent(
-      CONNECTION,
+      getConnection(),
       getMetadataVals(mints[0]),
       fieldAuthorities
     );
     const rentIx = await getEnsureRentMinTx(
-      CONNECTION,
+      getConnection(),
       ANCHOR_WALLET_KEYPAIR.publicKey,
       metadatas[0],
       rent
@@ -111,22 +111,29 @@ describe("Holder Metadata Plugin", () => {
       tx.add(rentIx);
     }
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    await sendAndConfirmTransaction(getConnection(), tx, [
+      ANCHOR_WALLET_KEYPAIR,
+    ]);
 
     // Check emmitted metadata
     const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
       ATM_PROGRAM_ID,
-      metadatas[0]
+      metadatas[0],
+      ANCHOR_WALLET_KEYPAIR.publicKey
     );
     assert.deepStrictEqual(emittedMetadata, getMetadataVals(mints[0]));
 
     // Check account metadata
-    const accountMetadata = await getAccountMetadata(metadatas[0]);
+    const accountMetadata = await getAccountMetadata(
+      getConnection(),
+      metadatas[0]
+    );
     assert.deepStrictEqual(accountMetadata, getMetadataVals(mints[0]));
 
     // Check field authorities
     const accountFieldAuthorities = await getFieldAuthorities(
-      CONNECTION,
+      getConnection(),
       metadatas[0]
     );
     assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
@@ -143,11 +150,13 @@ describe("Holder Metadata Plugin", () => {
 
     const tx = new Transaction().add(ix);
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    await sendAndConfirmTransaction(getConnection(), tx, [
+      ANCHOR_WALLET_KEYPAIR,
+    ]);
 
     // Check field authorities
     const accountFieldAuthorities = await getFieldAuthorities(
-      CONNECTION,
+      getConnection(),
       metadatas[0]
     );
     assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
@@ -182,7 +191,12 @@ describe("Holder Metadata Plugin", () => {
     // Check emmitted metadata
     const metadataVals = getMetadataVals(mint);
     metadataVals.name = val;
-    const emittedMetadata = await getEmittedMetadata(ATM_PROGRAM_ID, metadata);
+    const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
+      ATM_PROGRAM_ID,
+      metadata,
+      ANCHOR_WALLET_KEYPAIR.publicKey
+    );
     assert.deepStrictEqual(emittedMetadata, metadataVals);
   }
 
@@ -214,10 +228,12 @@ describe("Holder Metadata Plugin", () => {
       lamports: 5 * LAMPORTS_PER_SOL,
     });
     const tx = new Transaction().add(ix);
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    await sendAndConfirmTransaction(getConnection(), tx, [
+      ANCHOR_WALLET_KEYPAIR,
+    ]);
 
     // Check balance
-    const balance = await CONNECTION.getBalance(testHolder.publicKey);
+    const balance = await getConnection().getBalance(testHolder.publicKey);
     assert(balance === 5 * LAMPORTS_PER_SOL);
   });
 

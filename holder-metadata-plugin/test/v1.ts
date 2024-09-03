@@ -21,13 +21,13 @@ import {
   FIELD_AUTHORITY_PDA_SEED,
   fieldToSeedStr,
 } from "../../field-authority-interface/js";
+import { setupMintMetadataToken } from "../../util/js/helpers";
 import {
   getEmittedMetadata,
   randomStr,
-  setupMintMetadataToken,
   fieldToAnchorParam,
-} from "../../util/js/helpers";
-import { CONNECTION, setPayer } from "../../util/js/config";
+} from "../../common/js";
+import { getConnection, setPayer } from "../../util/js/config";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 
 describe("Holder Metadata Plugin", () => {
@@ -84,7 +84,9 @@ describe("Holder Metadata Plugin", () => {
 
     const tx = new Transaction().add(ix);
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    await sendAndConfirmTransaction(getConnection(), tx, [
+      ANCHOR_WALLET_KEYPAIR,
+    ]);
 
     // Check created PDA
     const [pda] = PublicKey.findProgramAddressSync(
@@ -95,7 +97,7 @@ describe("Holder Metadata Plugin", () => {
       ],
       ATM_PROGRAM_ID
     );
-    const pdaInfo = await CONNECTION.getAccountInfo(pda);
+    const pdaInfo = await getConnection().getAccountInfo(pda);
     assert(pdaInfo);
     const fieldAuthoritySchema = borsh.struct([borsh.publicKey("authority")]);
     const { authority } = fieldAuthoritySchema.decode(pdaInfo.data);
@@ -143,7 +145,12 @@ describe("Holder Metadata Plugin", () => {
     // Check emmitted metadata
     const metadataVals = getMetadataVals(mint);
     metadataVals.name = val;
-    const emittedMetadata = await getEmittedMetadata(ATM_PROGRAM_ID, metadata);
+    const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
+      ATM_PROGRAM_ID,
+      metadata,
+      ANCHOR_WALLET_KEYPAIR.publicKey
+    );
     assert.deepStrictEqual(emittedMetadata, metadataVals);
   }
 
@@ -175,10 +182,12 @@ describe("Holder Metadata Plugin", () => {
       lamports: 5 * LAMPORTS_PER_SOL,
     });
     const tx = new Transaction().add(ix);
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    await sendAndConfirmTransaction(getConnection(), tx, [
+      ANCHOR_WALLET_KEYPAIR,
+    ]);
 
     // Check balance
-    const balance = await CONNECTION.getBalance(testHolder.publicKey);
+    const balance = await getConnection().getBalance(testHolder.publicKey);
     assert(balance === 5 * LAMPORTS_PER_SOL);
   });
 

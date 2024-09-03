@@ -21,18 +21,17 @@ import {
 } from "@solana/spl-token";
 import { TokenMetadata } from "@solana/spl-token-metadata";
 
-import { setPayer, CONNECTION } from "../../util/js/config";
+import { setPayer, getConnection } from "../../util/js/config";
 import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
 import { ATM_PROGRAM_ID } from "../../advanced-token-metadata/js";
 import { VendingMachine } from "../../target/types/vending_machine";
+import { setupMintMetadata } from "../../util/js/helpers";
 import {
   randomStr,
+  getEnsureRentMinTx,
   getEmittedMetadata,
   fieldToAnchorParam,
-  setupMintMetadata,
-  getSpaceRent,
-  getEnsureRentMinTx,
-} from "../../util/js/helpers";
+} from "../../common/js";
 import {
   VENDING_MACHINE_PDA_SEED,
   TREASURY_PUBLIC_KEY,
@@ -44,6 +43,7 @@ import {
   FieldAuthorities,
   FieldAuthority,
   getFieldAuthorities,
+  getSpaceRent,
 } from "../../field-authority-interface/js";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 import { HOLDER_METADATA_PDA_SEED } from "../../holder-metadata-plugin/js";
@@ -84,6 +84,7 @@ describe("Vending Machine", () => {
   };
 
   const vendingMachineData = Keypair.generate();
+  console.log("Vending Machine Data:", creator.publicKey.toBase58()); // Log for manual testing in backend
 
   const holder = Keypair.generate();
 
@@ -142,12 +143,12 @@ describe("Vending Machine", () => {
 
     // Ensure rent minimum
     const { rent } = await getSpaceRent(
-      CONNECTION,
+      getConnection(),
       metadataTemplateVals,
       fieldAuthorities
     );
     const rentIx = await getEnsureRentMinTx(
-      CONNECTION,
+      getConnection(),
       ANCHOR_WALLET_KEYPAIR.publicKey,
       metadataTemplate.publicKey,
       rent
@@ -156,11 +157,13 @@ describe("Vending Machine", () => {
       tx.add(rentIx);
     }
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    await sendAndConfirmTransaction(getConnection(), tx, [
+      ANCHOR_WALLET_KEYPAIR,
+    ]);
 
     // Check field authorities
     const accountFieldAuthorities = await getFieldAuthorities(
-      CONNECTION,
+      getConnection(),
       metadataTemplate.publicKey
     );
     assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
@@ -180,8 +183,10 @@ describe("Vending Machine", () => {
         lamports: amount,
       })
     );
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
-    const holderBalance = await CONNECTION.getBalance(holder.publicKey);
+    await sendAndConfirmTransaction(getConnection(), tx, [
+      ANCHOR_WALLET_KEYPAIR,
+    ]);
+    const holderBalance = await getConnection().getBalance(holder.publicKey);
     assert.equal(holderBalance, amount);
   });
 
@@ -211,8 +216,12 @@ describe("Vending Machine", () => {
     const metadata = Keypair.generate();
     metadatas.push(metadata);
 
-    const preTreasuryBalance = await CONNECTION.getBalance(TREASURY_PUBLIC_KEY);
-    const preCreatorBalance = await CONNECTION.getBalance(creator.publicKey);
+    const preTreasuryBalance = await getConnection().getBalance(
+      TREASURY_PUBLIC_KEY
+    );
+    const preCreatorBalance = await getConnection().getBalance(
+      creator.publicKey
+    );
 
     await program.methods
       .mintNft(new BN(index.toString()))
@@ -231,7 +240,7 @@ describe("Vending Machine", () => {
 
     // Get mint info
     const mintInfo = await getMint(
-      CONNECTION,
+      getConnection(),
       mint.publicKey,
       undefined,
       TOKEN_2022_PROGRAM_ID
@@ -264,23 +273,29 @@ describe("Vending Machine", () => {
       undefined,
       TOKEN_2022_PROGRAM_ID
     );
-    const holderAtaBalance = await CONNECTION.getTokenAccountBalance(holderAta);
+    const holderAtaBalance = await getConnection().getTokenAccountBalance(
+      holderAta
+    );
     assert.equal(holderAtaBalance.value.amount, 1);
 
     // Check protocol fees
-    const postTreasuryBalance = await CONNECTION.getBalance(
+    const postTreasuryBalance = await getConnection().getBalance(
       TREASURY_PUBLIC_KEY
     );
     assert.equal(postTreasuryBalance - preTreasuryBalance, 1_000_000);
 
     // Check mint price
-    const postCreatorBalance = await CONNECTION.getBalance(creator.publicKey);
+    const postCreatorBalance = await getConnection().getBalance(
+      creator.publicKey
+    );
     assert.equal(postCreatorBalance - preCreatorBalance, mintPriceLamports);
 
     // Check metadata
     const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
       ATM_PROGRAM_ID,
-      metadata.publicKey
+      metadata.publicKey,
+      ANCHOR_WALLET_KEYPAIR.publicKey
     );
     const vals = getInitMetadataVals(1, mint.publicKey);
     assert.deepStrictEqual(emittedMetadata, vals);
@@ -302,7 +317,7 @@ describe("Vending Machine", () => {
 
     // Check field authorities
     const accountFieldAuthorities = await getFieldAuthorities(
-      CONNECTION,
+      getConnection(),
       metadataTemplate.publicKey
     );
     assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
@@ -438,8 +453,10 @@ describe("Vending Machine", () => {
       newHolderFieldVal,
     ]);
     const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
       ATM_PROGRAM_ID,
-      metadata.publicKey
+      metadata.publicKey,
+      ANCHOR_WALLET_KEYPAIR.publicKey
     );
     assert.deepStrictEqual(emittedMetadata, vals);
   });

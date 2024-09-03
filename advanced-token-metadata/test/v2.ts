@@ -17,16 +17,14 @@ import {
 
 import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
 import { ATM_PROGRAM_ID } from "../js";
+import { setupMintMetadataToken, updateField } from "../../util/js/helpers";
 import {
   getEmittedMetadata,
-  setupMintMetadataToken,
   getAccountMetadata,
   randomStr,
-  updateField,
   getEnsureRentMinTx,
-  getSpaceRent,
-} from "../../util/js/helpers";
-import { CONNECTION } from "../../util/js/config";
+} from "../../common/js";
+import { getConnection } from "../../util/js/config";
 import {
   createInitializeFieldAuthoritiesIx,
   FieldAuthority,
@@ -35,6 +33,7 @@ import {
   createUpdateFieldWithFieldAuthorityV2Ix,
   createAddFieldAuthorityV2Ix,
   createRemoveFieldAuthorityV2Ix,
+  getSpaceRent,
 } from "../../field-authority-interface/js";
 
 describe("Advanced Token Metadata Program V2", () => {
@@ -83,9 +82,11 @@ describe("Advanced Token Metadata Program V2", () => {
       toPubkey: fieldAuthorityKpOne.publicKey,
       lamports: 0.2 * LAMPORTS_PER_SOL,
     });
-    await sendAndConfirmTransaction(CONNECTION, new Transaction().add(ix), [
-      ANCHOR_WALLET_KEYPAIR,
-    ]);
+    await sendAndConfirmTransaction(
+      getConnection(),
+      new Transaction().add(ix),
+      [ANCHOR_WALLET_KEYPAIR]
+    );
   });
 
   it("Update field with update authority (regular)", async () => {
@@ -102,9 +103,13 @@ describe("Advanced Token Metadata Program V2", () => {
     });
     const tx = new Transaction().add(updateIx);
 
-    const { rent } = await getSpaceRent(CONNECTION, vals, fieldAuthorities);
+    const { rent } = await getSpaceRent(
+      getConnection(),
+      vals,
+      fieldAuthorities
+    );
     const rentIx = await getEnsureRentMinTx(
-      CONNECTION,
+      getConnection(),
       ANCHOR_WALLET_KEYPAIR.publicKey,
       metadataKeypair.publicKey,
       rent
@@ -113,17 +118,24 @@ describe("Advanced Token Metadata Program V2", () => {
       tx.add(rentIx);
     }
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    await sendAndConfirmTransaction(getConnection(), tx, [
+      ANCHOR_WALLET_KEYPAIR,
+    ]);
 
     // Check emmitted metadata
     const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
       ATM_PROGRAM_ID,
-      metadataKeypair.publicKey
+      metadataKeypair.publicKey,
+      ANCHOR_WALLET_KEYPAIR.publicKey
     );
     assert.deepStrictEqual(emittedMetadata, vals);
 
     // Check account metadata
-    const accountMetadata = await getAccountMetadata(metadataKeypair.publicKey);
+    const accountMetadata = await getAccountMetadata(
+      getConnection(),
+      metadataKeypair.publicKey
+    );
     assert.deepStrictEqual(accountMetadata, vals);
 
     // Update if succeeded
@@ -142,12 +154,12 @@ describe("Advanced Token Metadata Program V2", () => {
 
     // Ensure rent minimum
     const { rent } = await getSpaceRent(
-      CONNECTION,
+      getConnection(),
       metadataVals,
       fieldAuthorities
     );
     const rentIx = await getEnsureRentMinTx(
-      CONNECTION,
+      getConnection(),
       ANCHOR_WALLET_KEYPAIR.publicKey,
       metadataKeypair.publicKey,
       rent
@@ -156,22 +168,29 @@ describe("Advanced Token Metadata Program V2", () => {
       tx.add(rentIx);
     }
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    await sendAndConfirmTransaction(getConnection(), tx, [
+      ANCHOR_WALLET_KEYPAIR,
+    ]);
 
     // Check emmitted metadata
     const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
       ATM_PROGRAM_ID,
-      metadataKeypair.publicKey
+      metadataKeypair.publicKey,
+      ANCHOR_WALLET_KEYPAIR.publicKey
     );
     assert.deepStrictEqual(emittedMetadata, metadataVals);
 
     // Check account metadata
-    const accountMetadata = await getAccountMetadata(metadataKeypair.publicKey);
+    const accountMetadata = await getAccountMetadata(
+      getConnection(),
+      metadataKeypair.publicKey
+    );
     assert.deepStrictEqual(accountMetadata, metadataVals);
 
     // Check field authorities
     const accountFieldAuthorities = await getFieldAuthorities(
-      CONNECTION,
+      getConnection(),
       metadataKeypair.publicKey
     );
     assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
@@ -194,9 +213,13 @@ describe("Advanced Token Metadata Program V2", () => {
     });
     const tx = new Transaction().add(ix);
 
-    const { rent } = await getSpaceRent(CONNECTION, vals, fieldAuthorities);
+    const { rent } = await getSpaceRent(
+      getConnection(),
+      vals,
+      fieldAuthorities
+    );
     const rentIx = await getEnsureRentMinTx(
-      CONNECTION,
+      getConnection(),
       signers[0].publicKey,
       metadataKeypair.publicKey,
       rent
@@ -205,17 +228,22 @@ describe("Advanced Token Metadata Program V2", () => {
       tx.add(rentIx);
     }
 
-    await sendAndConfirmTransaction(CONNECTION, tx, signers);
+    await sendAndConfirmTransaction(getConnection(), tx, signers);
 
     // Check emmitted metadata
     const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
       ATM_PROGRAM_ID,
-      metadataKeypair.publicKey
+      metadataKeypair.publicKey,
+      ANCHOR_WALLET_KEYPAIR.publicKey
     );
     assert.deepStrictEqual(emittedMetadata, vals);
 
     // Check account metadata
-    const accountMetadata = await getAccountMetadata(metadataKeypair.publicKey);
+    const accountMetadata = await getAccountMetadata(
+      getConnection(),
+      metadataKeypair.publicKey
+    );
     assert.deepStrictEqual(accountMetadata, vals);
 
     // Update if succeeded
@@ -297,12 +325,12 @@ describe("Advanced Token Metadata Program V2", () => {
       authorities: [...fieldAuthorities.authorities, fieldAuthority],
     };
     const { rent } = await getSpaceRent(
-      CONNECTION,
+      getConnection(),
       metadataVals,
       newFieldAuthorities
     );
     const minRentIx = await getEnsureRentMinTx(
-      CONNECTION,
+      getConnection(),
       ANCHOR_WALLET_KEYPAIR.publicKey,
       metadataKeypair.publicKey,
       rent
@@ -311,11 +339,11 @@ describe("Advanced Token Metadata Program V2", () => {
       tx.add(minRentIx);
     }
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [signer]);
+    await sendAndConfirmTransaction(getConnection(), tx, [signer]);
 
     // Check field authorities
     const accountFieldAuthorities = await getFieldAuthorities(
-      CONNECTION,
+      getConnection(),
       metadataKeypair.publicKey
     );
     assert.deepStrictEqual(accountFieldAuthorities, newFieldAuthorities);
@@ -385,7 +413,7 @@ describe("Advanced Token Metadata Program V2", () => {
     });
     const tx = new Transaction().add(removeFieldAuthIx);
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [signer]);
+    await sendAndConfirmTransaction(getConnection(), tx, [signer]);
 
     // Check field authorities
     const newAuthorities = fieldAuthorities.authorities.filter(
@@ -398,7 +426,7 @@ describe("Advanced Token Metadata Program V2", () => {
     };
 
     const accountFieldAuthorities = await getFieldAuthorities(
-      CONNECTION,
+      getConnection(),
       metadataKeypair.publicKey
     );
     assert.deepStrictEqual(accountFieldAuthorities, newFieldAuthorities);

@@ -1,8 +1,8 @@
 import path from "path";
 import { readFileSync } from "fs";
 
-import { Keypair } from "@solana/web3.js";
 import appRoot from "app-root-path";
+import { Keypair } from "@solana/web3.js";
 
 const ATM_KEYPAIR_PATH = path.join(
   appRoot.path,

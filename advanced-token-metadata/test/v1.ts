@@ -14,15 +14,14 @@ import {
 } from "@solana/spl-token-metadata";
 import * as borsh from "@coral-xyz/borsh";
 
-import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
 import { ATM_PROGRAM_ID } from "../js";
 import {
-  getEmittedMetadata,
-  randomStr,
   setupMintMetadataToken,
   updateField,
-} from "../../util/js/helpers";
-import { CONNECTION } from "../../util/js/config";
+  getConnection,
+  ANCHOR_WALLET_KEYPAIR,
+} from "../../util/js";
+import { getEmittedMetadata, randomStr } from "../../common/js";
 import {
   createAddFieldAuthorityIx,
   fieldToSeedStr,
@@ -52,8 +51,10 @@ describe("Advanced Token Metadata Program", () => {
 
     // Check emmitted metadata
     const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
       ATM_PROGRAM_ID,
-      metadataKeypair.publicKey
+      metadataKeypair.publicKey,
+      ANCHOR_WALLET_KEYPAIR.publicKey
     );
     assert.deepStrictEqual(emittedMetadata, metadataVals);
   });
@@ -73,7 +74,7 @@ describe("Advanced Token Metadata Program", () => {
 
     const tx = new Transaction().add(ix);
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [
+    await sendAndConfirmTransaction(getConnection(), tx, [
       ANCHOR_WALLET_KEYPAIR,
       updateAuthority,
     ]);
@@ -87,7 +88,7 @@ describe("Advanced Token Metadata Program", () => {
       ],
       ATM_PROGRAM_ID
     );
-    const fieldPdaInfo = await CONNECTION.getAccountInfo(fieldPda);
+    const fieldPdaInfo = await getConnection().getAccountInfo(fieldPda);
     assert(fieldPdaInfo);
     const fieldAuthoritySchema = borsh.struct([borsh.publicKey("authority")]);
     const { authority } = fieldAuthoritySchema.decode(fieldPdaInfo.data);
@@ -107,13 +108,17 @@ describe("Advanced Token Metadata Program", () => {
 
     const tx = new Transaction().add(ix);
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    await sendAndConfirmTransaction(getConnection(), tx, [
+      ANCHOR_WALLET_KEYPAIR,
+    ]);
 
     // Check emmitted metadata
     const vals = updateField(metadataVals, Field.Name, val);
     const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
       ATM_PROGRAM_ID,
-      metadataKeypair.publicKey
+      metadataKeypair.publicKey,
+      ANCHOR_WALLET_KEYPAIR.publicKey
     );
     assert.deepStrictEqual(emittedMetadata, vals);
 
@@ -140,7 +145,7 @@ describe("Advanced Token Metadata Program", () => {
 
     const tx = new Transaction().add(ix);
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [
+    await sendAndConfirmTransaction(getConnection(), tx, [
       ANCHOR_WALLET_KEYPAIR,
       fa,
     ]);
@@ -149,8 +154,10 @@ describe("Advanced Token Metadata Program", () => {
 
     // Check emmitted metadata
     const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
       ATM_PROGRAM_ID,
-      metadataKeypair.publicKey
+      metadataKeypair.publicKey,
+      ANCHOR_WALLET_KEYPAIR.publicKey
     );
     assert.deepStrictEqual(emittedMetadata, vals);
 
@@ -172,7 +179,9 @@ describe("Advanced Token Metadata Program", () => {
 
     const tx = new Transaction().add(ix);
 
-    await sendAndConfirmTransaction(CONNECTION, tx, [ANCHOR_WALLET_KEYPAIR]);
+    await sendAndConfirmTransaction(getConnection(), tx, [
+      ANCHOR_WALLET_KEYPAIR,
+    ]);
 
     // Check deleted PDA
     const [pda] = PublicKey.findProgramAddressSync(
@@ -183,7 +192,7 @@ describe("Advanced Token Metadata Program", () => {
       ],
       ATM_PROGRAM_ID
     );
-    const pdaInfo = await CONNECTION.getAccountInfo(pda);
+    const pdaInfo = await getConnection().getAccountInfo(pda);
     assert.equal(pdaInfo, undefined);
   });
 
