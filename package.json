@@ -6,11 +6,10 @@
   "types": "build/sdk/index.d.ts",
   "files": [
     "build",
-    "target",
     "Anchor.toml"
   ],
   "scripts": {
-    "build:sdk": "tsc",
+    "build:sdk": "tsc --project sdk/tsconfig.json",
     "build:programs": "anchor build && util/bash/build/advanced-token-metadata.sh",
     "set-network:localnet": "solana config set --url http://localhost:8899",
     "set-network:devnet": "solana config set --url https://api.devnet.solana.com",
@@ -66,7 +65,7 @@
     "mocha": "^9.0.3",
     "prettier": "^2.6.2",
     "ts-mocha": "^10.0.0",
-    "typescript": "^4.3.5",
+    "typescript": "^5.5.4",
     "vitest": "^1.6.0"
   }
 }

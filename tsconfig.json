@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "lib": ["es2016"],
     "module": "commonjs",
     "target": "es2016",
     "esModuleInterop": true,
@@ -12,5 +13,6 @@
     "declaration": true,
     "outDir": "build"
   },
-  "include": ["sdk/**/*.ts"]
+  "include": ["**/*.ts"],
+  "exclude": ["vitest.config.ts", "tsconfig.json", "build"]
 }
