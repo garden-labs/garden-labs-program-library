@@ -4,6 +4,7 @@ import {
   VersionedTransaction,
   Connection,
 } from "@solana/web3.js";
+import { getTokenMetadata, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import {
   createEmitInstruction,
   unpack,
@@ -44,6 +45,15 @@ export async function getAccountMetadata(
   const accountInfo = await connection.getAccountInfo(metadataPubkey);
   if (!accountInfo) {
     throw new Error("Account not found");
+  }
+
+  // Discriminator is different in mint
+  if (accountInfo.owner.equals(TOKEN_2022_PROGRAM_ID)) {
+    const m = await getTokenMetadata(connection, metadataPubkey);
+    if (!m) {
+      throw new Error("Token metadata not found");
+    }
+    return m;
   }
 
   const tlv = new TlvState(

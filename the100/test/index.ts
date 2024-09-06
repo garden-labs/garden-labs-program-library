@@ -1,6 +1,6 @@
 import assert from "assert";
 
-import { workspace, BN, Program, AnchorError } from "@coral-xyz/anchor";
+import { workspace, Program, AnchorError } from "@coral-xyz/anchor";
 import {
   Keypair,
   LAMPORTS_PER_SOL,
@@ -23,151 +23,30 @@ import { TokenMetadata } from "@solana/spl-token-metadata";
 
 import { setPayer, getConnection } from "../../util/js/config";
 import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
-import { ATM_PROGRAM_ID } from "../../advanced-token-metadata/js";
-import { VendingMachine } from "../../target/types/vending_machine";
-import { setupMintMetadata } from "../../util/js/helpers";
+import { The100 } from "../../target/types/the_100";
+import { getAccountMetadata, getEmittedMetadata } from "../../common/js";
 import {
-  randomStr,
-  getEnsureRentMinTx,
-  getEmittedMetadata,
-  fieldToAnchorParam,
-} from "../../common/js";
-import {
-  VENDING_MACHINE_PDA_SEED,
+  THE100_PDA_SEED,
   TREASURY_PUBLIC_KEY,
   MEMBER_PDA_SEED,
   indexToSeed,
 } from "../js";
-import {
-  createInitializeFieldAuthoritiesIx,
-  FieldAuthorities,
-  FieldAuthority,
-  getFieldAuthorities,
-  getSpaceRent,
-} from "../../field-authority-interface/js";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 import { HOLDER_METADATA_PDA_SEED } from "../../holder-metadata-plugin/js";
 
-describe("Vending Machine", () => {
-  const admin = Keypair.generate();
-  const creator = Keypair.generate();
+describe("the100", () => {
   const maxSupply = 100;
-  const mintPriceLamports = 1 * LAMPORTS_PER_SOL;
+  const mintFee = 2 * LAMPORTS_PER_SOL;
 
-  const [vendingMachinePda] = PublicKey.findProgramAddressSync(
-    [Buffer.from(VENDING_MACHINE_PDA_SEED)],
-    new Program<VendingMachine>(workspace.VendingMachine.idl).programId
+  const [the100Pda] = PublicKey.findProgramAddressSync(
+    [Buffer.from(THE100_PDA_SEED)],
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    new Program<The100>(workspace.the100.idl).programId
   );
-
-  const mintTemplate = Keypair.generate();
-  const metadataTemplate = Keypair.generate();
-  const metadataTemplateVals: TokenMetadata = {
-    name: "the100",
-    symbol: "THE100",
-    uri: "https://arweave.net/",
-    updateAuthority: ANCHOR_WALLET_KEYPAIR.publicKey, // Not used
-    mint: mintTemplate.publicKey,
-    additionalMetadata: [],
-  };
-
-  const [holderMetadataPda] = PublicKey.findProgramAddressSync(
-    [Buffer.from(HOLDER_METADATA_PDA_SEED)],
-    new Program<HolderMetadataPlugin>(workspace.HolderMetadataPlugin.idl)
-      .programId
-  );
-  const holderField: FieldAuthority = {
-    field: "streamUrl",
-    authority: holderMetadataPda,
-  };
-  const fieldAuthorities: FieldAuthorities = {
-    authorities: [holderField],
-  };
-
-  const vendingMachineData = Keypair.generate();
-  console.log("Vending Machine Data:", creator.publicKey.toBase58()); // Log for manual testing in backend
 
   const holder = Keypair.generate();
 
   const mints: Keypair[] = [];
-  const metadatas: Keypair[] = [];
-
-  it("Init", async () => {
-    const { program } = setPayer<VendingMachine>(
-      ANCHOR_WALLET_KEYPAIR,
-      workspace.VendingMachine
-    );
-
-    const data = {
-      admin: admin.publicKey,
-      creator: creator.publicKey,
-      metadataTemplate: metadataTemplate.publicKey,
-      maxSupply: new BN(maxSupply.toString()),
-      mintPriceLamports: new BN(mintPriceLamports.toString()),
-    };
-
-    await program.methods
-      .init(data)
-      .accounts({
-        vendingMachineData: vendingMachineData.publicKey,
-      })
-      .signers([vendingMachineData])
-      .rpc();
-
-    // Check vending machine data
-    const v = await program.account.vendingMachineData.fetch(
-      vendingMachineData.publicKey
-    );
-    assert(v.creator.equals(creator.publicKey));
-    assert(v.metadataTemplate.equals(metadataTemplate.publicKey));
-    assert.equal(v.maxSupply, maxSupply);
-    assert.equal(v.mintPriceLamports, mintPriceLamports);
-  });
-
-  it("Create metadata template and field authorities", async () => {
-    await setupMintMetadata(
-      mintTemplate,
-      metadataTemplate,
-      metadataTemplateVals,
-      fieldAuthorities
-    );
-
-    // TODO: Modularize this in helpers, perhaps after SDK is updated
-    // Init ix
-    const ix = createInitializeFieldAuthoritiesIx({
-      programId: ATM_PROGRAM_ID,
-      metadata: metadataTemplate.publicKey,
-      updateAuthority: metadataTemplateVals.updateAuthority as PublicKey,
-      fieldAuthorities,
-    });
-    const tx = new Transaction().add(ix);
-
-    // Ensure rent minimum
-    const { rent } = await getSpaceRent(
-      getConnection(),
-      metadataTemplateVals,
-      fieldAuthorities
-    );
-    const rentIx = await getEnsureRentMinTx(
-      getConnection(),
-      ANCHOR_WALLET_KEYPAIR.publicKey,
-      metadataTemplate.publicKey,
-      rent
-    );
-    if (rentIx) {
-      tx.add(rentIx);
-    }
-
-    await sendAndConfirmTransaction(getConnection(), tx, [
-      ANCHOR_WALLET_KEYPAIR,
-    ]);
-
-    // Check field authorities
-    const accountFieldAuthorities = await getFieldAuthorities(
-      getConnection(),
-      metadataTemplate.publicKey
-    );
-    assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
-  });
 
   it("Setup holder for next tests", async () => {
     if (process.env.TEST_ENV !== "localnet") {
@@ -192,10 +71,10 @@ describe("Vending Machine", () => {
 
   function getInitMetadataVals(index: number, mint: PublicKey): TokenMetadata {
     const metadata: TokenMetadata = {
-      name: `${metadataTemplateVals.name} #${index}`,
-      symbol: metadataTemplateVals.symbol,
-      uri: `${metadataTemplateVals.uri}${index}.json`,
-      updateAuthority: vendingMachinePda,
+      name: `the100 Channel #${index}`,
+      symbol: "THE100",
+      uri: `TODO/${index}.json`,
+      updateAuthority: the100Pda,
       mint,
       additionalMetadata: [],
     };
@@ -203,39 +82,26 @@ describe("Vending Machine", () => {
   }
 
   it("Mint NFT", async () => {
-    const { program } = setPayer<VendingMachine>(
-      holder,
-      workspace.VendingMachine
-    );
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    const { program } = setPayer<The100>(holder, workspace.the100);
 
     const index = 1;
 
     const mint = Keypair.generate();
     mints.push(mint);
 
-    const metadata = Keypair.generate();
-    metadatas.push(metadata);
-
     const preTreasuryBalance = await getConnection().getBalance(
       TREASURY_PUBLIC_KEY
     );
-    const preCreatorBalance = await getConnection().getBalance(
-      creator.publicKey
-    );
 
     await program.methods
-      .mintNft(new BN(index.toString()))
+      .mintNft(index)
       .accounts({
         treasury: TREASURY_PUBLIC_KEY,
-        creator: creator.publicKey,
         mint: mint.publicKey,
-        metadata: metadata.publicKey,
         receiver: holder.publicKey,
-        metadataProgram: ATM_PROGRAM_ID,
-        vendingMachineData: vendingMachineData.publicKey,
-        metadataTemplate: metadataTemplate.publicKey,
       })
-      .signers([mint, metadata])
+      .signers([mint])
       .rpc();
 
     // Get mint info
@@ -250,21 +116,21 @@ describe("Vending Machine", () => {
     const metadataPointerState = getMetadataPointerState(mintInfo);
     assert(metadataPointerState);
     assert(metadataPointerState.metadataAddress);
-    assert(metadataPointerState.metadataAddress.equals(metadata.publicKey));
+    assert(metadataPointerState.metadataAddress.equals(mint.publicKey));
 
     // Check group member pointer
     const groupMemberPointerState = getGroupMemberPointerState(mintInfo);
-    assert(groupMemberPointerState?.authority?.equals(vendingMachinePda));
+    assert(groupMemberPointerState?.authority?.equals(the100Pda));
     assert(groupMemberPointerState?.memberAddress?.equals(mint.publicKey));
 
     // Check transfer hook
     const transferHook = getTransferHook(mintInfo);
-    assert(transferHook?.authority?.equals(vendingMachinePda));
+    assert(transferHook?.authority?.equals(the100Pda));
     assert(transferHook?.programId.equals(PublicKey.default));
 
     // Check permanent delegate
     const permanentDelegate = getPermanentDelegate(mintInfo);
-    assert(permanentDelegate?.delegate?.equals(vendingMachinePda));
+    assert(permanentDelegate?.delegate?.equals(the100Pda));
 
     // Check token balance
     const holderAta = await getAssociatedTokenAddress(
@@ -278,77 +144,59 @@ describe("Vending Machine", () => {
     );
     assert.equal(holderAtaBalance.value.amount, 1);
 
-    // Check protocol fees
+    // Check mint fees
     const postTreasuryBalance = await getConnection().getBalance(
       TREASURY_PUBLIC_KEY
     );
-    assert.equal(postTreasuryBalance - preTreasuryBalance, 1_000_000);
+    assert.equal(postTreasuryBalance - preTreasuryBalance, mintFee);
 
-    // Check mint price
-    const postCreatorBalance = await getConnection().getBalance(
-      creator.publicKey
-    );
-    assert.equal(postCreatorBalance - preCreatorBalance, mintPriceLamports);
-
-    // Check metadata
+    // Check emitted metadata
     const emittedMetadata = await getEmittedMetadata(
       getConnection(),
-      ATM_PROGRAM_ID,
-      metadata.publicKey,
+      TOKEN_2022_PROGRAM_ID,
+      mint.publicKey,
       ANCHOR_WALLET_KEYPAIR.publicKey
     );
     const vals = getInitMetadataVals(1, mint.publicKey);
     assert.deepStrictEqual(emittedMetadata, vals);
+
+    // Check account metadata
+    const accountMetadata = await getAccountMetadata(
+      getConnection(),
+      mint.publicKey
+    );
+    assert.deepStrictEqual(accountMetadata, vals);
 
     // Check mint authority is None
     assert.equal(mintInfo.mintAuthority, null);
 
     // Check member PDA data
     const [memberPda] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from(MEMBER_PDA_SEED),
-        vendingMachineData.publicKey.toBuffer(),
-        indexToSeed(new BN(index.toString())),
-      ],
+      [Buffer.from(MEMBER_PDA_SEED), indexToSeed(index)],
       program.programId
     );
     const memberPdaData = await program.account.memberPda.fetch(memberPda);
     assert(memberPdaData.mint.equals(mint.publicKey));
 
-    // Check field authorities
-    const accountFieldAuthorities = await getFieldAuthorities(
-      getConnection(),
-      metadataTemplate.publicKey
-    );
-    assert.deepStrictEqual(accountFieldAuthorities, fieldAuthorities);
-
     // TODO: Check actual member once group is enabled in token-2022
   });
 
   it("Mint NFT index 1 twice fails", async () => {
-    const { program } = setPayer<VendingMachine>(
-      holder,
-      workspace.VendingMachine
-    );
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    const { program } = setPayer<The100>(holder, workspace.the100);
 
     try {
       const index = 1;
       const mint = Keypair.generate();
-      const metadata = Keypair.generate();
 
       await program.methods
-        .mintNft(new BN(index.toString()))
+        .mintNft(index)
         .accounts({
           treasury: TREASURY_PUBLIC_KEY,
-          creator: creator.publicKey,
           mint: mint.publicKey,
-          metadata: metadata.publicKey,
           receiver: holder.publicKey,
-          metadataProgram: ATM_PROGRAM_ID,
-          vendingMachineData: vendingMachineData.publicKey,
-          metadataTemplate: metadataTemplate.publicKey,
         })
-        .signers([mint, metadata])
+        .signers([mint])
         .rpc();
       throw new Error("Should have thrown");
     } catch (err) {
@@ -357,29 +205,21 @@ describe("Vending Machine", () => {
   });
 
   it("Mint NFT index 0 fails", async () => {
-    const { program } = setPayer<VendingMachine>(
-      holder,
-      workspace.VendingMachine
-    );
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    const { program } = setPayer<The100>(holder, workspace.the100);
 
     try {
       const index = 0;
       const mint = Keypair.generate();
-      const metadata = Keypair.generate();
 
       await program.methods
-        .mintNft(new BN(index.toString()))
+        .mintNft(index)
         .accounts({
           treasury: TREASURY_PUBLIC_KEY,
-          creator: creator.publicKey,
           mint: mint.publicKey,
-          metadata: metadata.publicKey,
           receiver: holder.publicKey,
-          metadataProgram: ATM_PROGRAM_ID,
-          vendingMachineData: vendingMachineData.publicKey,
-          metadataTemplate: metadataTemplate.publicKey,
         })
-        .signers([mint, metadata])
+        .signers([mint])
         .rpc();
       throw new Error("Should have thrown");
     } catch (err) {
@@ -391,29 +231,21 @@ describe("Vending Machine", () => {
   });
 
   it("Mint NFT index above max supply fails", async () => {
-    const { program } = setPayer<VendingMachine>(
-      holder,
-      workspace.VendingMachine
-    );
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    const { program } = setPayer<The100>(holder, workspace.the100);
 
     try {
       const index = maxSupply + 1;
       const mint = Keypair.generate();
-      const metadata = Keypair.generate();
 
       await program.methods
-        .mintNft(new BN(index.toString()))
+        .mintNft(index)
         .accounts({
           treasury: TREASURY_PUBLIC_KEY,
-          creator: creator.publicKey,
           mint: mint.publicKey,
-          metadata: metadata.publicKey,
           receiver: holder.publicKey,
-          metadataProgram: ATM_PROGRAM_ID,
-          vendingMachineData: vendingMachineData.publicKey,
-          metadataTemplate: metadataTemplate.publicKey,
         })
-        .signers([mint, metadata])
+        .signers([mint])
         .rpc();
       throw new Error("Should have thrown");
     } catch (err) {
@@ -424,42 +256,42 @@ describe("Vending Machine", () => {
     }
   });
 
-  it("Update holder field with holder", async () => {
-    const { program } = setPayer<HolderMetadataPlugin>(
-      holder,
-      workspace.HolderMetadataPlugin
-    );
+  // it("Update holder field with holder", async () => {
+  //   const { program } = setPayer<HolderMetadataPlugin>(
+  //     holder,
+  //     workspace.HolderMetadataPlugin
+  //   );
 
-    const index = 1;
-    const mint = mints[index - 1];
-    const metadata = metadatas[index - 1];
+  //   const index = 1;
+  //   const mint = mints[index - 1];
+  //   const metadata = metadatas[index - 1];
 
-    const param = fieldToAnchorParam(holderField.field);
-    const newHolderFieldVal = randomStr(10);
+  //   const param = fieldToAnchorParam(holderField.field);
+  //   const newHolderFieldVal = randomStr(10);
 
-    await program.methods
-      .updateHolderFieldV2(param, newHolderFieldVal)
-      .accounts({
-        mint: mint.publicKey,
-        metadata: metadata.publicKey,
-        fieldAuthorityProgram: ATM_PROGRAM_ID,
-        tokenProgram: TOKEN_2022_PROGRAM_ID,
-      })
-      .rpc();
+  //   await program.methods
+  //     .updateHolderFieldV2(param, newHolderFieldVal)
+  //     .accounts({
+  //       mint: mint.publicKey,
+  //       metadata: metadata.publicKey,
+  //       fieldAuthorityProgram: ATM_PROGRAM_ID,
+  //       tokenProgram: TOKEN_2022_PROGRAM_ID,
+  //     })
+  //     .rpc();
 
-    const vals = getInitMetadataVals(index, mint.publicKey);
-    vals.additionalMetadata.push([
-      holderField.field as string,
-      newHolderFieldVal,
-    ]);
-    const emittedMetadata = await getEmittedMetadata(
-      getConnection(),
-      ATM_PROGRAM_ID,
-      metadata.publicKey,
-      ANCHOR_WALLET_KEYPAIR.publicKey
-    );
-    assert.deepStrictEqual(emittedMetadata, vals);
-  });
+  //   const vals = getInitMetadataVals(index, mint.publicKey);
+  //   vals.additionalMetadata.push([
+  //     holderField.field as string,
+  //     newHolderFieldVal,
+  //   ]);
+  //   const emittedMetadata = await getEmittedMetadata(
+  //     getConnection(),
+  //     ATM_PROGRAM_ID,
+  //     metadata.publicKey,
+  //     ANCHOR_WALLET_KEYPAIR.publicKey
+  //   );
+  //   assert.deepStrictEqual(emittedMetadata, vals);
+  // });
 
   // TODO: Test wrong metadata template values, specifically the wrong update authority
 });

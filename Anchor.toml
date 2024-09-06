@@ -8,7 +8,7 @@ skip-lint = false
 holder_metadata_plugin = "3DkEmKWuBJbza9ur1BnVVhXrzkuiMCqBuKHdoDBdLpxZ"
 ai_aliens = "48MKwUN9uxxGrFCzXAV4kF5RPMVUyruLyYnapNynNtd4"
 vending_machine = "Uvwz29jANqCpX5F2zMHo5NMZc5MdC23ss8gTUnsEJAY"
-the100 = "AhDyfXr5yj89XsPjKt3z1VjjVqwi5v43PYfDXA3NbEWC"
+the_100 = "AhDyfXr5yj89XsPjKt3z1VjjVqwi5v43PYfDXA3NbEWC"
 
 [registry]
 url = "https://api.apr.dev"

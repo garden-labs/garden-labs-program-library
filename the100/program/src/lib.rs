@@ -12,7 +12,7 @@ use anchor_lang::prelude::*;
 declare_id!("AhDyfXr5yj89XsPjKt3z1VjjVqwi5v43PYfDXA3NbEWC");
 
 #[program]
-pub mod the100 {
+pub mod the_100 {
     use super::*;
 
     pub fn mint_nft(ctx: Context<MintNft>, index: u16) -> Result<()> {

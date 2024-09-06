@@ -23,12 +23,6 @@ pub fn get_metadata_init_vals(index: u16, mint: Pubkey) -> Result<TokenMetadata>
     return Ok(init_vals);
 }
 
-pub fn get_init_space(index: u16, mint: Pubkey) -> Result<usize> {
-    let init_vals = get_metadata_init_vals(index, mint)?;
-    let init_vals_space = init_vals.tlv_size_of()?;
-    return Ok(init_vals_space);
-}
-
 pub fn get_treasury_pubkey() -> Pubkey {
     return get_pubkey(TREASURY_PUBKEY_STR).unwrap();
 }

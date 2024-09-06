@@ -2,7 +2,7 @@ use {
     crate::{
         constants::{MAX_SUPPLY, MEMBER_PDA_SEED, MINT_FEE_LAMPORTS, THE100_PDA_SEED},
         errors::The100Error,
-        helpers::{get_init_space, get_metadata_init_vals, get_treasury_pubkey},
+        helpers::{get_metadata_init_vals, get_treasury_pubkey},
         state::MemberPda,
     },
     anchor_lang::{prelude::*, solana_program::program::invoke_signed},
@@ -202,6 +202,13 @@ pub fn handle_mint_nft(mut ctx: Context<MintNft>, index: u16) -> Result<()> {
     nullify_mint_authority(&ctx)?;
 
     init_member(&mut ctx)?;
+
+    // TODO: Add holder fields
+
+    reach_minimum_rent(
+        ctx.accounts.payer.clone(),
+        ctx.accounts.mint.to_account_info(),
+    )?;
 
     Ok(())
 }
