@@ -14,3 +14,4 @@ default = []
 [dependencies]
 anchor-lang = { workspace = true }
 spl-token-metadata-interface = { workspace = true}
+spl-type-length-value = { workspace = true }

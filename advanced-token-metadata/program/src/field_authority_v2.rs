@@ -16,7 +16,7 @@ use {
         program_error::ProgramError,
         pubkey::Pubkey,
     },
-    spl_token_metadata_interface::state::{Field, TokenMetadata},
+    spl_token_metadata_interface::state::TokenMetadata,
     // TlvState needed for get_first_variable_len_value()
     spl_type_length_value::state::{
         realloc_and_pack_first_variable_len, TlvState, TlvStateBorrowed, TlvStateMut,
