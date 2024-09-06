@@ -4,4 +4,6 @@ use anchor_lang::prelude::*;
 pub enum The100Error {
     #[msg("Index out of bounds")]
     IndexOutOfBounds,
+    #[msg("Invalid holder field")]
+    InvalidHolderField,
 }

@@ -7,3 +7,5 @@ pub const TREASURY_PUBKEY_STR: &str = "JCXiqb3oL3xPrs9VWbDPcotEN8mEiNNba7E5fWhz6
 pub const MEMBER_PDA_SEED: &str = "member-pda";
 
 pub const MAX_SUPPLY: u16 = 100;
+
+pub const HOLDER_FIELDS: [&str; 3] = ["network", "genre", "stream_url"];

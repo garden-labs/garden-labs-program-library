@@ -31,8 +31,6 @@ import {
   MEMBER_PDA_SEED,
   indexToSeed,
 } from "../js";
-import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
-import { HOLDER_METADATA_PDA_SEED } from "../../holder-metadata-plugin/js";
 
 describe("the100", () => {
   const maxSupply = 100;
@@ -254,6 +252,21 @@ describe("the100", () => {
           err.error.errorCode.code === "IndexOutOfBounds"
       );
     }
+  });
+
+  it("Updates network field", async () => {
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    const { program } = setPayer<The100>(holder, workspace.the100);
+
+    const index = 1;
+    const mint = mints[index - 1];
+
+    await program.methods
+      .updateHolderField("network", "The Lab")
+      .accounts({
+        mint: mint.publicKey,
+      })
+      .rpc();
   });
 
   // it("Update holder field with holder", async () => {

@@ -5,7 +5,6 @@ pub mod instructions;
 pub mod state;
 
 use instructions::*;
-use state::*;
 
 use anchor_lang::prelude::*;
 
@@ -17,5 +16,13 @@ pub mod the_100 {
 
     pub fn mint_nft(ctx: Context<MintNft>, index: u16) -> Result<()> {
         return handle_mint_nft(ctx, index);
+    }
+
+    pub fn update_holder_field(
+        ctx: Context<UpdateHolderField>,
+        field: String,
+        val: String,
+    ) -> Result<()> {
+        return handle_update_holder_field(ctx, field, val);
     }
 }
