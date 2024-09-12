@@ -2,7 +2,9 @@
 
 set -e
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+solana config set --url http://127.0.0.1:8899
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 DEPLOY_DIR="$ROOT_DIR/target/deploy"
 
 ATM_KEYPAIR="$DEPLOY_DIR/advanced_token_metadata-keypair.json"

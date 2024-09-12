@@ -32,5 +32,6 @@ export const DEPLOY_ATM_SCRIPT_PATH = path.join(
   "util",
   "bash",
   "deploy",
+  "localnet",
   "advanced-token-metadata.sh"
 );

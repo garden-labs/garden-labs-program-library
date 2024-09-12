@@ -170,10 +170,6 @@ describe("Vending Machine", () => {
   });
 
   it("Setup holder for next tests", async () => {
-    if (process.env.TEST_ENV !== "localnet") {
-      throw new Error("Test unsupported on non-localnet");
-    }
-
     // Give holder some lamports
     const amount = 10 * LAMPORTS_PER_SOL;
     const tx = new Transaction().add(
