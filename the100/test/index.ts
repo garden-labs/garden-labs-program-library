@@ -75,7 +75,9 @@ describe("the100", () => {
     const metadata: TokenMetadata = {
       name: `the100 Channel #${index}`,
       symbol: "THE100",
-      uri: `www.uri.com/${index}.json`,
+      uri: `https://firebasestorage.googleapis.com/v0/b/the100-f61ce.appspot.com/o/uri%2F${
+        index - 1
+      }.json?alt=media`,
       updateAuthority: the100Pda,
       mint,
       additionalMetadata: [],
