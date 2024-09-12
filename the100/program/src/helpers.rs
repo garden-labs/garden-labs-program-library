@@ -15,7 +15,7 @@ pub fn get_metadata_init_vals(index: u16, mint: Pubkey) -> Result<TokenMetadata>
     let init_vals = TokenMetadata {
         name: format!("the100 Channel #{}", index),
         symbol: "THE100".to_string(),
-        uri: format!("TODO/{}.json", index),
+        uri: format!("www.uri.com/{}.json", index),
         update_authority: Some(get_the100_pda()).try_into().unwrap(),
         mint,
         ..Default::default()

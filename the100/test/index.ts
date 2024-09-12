@@ -21,8 +21,12 @@ import {
 } from "@solana/spl-token";
 import { TokenMetadata } from "@solana/spl-token-metadata";
 
-import { setPayer, getConnection } from "../../util/js/config";
-import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
+import {
+  setPayer,
+  getConnection,
+  ANCHOR_WALLET_KEYPAIR,
+  updateField,
+} from "../../util/js";
 import { The100 } from "../../target/types/the_100";
 import { getAccountMetadata, getEmittedMetadata } from "../../common/js";
 import {
@@ -71,7 +75,7 @@ describe("the100", () => {
     const metadata: TokenMetadata = {
       name: `the100 Channel #${index}`,
       symbol: "THE100",
-      uri: `TODO/${index}.json`,
+      uri: `www.uri.com/${index}.json`,
       updateAuthority: the100Pda,
       mint,
       additionalMetadata: [],
@@ -254,57 +258,75 @@ describe("the100", () => {
     }
   });
 
-  it("Updates network field", async () => {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
-    const { program } = setPayer<The100>(holder, workspace.the100);
+  async function updateHolderField(
+    index: number,
+    field: string,
+    val: string,
+    h: Keypair = holder
+  ): Promise<void> {
+    const { program } = setPayer<The100>(h, workspace.the100);
 
-    const index = 1;
-    const mint = mints[index - 1];
+    const mint = mints[index - 1].publicKey;
+
+    // Get prev vals
+    const prevVals = await getAccountMetadata(getConnection(), mint);
 
     await program.methods
-      .updateHolderField("network", "The Lab")
+      .updateHolderField(field, val)
       .accounts({
-        mint: mint.publicKey,
+        mint,
       })
       .rpc();
+
+    const newVals = updateField(prevVals, field, val);
+
+    // Check emitted metadata
+    const emittedMetadata = await getEmittedMetadata(
+      getConnection(),
+      TOKEN_2022_PROGRAM_ID,
+      mint,
+      ANCHOR_WALLET_KEYPAIR.publicKey
+    );
+    assert.deepStrictEqual(emittedMetadata, newVals);
+
+    // Check account metadata
+    const accountMetadata = await getAccountMetadata(getConnection(), mint);
+    assert.deepStrictEqual(accountMetadata, newVals);
+  }
+
+  it("Updates network field", async () => {
+    await updateHolderField(1, "network", "The Lab");
   });
 
-  // it("Update holder field with holder", async () => {
-  //   const { program } = setPayer<HolderMetadataPlugin>(
-  //     holder,
-  //     workspace.HolderMetadataPlugin
-  //   );
+  it("Updates genre field", async () => {
+    await updateHolderField(1, "genre", "Music");
+  });
 
-  //   const index = 1;
-  //   const mint = mints[index - 1];
-  //   const metadata = metadatas[index - 1];
+  it("Updates stream_url field", async () => {
+    await updateHolderField(1, "stream_url", "www.stream.com");
+  });
 
-  //   const param = fieldToAnchorParam(holderField.field);
-  //   const newHolderFieldVal = randomStr(10);
+  it("Update non-holder field fails", async () => {
+    try {
+      await updateHolderField(1, "non-holder-field", "blablabla");
+      throw new Error("Should have thrown");
+    } catch (err) {
+      assert(
+        err instanceof AnchorError &&
+          err.error.errorCode.code === "InvalidHolderField"
+      );
+    }
+  });
 
-  //   await program.methods
-  //     .updateHolderFieldV2(param, newHolderFieldVal)
-  //     .accounts({
-  //       mint: mint.publicKey,
-  //       metadata: metadata.publicKey,
-  //       fieldAuthorityProgram: ATM_PROGRAM_ID,
-  //       tokenProgram: TOKEN_2022_PROGRAM_ID,
-  //     })
-  //     .rpc();
-
-  //   const vals = getInitMetadataVals(index, mint.publicKey);
-  //   vals.additionalMetadata.push([
-  //     holderField.field as string,
-  //     newHolderFieldVal,
-  //   ]);
-  //   const emittedMetadata = await getEmittedMetadata(
-  //     getConnection(),
-  //     ATM_PROGRAM_ID,
-  //     metadata.publicKey,
-  //     ANCHOR_WALLET_KEYPAIR.publicKey
-  //   );
-  //   assert.deepStrictEqual(emittedMetadata, vals);
-  // });
-
-  // TODO: Test wrong metadata template values, specifically the wrong update authority
+  it("Update field with non-holder fails", async () => {
+    try {
+      await updateHolderField(1, "network", "The Lab", ANCHOR_WALLET_KEYPAIR);
+      throw new Error("Should have thrown");
+    } catch (err) {
+      assert(
+        err instanceof AnchorError &&
+          err.error.errorCode.code === "AccountNotInitialized" // Holder token account
+      );
+    }
+  });
 });

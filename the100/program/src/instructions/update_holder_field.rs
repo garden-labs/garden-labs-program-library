@@ -45,11 +45,11 @@ pub struct UpdateHolderField<'info> {
     pub mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
-    associated_token::token_program = token_program,
-    associated_token::mint = mint,
-    associated_token::authority = holder,
-    constraint = holder_token_account.amount > 0,
-)]
+        associated_token::token_program = token_program,
+        associated_token::mint = mint,
+        associated_token::authority = holder,
+        constraint = holder_token_account.amount > 0,
+    )]
     pub holder_token_account: InterfaceAccount<'info, TokenAccount>,
 
     /// CHECK: Account checked in constraints
