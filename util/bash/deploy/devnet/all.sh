@@ -9,7 +9,7 @@ source $ROOT_DIR/.env
 DEPLOY_DIR="$ROOT_DIR/target/deploy"
 
 # Deploy advanced token metadata
-solana config set --url $SOLANA_DEVNET_RPC
+solana config set --url $DEVNET_RPC
 ATM_KEYPAIR="$DEPLOY_DIR/advanced_token_metadata-keypair.json"
 ATM_BINARY="$DEPLOY_DIR/advanced_token_metadata.so"
 solana program deploy --program-id $ATM_KEYPAIR $ATM_BINARY

@@ -27,7 +27,7 @@
     "restart:localnet": "solana-test-validator -r",
     "test:localnet": "util/bash/build/advanced-token-metadata.sh && anchor test",
     "test:localnet:vending-machine": "TEST_INCLUDE_PATH=vending-machine/test/**/*.ts npm run test:localnet",
-    "test:localnet:keep-open": "npm run test:localnet -- --skip-local-validator",
+    "test:localnet:manual-validator": "npm run test:localnet -- --skip-local-validator",
     "lint": "eslint ."
   },
   "dependencies": {
