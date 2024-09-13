@@ -1,6 +1,6 @@
 {
   "name": "@garden-labs/sdk",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "main": "build/sdk/index.js",
   "types": "build/sdk/index.d.ts",
