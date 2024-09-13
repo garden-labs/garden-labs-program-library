@@ -2,6 +2,7 @@
   "name": "@garden-labs/sdk",
   "version": "0.1.0",
   "description": "",
+  "author": "Garden Labs",
   "main": "build/sdk/index.js",
   "types": "build/sdk/index.d.ts",
   "files": [
@@ -9,27 +10,27 @@
     "Anchor.toml"
   ],
   "scripts": {
-    "build:sdk": "tsc --project sdk/tsconfig.json",
-    "dev:sdk": "tsc --project sdk/tsconfig.json --watch",
     "build:programs": "anchor build && util/bash/build/advanced-token-metadata.sh",
+    "build:sdk": "tsc --project sdk/tsconfig.json",
     "deploy:devnet": "util/bash/deploy/devnet/all.sh",
-    "write-buffer:prio-fees:staked-rpc": "solana program write-buffer --url https://deploy-qos.mainnet.rpcpool.com --with-compute-unit-price 200000 --max-sign-attempts 10000 --",
-    "recover-buffer": "solana-keygen recover -o buffer.json",
-    "recover-all-buffers": "solana program close --buffers",
-    "verify:get-hash:executable": "solana-verify get-executable-hash  --",
-    "verify:get-hash:buffer:mainnet": "solana-verify get-buffer-hash --url https://api.mainnet-beta.solana.com $(solana-keygen pubkey buffer.json)",
-    "verify:get-hash:program:mainnet": "solana-verify get-program-hash --url https://api.mainnet-beta.solana.com --",
     "deploy:mainnet": "solana program deploy --with-compute-unit-price 200000 --max-sign-attempts 10000 --buffer $(solana-keygen pubkey buffer.json) --program-id --",
-    "upgrade:mainnet": "solana program upgrade $(solana-keygen pubkey buffer.json) --",
+    "dev:sdk": "tsc --project sdk/tsconfig.json --watch",
     "get-size:executable": "stat -f %z --",
     "get-size:program": "solana program show --",
+    "lint": "eslint .",
+    "recover-all-buffers": "solana program close --buffers",
+    "recover-buffer": "solana-keygen recover -o buffer.json",
     "resize": "solana program extend --",
-    "start:localnet": "solana-test-validator",
     "restart:localnet": "solana-test-validator -r",
+    "start:localnet": "solana-test-validator",
     "test:localnet": "util/bash/build/advanced-token-metadata.sh && anchor test",
-    "test:localnet:vending-machine": "TEST_INCLUDE_PATH=vending-machine/test/**/*.ts npm run test:localnet",
     "test:localnet:manual-validator": "npm run test:localnet -- --skip-local-validator",
-    "lint": "eslint ."
+    "test:localnet:vending-machine": "TEST_INCLUDE_PATH=vending-machine/test/**/*.ts npm run test:localnet",
+    "upgrade:mainnet": "solana program upgrade $(solana-keygen pubkey buffer.json) --",
+    "verify:get-hash:buffer:mainnet": "solana-verify get-buffer-hash --url https://api.mainnet-beta.solana.com $(solana-keygen pubkey buffer.json)",
+    "verify:get-hash:executable": "solana-verify get-executable-hash  --",
+    "verify:get-hash:program:mainnet": "solana-verify get-program-hash --url https://api.mainnet-beta.solana.com --",
+    "write-buffer:prio-fees:staked-rpc": "solana program write-buffer --url https://deploy-qos.mainnet.rpcpool.com --with-compute-unit-price 200000 --max-sign-attempts 10000 --"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.30.1",
@@ -64,5 +65,8 @@
     "ts-mocha": "^10.0.0",
     "typescript": "^5.5.4",
     "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": "18.x"
   }
 }
