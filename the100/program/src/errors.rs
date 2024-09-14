@@ -6,4 +6,6 @@ pub enum The100Error {
     IndexOutOfBounds,
     #[msg("Invalid holder field")]
     InvalidHolderField,
+    #[msg("Holder field value too long")]
+    HolderFieldValTooLong,
 }

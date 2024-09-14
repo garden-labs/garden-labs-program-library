@@ -7,3 +7,8 @@ use anchor_lang::prelude::*;
 pub struct MemberPda {
     pub mint: Pubkey,
 }
+
+pub struct HolderFieldConfig {
+    pub name: &'static str,
+    pub max_len: u8,
+}

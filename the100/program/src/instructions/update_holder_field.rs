@@ -1,7 +1,7 @@
 use {
     crate::{
         constants::{
-            HOLDER_FIELDS, MAX_SUPPLY, MEMBER_PDA_SEED, MINT_FEE_LAMPORTS, THE100_PDA_SEED,
+            HOLDER_FIELD_CONFIGS, MAX_SUPPLY, MEMBER_PDA_SEED, MINT_FEE_LAMPORTS, THE100_PDA_SEED,
         },
         errors::The100Error,
         helpers::{get_metadata_init_vals, get_treasury_pubkey},
@@ -71,8 +71,19 @@ pub fn handle_update_holder_field(
     field: String,
     val: String,
 ) -> Result<()> {
-    if !HOLDER_FIELDS.contains(&field.as_str()) {
-        return Err(The100Error::InvalidHolderField.into());
+    // Check if it exists and is valid
+    let holder_field = HOLDER_FIELD_CONFIGS
+        .iter()
+        .find(|&f| f.name == field.as_str());
+    match holder_field {
+        Some(f) => {
+            if val.len() > f.max_len as usize {
+                return Err(The100Error::HolderFieldValTooLong.into());
+            }
+        }
+        None => {
+            return Err(The100Error::InvalidHolderField.into());
+        }
     }
 
     let accounts = TokenMetadataUpdateField {

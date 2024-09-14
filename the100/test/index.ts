@@ -28,7 +28,11 @@ import {
   updateField,
 } from "../../util/js";
 import { The100 } from "../../target/types/the_100";
-import { getAccountMetadata, getEmittedMetadata } from "../../common/js";
+import {
+  getAccountMetadata,
+  getEmittedMetadata,
+  randomStr,
+} from "../../common/js";
 import {
   THE100_PDA_SEED,
   TREASURY_PUBLIC_KEY,
@@ -293,15 +297,49 @@ describe("the100", () => {
   }
 
   it("Updates network field", async () => {
-    await updateHolderField(1, "network", "The Lab");
+    await updateHolderField(1, "network", randomStr(32));
+  });
+
+  it("Too long network fails", async () => {
+    try {
+      await updateHolderField(1, "network", randomStr(33));
+      throw new Error("Should have thrown");
+    } catch (err) {
+      assert(
+        err instanceof AnchorError &&
+          err.error.errorCode.code === "HolderFieldValTooLong"
+      );
+    }
   });
 
   it("Updates genre field", async () => {
-    await updateHolderField(1, "genre", "Music");
+    await updateHolderField(1, "genre", randomStr(32));
+  });
+
+  it("Too long genre fails", async () => {
+    try {
+      await updateHolderField(1, "genre", randomStr(33));
+    } catch (err) {
+      assert(
+        err instanceof AnchorError &&
+          err.error.errorCode.code === "HolderFieldValTooLong"
+      );
+    }
   });
 
   it("Updates stream_url field", async () => {
-    await updateHolderField(1, "stream_url", "www.stream.com");
+    await updateHolderField(1, "stream_url", randomStr(200));
+  });
+
+  it("Too long stream fails", async () => {
+    try {
+      await updateHolderField(1, "stream_url", randomStr(201));
+    } catch (err) {
+      assert(
+        err instanceof AnchorError &&
+          err.error.errorCode.code === "HolderFieldValTooLong"
+      );
+    }
   });
 
   it("Update non-holder field fails", async () => {
