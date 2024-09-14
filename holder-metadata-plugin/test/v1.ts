@@ -13,7 +13,7 @@ import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 import * as borsh from "@coral-xyz/borsh";
 import { workspace } from "@coral-xyz/anchor";
 
-import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
+import { ANCHOR_WALLET_KEYPAIR } from "../../util/constants";
 import { ATM_PROGRAM_ID } from "../../advanced-token-metadata/js";
 import { HOLDER_METADATA_PDA_SEED } from "../js";
 import {
@@ -21,13 +21,13 @@ import {
   FIELD_AUTHORITY_PDA_SEED,
   fieldToSeedStr,
 } from "../../field-authority-interface/js";
-import { setupMintMetadataToken } from "../../util/js/helpers";
+import { setupMintMetadataToken } from "../../util/helpers";
 import {
   getEmittedMetadata,
   randomStr,
   fieldToAnchorParam,
 } from "../../common/js";
-import { getConnection, setPayer } from "../../util/js/config";
+import { getConnection, setPayer } from "../../util/config";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 
 describe("Holder Metadata Plugin", () => {

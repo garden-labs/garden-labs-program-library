@@ -12,7 +12,7 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 import { workspace } from "@coral-xyz/anchor";
 
-import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
+import { ANCHOR_WALLET_KEYPAIR } from "../../util/constants";
 import { ATM_PROGRAM_ID } from "../../advanced-token-metadata/js";
 import { HOLDER_METADATA_PDA_SEED } from "../js";
 import {
@@ -23,7 +23,7 @@ import {
   getFieldAuthorities,
   getSpaceRent,
 } from "../../field-authority-interface/js";
-import { setupMintMetadataToken } from "../../util/js/helpers";
+import { setupMintMetadataToken } from "../../util/helpers";
 import {
   getEmittedMetadata,
   randomStr,
@@ -31,7 +31,7 @@ import {
   getEnsureRentMinTx,
   getAccountMetadata,
 } from "../../common/js";
-import { getConnection, setPayer } from "../../util/js/config";
+import { getConnection, setPayer } from "../../util/config";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 
 describe("Holder Metadata Plugin", () => {

@@ -26,7 +26,7 @@ import {
   getConnection,
   ANCHOR_WALLET_KEYPAIR,
   updateField,
-} from "../../util/js";
+} from "../../util";
 import { The100 } from "../../target/types/the_100";
 import {
   getAccountMetadata,

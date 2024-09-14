@@ -21,16 +21,14 @@ export const ANCHOR_WALLET_KEYPAIR = Keypair.fromSecretKey(
 
 export const BUILD_ATM_SCRIPT_PATH = path.join(
   appRoot.path,
-  "util",
-  "bash",
+  "scripts",
   "build",
   "advanced-token-metadata.sh"
 );
 
 export const DEPLOY_ATM_SCRIPT_PATH = path.join(
   appRoot.path,
-  "util",
-  "bash",
+  "scripts",
   "deploy",
   "localnet",
   "advanced-token-metadata.sh"

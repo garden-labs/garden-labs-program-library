@@ -15,16 +15,16 @@ import {
   createUpdateFieldInstruction,
 } from "@solana/spl-token-metadata";
 
-import { ANCHOR_WALLET_KEYPAIR } from "../../util/js/constants";
+import { ANCHOR_WALLET_KEYPAIR } from "../../util/constants";
 import { ATM_PROGRAM_ID } from "../js";
-import { setupMintMetadataToken, updateField } from "../../util/js/helpers";
+import { setupMintMetadataToken, updateField } from "../../util/helpers";
 import {
   getEmittedMetadata,
   getAccountMetadata,
   randomStr,
   getEnsureRentMinTx,
 } from "../../common/js";
-import { getConnection } from "../../util/js/config";
+import { getConnection } from "../../util/config";
 import {
   createInitializeFieldAuthoritiesIx,
   FieldAuthority,

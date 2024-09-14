@@ -1,10 +1,7 @@
 #!/bin/bash
-
 set -e
-
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
-
-source "$ROOT_DIR/.env"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+source $ROOT_DIR/.env
 
 solana config set --url $MAINNET_RPC
 

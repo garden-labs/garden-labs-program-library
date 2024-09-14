@@ -21,7 +21,7 @@ import {
 } from "@solana/spl-token";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 
-import { getConnection, setPayer, ANCHOR_WALLET_KEYPAIR } from "../../util/js";
+import { getConnection, setPayer, ANCHOR_WALLET_KEYPAIR } from "../../util";
 import {
   interpretTxErr,
   InterpretedTxErrType,

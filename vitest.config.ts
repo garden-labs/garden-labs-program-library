@@ -6,6 +6,6 @@ export default defineConfig({
     include: [process.env.TEST_INCLUDE_PATH || "**/test/**/*.ts"],
     exclude: ["node_modules", "build"],
     testTimeout: 1000000,
-    globalSetup: "./util/js/test-setup.ts",
+    globalSetup: "./util/test-setup.ts",
   },
 });

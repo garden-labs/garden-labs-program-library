@@ -21,11 +21,11 @@ import {
 } from "@solana/spl-token-metadata";
 
 import { ANCHOR_WALLET_KEYPAIR } from "./constants";
-import { ATM_PROGRAM_ID } from "../../advanced-token-metadata/js";
+import { ATM_PROGRAM_ID } from "../advanced-token-metadata/js";
 import { getConnection } from "./config";
-import type { FieldAuthorities } from "../../field-authority-interface/js";
-import { getAccountMetadata, getEmittedMetadata } from "../../common/js";
-import { getSpaceRent } from "../../field-authority-interface/js";
+import type { FieldAuthorities } from "../field-authority-interface/js";
+import { getAccountMetadata, getEmittedMetadata } from "../common/js";
+import { getSpaceRent } from "../field-authority-interface/js";
 
 // TODO: Create realloc instruction to metadata program so we don't need to
 // preallocate field authority space

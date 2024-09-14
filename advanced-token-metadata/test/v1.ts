@@ -20,7 +20,7 @@ import {
   updateField,
   getConnection,
   ANCHOR_WALLET_KEYPAIR,
-} from "../../util/js";
+} from "../../util";
 import { getEmittedMetadata, randomStr } from "../../common/js";
 import {
   createAddFieldAuthorityIx,
