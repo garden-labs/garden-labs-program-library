@@ -1,31 +1,21 @@
 use {
     crate::{
-        constants::{
-            HOLDER_FIELD_CONFIGS, MAX_SUPPLY, MEMBER_PDA_SEED, MINT_FEE_LAMPORTS, THE100_PDA_SEED,
-        },
+        constants::{HOLDER_FIELD_CONFIGS, THE100_PDA_SEED},
         errors::The100Error,
-        helpers::{get_metadata_init_vals, get_treasury_pubkey},
-        state::MemberPda,
+        helpers::update_field,
     },
-    anchor_lang::{prelude::*, solana_program::program::invoke_signed},
+    anchor_lang::prelude::*,
     anchor_spl::{
         associated_token::AssociatedToken,
-        token_2022::spl_token_2022::{
-            extension::{
-                // Needed for contraints (?)
-                group_member_pointer::GroupMemberPointer,
-                metadata_pointer::MetadataPointer,
-                mint_close_authority::MintCloseAuthority,
-                permanent_delegate::PermanentDelegate,
-                transfer_hook::TransferHook,
-            },
-            instruction::AuthorityType,
+        token_2022::spl_token_2022::extension::{
+            // Needed for contraints (?)
+            group_member_pointer::GroupMemberPointer,
+            metadata_pointer::MetadataPointer,
+            mint_close_authority::MintCloseAuthority,
+            permanent_delegate::PermanentDelegate,
+            transfer_hook::TransferHook,
         },
-        token_interface::{
-            mint_to, set_authority, token_metadata_initialize, token_metadata_update_field, Mint,
-            MintTo, SetAuthority, Token2022, TokenAccount, TokenMetadataInitialize,
-            TokenMetadataUpdateField,
-        },
+        token_interface::{Mint, Token2022, TokenAccount},
     },
     gpl_common::reach_minimum_rent,
     spl_token_metadata_interface::state::Field,
@@ -86,20 +76,14 @@ pub fn handle_update_holder_field(
         }
     }
 
-    let accounts = TokenMetadataUpdateField {
-        token_program_id: ctx.accounts.token_program.to_account_info(),
-        metadata: ctx.accounts.mint.to_account_info(),
-        update_authority: ctx.accounts.the100_pda.to_account_info(),
-    };
-    let the100_pda_seeds: &[&[u8]; 2] = &[THE100_PDA_SEED.as_bytes(), &[ctx.bumps.the100_pda]];
-    let signer_seeds = &[&the100_pda_seeds[..]];
-    let update_field_ctx = CpiContext::new_with_signer(
+    update_field(
         ctx.accounts.token_program.to_account_info(),
-        accounts,
-        signer_seeds,
-    );
-
-    token_metadata_update_field(update_field_ctx, Field::Key(field), val)?;
+        ctx.accounts.mint.to_account_info(),
+        ctx.accounts.the100_pda.to_account_info(),
+        ctx.bumps.the100_pda,
+        Field::Key(field),
+        val,
+    )?;
 
     reach_minimum_rent(
         ctx.accounts.payer.clone(),

@@ -2,7 +2,7 @@ use {
     crate::{
         constants::{MAX_SUPPLY, MEMBER_PDA_SEED, MINT_FEE_LAMPORTS, THE100_PDA_SEED},
         errors::The100Error,
-        helpers::{get_metadata_init_vals, get_treasury_pubkey},
+        helpers::{get_metadata_init_vals, get_treasury_pubkey, update_field},
         state::MemberPda,
     },
     anchor_lang::{prelude::*, solana_program::program::invoke_signed},
@@ -26,7 +26,7 @@ use {
         },
     },
     gpl_common::reach_minimum_rent,
-    spl_token_metadata_interface::state::TokenMetadata,
+    spl_token_metadata_interface::state::Field,
     spl_type_length_value::state::{TlvState, TlvStateBorrowed},
 };
 
@@ -96,7 +96,7 @@ pub struct MintNft<'info> {
     pub system_program: Program<'info, System>,
 }
 
-fn check_max_supply(ctx: &Context<MintNft>, index: u16) -> Result<()> {
+fn check_max_supply(index: u16) -> Result<()> {
     if index > MAX_SUPPLY || index < 1 {
         return err!(The100Error::IndexOutOfBounds);
     }
@@ -141,6 +141,18 @@ fn init_metadata(ctx: &Context<MintNft>, index: u16) -> Result<()> {
         token_metadata.symbol,
         token_metadata.uri,
     )?;
+
+    // Add additional fields
+    for (key, val) in token_metadata.additional_metadata {
+        update_field(
+            ctx.accounts.token_program.to_account_info(),
+            ctx.accounts.mint.to_account_info(),
+            ctx.accounts.the100_pda.to_account_info(),
+            ctx.bumps.the100_pda,
+            Field::Key(key),
+            val,
+        )?;
+    }
 
     Ok(())
 }
@@ -191,7 +203,7 @@ fn init_member(ctx: &mut Context<MintNft>) -> Result<()> {
 }
 
 pub fn handle_mint_nft(mut ctx: Context<MintNft>, index: u16) -> Result<()> {
-    check_max_supply(&ctx, index)?;
+    check_max_supply(index)?;
 
     pay_mint_fee(&ctx)?;
 

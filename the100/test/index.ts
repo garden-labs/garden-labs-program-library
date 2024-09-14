@@ -80,7 +80,8 @@ describe("the100", () => {
       }.json?alt=media`,
       updateAuthority: the100Pda,
       mint,
-      additionalMetadata: [],
+      // TODO: Perhaps add my own "unpack" method to make this camelcase
+      additionalMetadata: [["channel_num", index.toString()]],
     };
     return metadata;
   }
