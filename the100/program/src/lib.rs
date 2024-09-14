@@ -8,7 +8,7 @@ use instructions::*;
 
 use anchor_lang::prelude::*;
 
-declare_id!("AhDyfXr5yj89XsPjKt3z1VjjVqwi5v43PYfDXA3NbEWC");
+declare_id!("GPsudi35ndUQzhUuUn1Z9mCZWrJGbPLdsmMzP9LUzmbz");
 
 #[program]
 pub mod the_100 {
