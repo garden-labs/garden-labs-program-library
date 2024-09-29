@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
-    "lib": ["es2016"],
-    "module": "commonjs",
-    "target": "es2016",
+    "lib": ["es2020", "dom"],
+    "module": "esnext",
+    "target": "es2020",
     "esModuleInterop": true,
     "strict": true,
     "baseUrl": ".",
@@ -11,7 +11,8 @@
     "noImplicitAny": true,
     "skipLibCheck": true,
     "declaration": true,
-    "outDir": "build"
+    "outDir": "build",
+    "moduleResolution": "node"
   },
   "include": ["**/*.ts"],
   "exclude": ["vitest.config.ts", "tsconfig.json", "build"]
