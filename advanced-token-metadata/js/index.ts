@@ -1,18 +1,7 @@
-import path from "path";
-import { readFileSync } from "fs";
+import { PublicKey } from "@solana/web3.js";
 
-import appRoot from "app-root-path";
-import { Keypair } from "@solana/web3.js";
-
-const ATM_KEYPAIR_PATH = path.join(
-  appRoot.path,
-  "target",
-  "deploy",
-  "advanced_token_metadata-keypair.json"
+// We can't use fs to read dynamically from target because fs not supported in
+// browser
+export const ATM_PROGRAM_ID = new PublicKey(
+  "2GkHVZ2y5wP4nw4uA2GWFnc7jphfjKbbcEKwqMCV42a6"
 );
-
-const ATM_KEYPAIR = Keypair.fromSecretKey(
-  Uint8Array.from(JSON.parse(readFileSync(ATM_KEYPAIR_PATH).toString()))
-);
-
-export const ATM_PROGRAM_ID = ATM_KEYPAIR.publicKey;

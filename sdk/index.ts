@@ -7,6 +7,3 @@ export {
   MEMBER_PDA_SEED as THE100_MEMBER_PDA_SEED,
   indexToSeed as the100IndexToSeed,
 } from "../the100/js";
-
-// Helpful for development but perhaps should remove from package eventually
-export { ANCHOR_WALLET_KEYPAIR } from "../util";
