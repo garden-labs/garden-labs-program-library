@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
-    "lib": ["es2020", "dom"],
-    "module": "esnext",
-    "target": "es2020",
+    "target": "es2018",
+    "module": "commonjs",
+    "lib": ["esnext"],
+    "types": ["node"],
     "esModuleInterop": true,
     "strict": true,
     "baseUrl": ".",
@@ -11,6 +12,7 @@
     "noImplicitAny": true,
     "skipLibCheck": true,
     "declaration": true,
+    "declarationMap": true,
     "outDir": "build",
     "moduleResolution": "node"
   },
