@@ -2,7 +2,9 @@ use {
     crate::{
         constants::{MAX_SUPPLY, MEMBER_PDA_SEED, MINT_FEE_LAMPORTS, THE100_PDA_SEED},
         errors::The100Error,
-        helpers::{get_metadata_init_vals, get_treasury_pubkey, update_field},
+        helpers::{
+            get_metadata_init_vals, get_reserved_authority, get_treasury_pubkey, update_field,
+        },
         state::MemberPda,
     },
     anchor_lang::{prelude::*, solana_program::program::invoke_signed},
@@ -100,6 +102,17 @@ fn check_max_supply(index: u16) -> Result<()> {
     if index > MAX_SUPPLY || index < 1 {
         return err!(The100Error::IndexOutOfBounds);
     }
+    Ok(())
+}
+
+// Indices less than 10 or multiples of 10 are reserved
+fn check_reserved(ctx: &Context<MintNft>, index: u16) -> Result<()> {
+    if ctx.accounts.payer.key() != get_reserved_authority() {
+        if index < 10 || index % 10 == 0 {
+            return err!(The100Error::ReservedChannel);
+        }
+    }
+
     Ok(())
 }
 
@@ -204,6 +217,8 @@ fn init_member(ctx: &mut Context<MintNft>) -> Result<()> {
 
 pub fn handle_mint_nft(mut ctx: Context<MintNft>, index: u16) -> Result<()> {
     check_max_supply(index)?;
+
+    check_reserved(&ctx, index)?;
 
     pay_mint_fee(&ctx)?;
 

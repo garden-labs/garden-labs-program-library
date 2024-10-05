@@ -1,5 +1,8 @@
 import assert from "assert";
 
+// TODO: Get globals recognized in Cursor IDE
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { describe, it } from "vitest";
 import { workspace, Program, AnchorError } from "@coral-xyz/anchor";
 import {
   Keypair,
@@ -52,7 +55,7 @@ describe("the100", () => {
 
   const holder = Keypair.generate();
 
-  const mints: Keypair[] = [];
+  const mints: Map<number, Keypair> = new Map();
 
   it("Setup holder for next tests", async () => {
     // Give holder some lamports
@@ -86,25 +89,22 @@ describe("the100", () => {
     return metadata;
   }
 
-  it("Mint NFT", async () => {
+  async function testMint(index: number, receiver: Keypair): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/dot-notation
-    const { program } = setPayer<The100>(holder, workspace.the100);
-
-    const index = 1;
-
-    const mint = Keypair.generate();
-    mints.push(mint);
+    const { program } = setPayer<The100>(receiver, workspace.the100);
 
     const preTreasuryBalance = await getConnection().getBalance(
       TREASURY_PUBLIC_KEY
     );
+
+    const mint = Keypair.generate();
 
     await program.methods
       .mintNft(index)
       .accounts({
         treasury: TREASURY_PUBLIC_KEY,
         mint: mint.publicKey,
-        receiver: holder.publicKey,
+        receiver: receiver.publicKey,
       })
       .signers([mint])
       .rpc();
@@ -138,16 +138,16 @@ describe("the100", () => {
     assert(permanentDelegate?.delegate?.equals(the100Pda));
 
     // Check token balance
-    const holderAta = await getAssociatedTokenAddress(
+    const receiverAta = await getAssociatedTokenAddress(
       mint.publicKey,
-      holder.publicKey,
+      receiver.publicKey,
       undefined,
       TOKEN_2022_PROGRAM_ID
     );
-    const holderAtaBalance = await getConnection().getTokenAccountBalance(
-      holderAta
+    const receiverAtaBalance = await getConnection().getTokenAccountBalance(
+      receiverAta
     );
-    assert.equal(holderAtaBalance.value.amount, 1);
+    assert.equal(receiverAtaBalance.value.amount, 1);
 
     // Check mint fees
     const postTreasuryBalance = await getConnection().getBalance(
@@ -162,7 +162,7 @@ describe("the100", () => {
       mint.publicKey,
       ANCHOR_WALLET_KEYPAIR.publicKey
     );
-    const vals = getInitMetadataVals(1, mint.publicKey);
+    const vals = getInitMetadataVals(index, mint.publicKey);
     assert.deepStrictEqual(emittedMetadata, vals);
 
     // Check account metadata
@@ -184,14 +184,23 @@ describe("the100", () => {
     assert(memberPdaData.mint.equals(mint.publicKey));
 
     // TODO: Check actual member once group is enabled in token-2022
+
+    // Add if succeeded
+    mints.set(index, mint);
+  }
+
+  it("Mint NFT", async () => {
+    const index = 11;
+
+    await testMint(index, holder);
   });
 
-  it("Mint NFT index 1 twice fails", async () => {
+  it("Mint NFT index 11 twice fails", async () => {
     // eslint-disable-next-line @typescript-eslint/dot-notation
     const { program } = setPayer<The100>(holder, workspace.the100);
 
     try {
-      const index = 1;
+      const index = 11;
       const mint = Keypair.generate();
 
       await program.methods
@@ -269,7 +278,7 @@ describe("the100", () => {
   ): Promise<void> {
     const { program } = setPayer<The100>(h, workspace.the100);
 
-    const mint = mints[index - 1].publicKey;
+    const mint = mints.get(index)!.publicKey;
 
     // Get prev vals
     const prevVals = await getAccountMetadata(getConnection(), mint);
@@ -298,12 +307,12 @@ describe("the100", () => {
   }
 
   it("Updates network field", async () => {
-    await updateHolderField(1, "network", randomStr(32));
+    await updateHolderField(11, "network", randomStr(32));
   });
 
   it("Too long network fails", async () => {
     try {
-      await updateHolderField(1, "network", randomStr(33));
+      await updateHolderField(11, "network", randomStr(33));
       throw new Error("Should have thrown");
     } catch (err) {
       assert(
@@ -314,12 +323,12 @@ describe("the100", () => {
   });
 
   it("Updates genre field", async () => {
-    await updateHolderField(1, "genre", randomStr(32));
+    await updateHolderField(11, "genre", randomStr(32));
   });
 
   it("Too long genre fails", async () => {
     try {
-      await updateHolderField(1, "genre", randomStr(33));
+      await updateHolderField(11, "genre", randomStr(33));
     } catch (err) {
       assert(
         err instanceof AnchorError &&
@@ -329,12 +338,12 @@ describe("the100", () => {
   });
 
   it("Updates stream_url field", async () => {
-    await updateHolderField(1, "stream_url", randomStr(200));
+    await updateHolderField(11, "stream_url", randomStr(200));
   });
 
   it("Too long stream fails", async () => {
     try {
-      await updateHolderField(1, "stream_url", randomStr(201));
+      await updateHolderField(11, "stream_url", randomStr(201));
     } catch (err) {
       assert(
         err instanceof AnchorError &&
@@ -345,7 +354,7 @@ describe("the100", () => {
 
   it("Update non-holder field fails", async () => {
     try {
-      await updateHolderField(1, "non-holder-field", "blablabla");
+      await updateHolderField(11, "non-holder-field", "blablabla");
       throw new Error("Should have thrown");
     } catch (err) {
       assert(
@@ -357,7 +366,7 @@ describe("the100", () => {
 
   it("Update field with non-holder fails", async () => {
     try {
-      await updateHolderField(1, "network", "The Lab", ANCHOR_WALLET_KEYPAIR);
+      await updateHolderField(11, "network", "The Lab", ANCHOR_WALLET_KEYPAIR);
       throw new Error("Should have thrown");
     } catch (err) {
       assert(
@@ -365,5 +374,25 @@ describe("the100", () => {
           err.error.errorCode.code === "AccountNotInitialized" // Holder token account
       );
     }
+  });
+
+  it("Mint reserved with non-reserve authority fails", async () => {
+    const index = 1;
+
+    try {
+      await testMint(index, holder);
+      throw new Error("Should have thrown");
+    } catch (err) {
+      assert(
+        err instanceof AnchorError &&
+          err.error.errorCode.code === "ReservedChannel"
+      );
+    }
+  });
+
+  // NOTE: This will only work if Anchor wallet is the reserve authority
+  it("Mint reserved with reserve authority succeeds", async () => {
+    const index = 1;
+    await testMint(index, ANCHOR_WALLET_KEYPAIR);
   });
 });

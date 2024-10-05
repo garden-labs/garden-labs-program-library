@@ -24,3 +24,5 @@ pub const HOLDER_FIELD_CONFIGS: [HolderFieldConfig; 3] = [
         max_len: 200,
     },
 ];
+
+pub const RESERVED_AUTHORITY_STR: &str = "FbaDEEWfq4twAc9QV8RcsKi4QHrHgMRi7hyUTVjYYBh5";

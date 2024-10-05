@@ -8,4 +8,6 @@ pub enum The100Error {
     InvalidHolderField,
     #[msg("Holder field value too long")]
     HolderFieldValTooLong,
+    #[msg("Channel is reserved")]
+    ReservedChannel,
 }
