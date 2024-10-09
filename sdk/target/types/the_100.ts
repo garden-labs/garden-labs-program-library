@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/the_100.json`.
  */
 export type The100 = {
-  "address": "GPsudi35ndUQzhUuUn1Z9mCZWrJGbPLdsmMzP9LUzmbz",
+  "address": "hundhVJRpUuamCdMthaPchfwEm2fiCpKgpxgUCNWXt9",
   "metadata": {
     "name": "the100",
     "version": "0.1.0",
@@ -329,6 +329,11 @@ export type The100 = {
       "code": 6002,
       "name": "holderFieldValTooLong",
       "msg": "Holder field value too long"
+    },
+    {
+      "code": 6003,
+      "name": "reservedChannel",
+      "msg": "Channel is reserved"
     }
   ],
   "types": [

@@ -1,5 +1,5 @@
 {
-  "address": "GPsudi35ndUQzhUuUn1Z9mCZWrJGbPLdsmMzP9LUzmbz",
+  "address": "hundhVJRpUuamCdMthaPchfwEm2fiCpKgpxgUCNWXt9",
   "metadata": {
     "name": "the_100",
     "version": "0.1.0",
@@ -323,6 +323,11 @@
       "code": 6002,
       "name": "HolderFieldValTooLong",
       "msg": "Holder field value too long"
+    },
+    {
+      "code": 6003,
+      "name": "ReservedChannel",
+      "msg": "Channel is reserved"
     }
   ],
   "types": [
