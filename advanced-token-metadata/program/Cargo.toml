@@ -14,11 +14,11 @@ test-sbf = []
 [dependencies]
 solana-program = { workspace = true }
 spl-token-2022 = { workspace = true }
-spl-token-metadata-interface =  { workspace = true }
+spl-token-metadata-interface = { workspace = true }
 spl-type-length-value = { workspace = true }
 spl-pod = { workspace = true }
 borsh = { workspace = true }
-field-authority-interface = { version = "0.3.3", path = "../../field-authority-interface/program" }
+field-authority-interface = { version = "0.3.3", path = "../../field-authority-interface/interface" }
 
 [dev-dependencies]
 solana-program-test = ">=1.18.11,<=2"

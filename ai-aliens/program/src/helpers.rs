@@ -1,10 +1,11 @@
 use crate::constants::{DUMMY_PUBKEY_STR, METADATA_PROGRAM_ID_STR};
 use crate::errors::AiAliensError;
-use spl_token_metadata_interface::state::TokenMetadata;
 
 use anchor_lang::prelude::*;
+use spl_token_metadata_interface::state::TokenMetadata;
 use std::str::FromStr;
 
+// TODO: Replace this with common lib function
 fn get_pubkey(str: &str) -> Result<Pubkey> {
     Pubkey::from_str(str).map_err(|_| AiAliensError::InvalidPublicKey.into())
 }

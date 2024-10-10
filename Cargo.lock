@@ -120,6 +120,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "field-authority-interface",
+ "gpl-common",
  "holder-metadata-plugin",
  "spl-pod 0.2.2",
  "spl-token-2022 3.0.2",
@@ -1633,6 +1634,7 @@ dependencies = [
  "solana-program",
  "spl-discriminator 0.2.2",
  "spl-token-metadata-interface 0.3.3",
+ "spl-type-length-value 0.4.3",
  "thiserror",
 ]
 
@@ -1842,6 +1844,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "gpl-common"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "spl-token-metadata-interface 0.3.3",
+ "spl-type-length-value 0.4.3",
+]
+
+[[package]]
 name = "h2"
 version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1975,6 +1986,7 @@ dependencies = [
  "anchor-lang",
  "anchor-spl",
  "field-authority-interface",
+ "gpl-common",
  "spl-pod 0.2.2",
  "spl-token-metadata-interface 0.3.3",
 ]
@@ -5664,6 +5676,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23d434d3f8967a09480fb04132ebe0a3e088c173e6d0ee7897abbdf4eab0f8b9"
 
 [[package]]
+name = "the100"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
+ "anchor-spl",
+ "gpl-common",
+ "spl-token-metadata-interface 0.3.3",
+ "spl-type-length-value 0.4.3",
+]
+
+[[package]]
 name = "thiserror"
 version = "1.0.61"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6149,6 +6172,12 @@ name = "vending-machine"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
+ "anchor-spl",
+ "field-authority-interface",
+ "gpl-common",
+ "holder-metadata-plugin",
+ "spl-token-metadata-interface 0.3.3",
+ "spl-type-length-value 0.4.3",
 ]
 
 [[package]]

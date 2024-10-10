@@ -1,0 +1,319 @@
+{
+  "address": "3DkEmKWuBJbza9ur1BnVVhXrzkuiMCqBuKHdoDBdLpxZ",
+  "metadata": {
+    "name": "holder_metadata_plugin",
+    "version": "0.3.0",
+    "spec": "0.1.0",
+    "description": "Acts as a field authority and checks token ownership before updating metadata"
+  },
+  "instructions": [
+    {
+      "name": "update_holder_field",
+      "discriminator": [
+        183,
+        35,
+        96,
+        131,
+        43,
+        66,
+        192,
+        251
+      ],
+      "accounts": [
+        {
+          "name": "holder",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "metadata",
+          "writable": true
+        },
+        {
+          "name": "holder_token_account",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "holder"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "holder_metadata_pda",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  111,
+                  108,
+                  100,
+                  101,
+                  114,
+                  45,
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97,
+                  45,
+                  112,
+                  100,
+                  97
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "field_pda"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "field_authority_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "field",
+          "type": {
+            "defined": {
+              "name": "AnchorField"
+            }
+          }
+        },
+        {
+          "name": "val",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "update_holder_field_v2",
+      "discriminator": [
+        57,
+        86,
+        144,
+        87,
+        144,
+        105,
+        25,
+        124
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "holder",
+          "signer": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "metadata",
+          "writable": true
+        },
+        {
+          "name": "holder_token_account",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "holder"
+              },
+              {
+                "kind": "account",
+                "path": "token_program"
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "holder_metadata_pda",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  104,
+                  111,
+                  108,
+                  100,
+                  101,
+                  114,
+                  45,
+                  109,
+                  101,
+                  116,
+                  97,
+                  100,
+                  97,
+                  116,
+                  97,
+                  45,
+                  112,
+                  100,
+                  97
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "field_authority_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "field",
+          "type": {
+            "defined": {
+              "name": "AnchorField"
+            }
+          }
+        },
+        {
+          "name": "val",
+          "type": "string"
+        }
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "AnchorField",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Name"
+          },
+          {
+            "name": "Symbol"
+          },
+          {
+            "name": "Uri"
+          },
+          {
+            "name": "Key",
+            "fields": [
+              "string"
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

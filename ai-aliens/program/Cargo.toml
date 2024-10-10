@@ -23,4 +23,5 @@ spl-token-metadata-interface = { workspace = true }
 spl-token-2022 = { workspace = true }
 holder-metadata-plugin = { version = "0.3.0", path = "../../holder-metadata-plugin/program", features = ["cpi"]}
 spl-pod = { workspace = true }
-field-authority-interface = { version = "0.3.3", path = "../../field-authority-interface/program" }
+field-authority-interface = { version = "0.3.3", path = "../../field-authority-interface/interface" }
+gpl-common = { version = "0.1.0", path = "../../common/rust" }

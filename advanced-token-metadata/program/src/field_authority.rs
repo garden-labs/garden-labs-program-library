@@ -26,7 +26,8 @@ use {
     },
 };
 
-fn check_metadata_update_authority(
+/// Checks the metadata update authority is correct and signing
+pub fn check_metadata_update_authority(
     metadata_info: &AccountInfo,
     update_authority_info: &AccountInfo,
 ) -> Result<(), ProgramError> {

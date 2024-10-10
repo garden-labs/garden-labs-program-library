@@ -14,7 +14,13 @@ no-idl = []
 no-log-ix-name = []
 cpi = ["no-entrypoint"]
 default = []
-idl-build = ["anchor-lang/idl-build"]
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
 
 [dependencies]
-anchor-lang = { workspace = true}
+anchor-lang = { workspace = true }
+anchor-spl = { workspace = true }
+spl-token-metadata-interface = { workspace = true }
+holder-metadata-plugin = { version = "0.3.0", path = "../../holder-metadata-plugin/program", features = ["cpi"]}
+field-authority-interface = { version = "0.3.3", path = "../../field-authority-interface/interface" }
+gpl-common = { version = "0.1.0", path = "../../common/rust" }
+spl-type-length-value = { workspace = true }

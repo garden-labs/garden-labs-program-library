@@ -5,6 +5,7 @@
 #![cfg_attr(not(test), forbid(unsafe_code))]
 
 pub mod field_authority;
+pub mod field_authority_v2;
 pub mod processor;
 
 #[cfg(not(feature = "no-entrypoint"))]

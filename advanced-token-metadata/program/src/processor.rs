@@ -1,9 +1,15 @@
 //! Program state processor
 
 use {
-    crate::field_authority::{
-        process_add_field_authority, process_remove_field_authority,
-        process_update_field_with_field_authority,
+    crate::{
+        field_authority::{
+            process_add_field_authority, process_remove_field_authority,
+            process_update_field_with_field_authority,
+        },
+        field_authority_v2::{
+            process_add_field_authority_v2, process_initialize_field_authorities,
+            process_remove_field_authority_v2, process_update_field_with_field_authority_v2,
+        },
     },
     field_authority_interface::instructions::FieldAuthorityInstruction,
     solana_program::{
@@ -205,17 +211,33 @@ pub fn process(program_id: &Pubkey, accounts: &[AccountInfo], input: &[u8]) -> P
 
     if let Ok(field_authority_ix) = FieldAuthorityInstruction::unpack(input) {
         match field_authority_ix {
+            FieldAuthorityInstruction::InitializeFieldAuthorities(data) => {
+                msg!("Instruction: InitializeFieldAuthorities");
+                return process_initialize_field_authorities(program_id, accounts, data);
+            }
             FieldAuthorityInstruction::AddFieldAuthority(data) => {
                 msg!("Instruction: AddFieldAuthority");
                 return process_add_field_authority(program_id, accounts, data);
+            }
+            FieldAuthorityInstruction::AddFieldAuthorityV2(data) => {
+                msg!("Instruction: AddFieldAuthorityV2");
+                return process_add_field_authority_v2(program_id, accounts, data);
             }
             FieldAuthorityInstruction::UpdateFieldWithFieldAuthority(data) => {
                 msg!("Instruction: UpdateFieldWithFieldAuthority");
                 return process_update_field_with_field_authority(program_id, accounts, data);
             }
+            FieldAuthorityInstruction::UpdateFieldWithFieldAuthorityV2(data) => {
+                msg!("Instruction: UpdateFieldWithFieldAuthorityV2");
+                return process_update_field_with_field_authority_v2(program_id, accounts, data);
+            }
             FieldAuthorityInstruction::RemoveFieldAuthority(data) => {
                 msg!("Instruction: RemoveFieldAuthority");
                 return process_remove_field_authority(program_id, accounts, data);
+            }
+            FieldAuthorityInstruction::RemoveFieldAuthorityV2(data) => {
+                msg!("Instruction: RemoveFieldAuthorityV2");
+                return process_remove_field_authority_v2(program_id, accounts, data);
             }
         }
     }

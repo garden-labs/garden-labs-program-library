@@ -8,7 +8,7 @@ use anchor_spl::{
     token_2022::Token2022,
     token_interface::{Mint, TokenAccount},
 };
-use holder_metadata_plugin::state::AnchorField;
+use gpl_common::AnchorField;
 use spl_token_2022::{
     extension::ExtensionType::{
         self, GroupMemberPointer, MetadataPointer, PermanentDelegate, TransferHook,
@@ -90,10 +90,10 @@ pub struct CreateMint<'info> {
     /// CHECK: Account checked in CPI
     #[account(mut)]
     pub field_pda: UncheckedAccount<'info>,
+    // Need to keep on one line to not break rust-analyzer formatting
     /// CHECK: Account checked in constraints
     #[account(
-        executable, 
-        constraint = metadata_program.key() == get_metadata_program_id()?
+        executable, constraint = metadata_program.key() == get_metadata_program_id()?
     )]
     pub metadata_program: UncheckedAccount<'info>,
     pub token_program: Program<'info, Token2022>,
@@ -114,6 +114,7 @@ pub struct CreateToken<'info> {
         payer = payer,
         associated_token::mint = mint,
         associated_token::authority = dest,
+        associated_token::token_program = token_program,
     )]
     pub dest_ata: InterfaceAccount<'info, TokenAccount>,
     #[account(seeds = [AI_ALIENS_PDA_SEED.as_bytes()], bump)]
@@ -137,10 +138,10 @@ pub struct UpdateField<'info> {
     pub metadata: UncheckedAccount<'info>,
     #[account(seeds = [AI_ALIENS_PDA_SEED.as_bytes()], bump)]
     pub ai_aliens_pda: Account<'info, AiAliensPda>,
+    // Need to keep on one line to not break rust-analyzer formatting
     /// CHECK: Account checked in constraints
     #[account(
-        executable, 
-        constraint = metadata_program.key() == get_metadata_program_id()?
+        executable, constraint = metadata_program.key() == get_metadata_program_id()?
     )]
     pub metadata_program: UncheckedAccount<'info>,
 }

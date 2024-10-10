@@ -7,14 +7,15 @@ skip-lint = false
 [programs.localnet]
 holder_metadata_plugin = "3DkEmKWuBJbza9ur1BnVVhXrzkuiMCqBuKHdoDBdLpxZ"
 ai_aliens = "48MKwUN9uxxGrFCzXAV4kF5RPMVUyruLyYnapNynNtd4"
-vending_machine = "DMdzKuw3G1PmPkb1GdxMAWHkAyDAwW72SiM11BFW3cib"
+vending_machine = "Uvwz29jANqCpX5F2zMHo5NMZc5MdC23ss8gTUnsEJAY"
+the_100 = "GPsudi35ndUQzhUuUn1Z9mCZWrJGbPLdsmMzP9LUzmbz"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
 cluster = "Localnet"
-wallet = "/Users/jackson/.config/solana/id.json"
+wallet = "~/.config/solana/id.json"
 
 [scripts]
 test = "yarn run vitest run"
@@ -24,4 +25,5 @@ members = [
   "holder-metadata-plugin/program",
   "ai-aliens/program",
   "vending-machine/program",
+  "the100/program",
 ]

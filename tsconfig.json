@@ -1,13 +1,21 @@
 {
   "compilerOptions": {
-    "types": ["mocha", "chai"],
-    "typeRoots": ["./node_modules/@types"],
-    "lib": ["es2015"],
+    "target": "es2018",
     "module": "commonjs",
-    "target": "es6",
+    "lib": ["esnext"],
+    "types": ["node"],
     "esModuleInterop": true,
     "strict": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "build",
+    "moduleResolution": "node"
   },
-  "exclude": ["tsconfig.json"]
+  "include": ["**/*.ts"],
+  "exclude": ["vitest.config.ts", "tsconfig.json", "build"]
 }
