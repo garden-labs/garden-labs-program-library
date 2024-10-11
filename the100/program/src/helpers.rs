@@ -1,5 +1,5 @@
 use {
-    crate::constants::{RESERVED_AUTHORITY_STR, THE100_PDA_SEED, TREASURY_PUBKEY_STR},
+    crate::constants::{RESERVED_AUTHORITY_PUBKEKY_STR, THE100_PDA_SEED, TREASURY_PUBKEY_STR},
     anchor_lang::prelude::*,
     anchor_spl::token_interface::{token_metadata_update_field, TokenMetadataUpdateField},
     gpl_common::get_pubkey,
@@ -32,7 +32,7 @@ pub fn get_treasury_pubkey() -> Pubkey {
 }
 
 pub fn get_reserved_authority() -> Pubkey {
-    return get_pubkey(RESERVED_AUTHORITY_STR).unwrap();
+    return get_pubkey(RESERVED_AUTHORITY_PUBKEKY_STR).unwrap();
 }
 
 pub fn update_field<'info>(

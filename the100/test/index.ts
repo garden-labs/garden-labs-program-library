@@ -45,7 +45,7 @@ import {
 
 describe("the100", () => {
   const maxSupply = 100;
-  const mintFee = 2 * LAMPORTS_PER_SOL;
+  const mintFee = 4 * LAMPORTS_PER_SOL;
 
   const [the100Pda] = PublicKey.findProgramAddressSync(
     [Buffer.from(THE100_PDA_SEED)],

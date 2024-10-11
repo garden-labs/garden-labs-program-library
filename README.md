@@ -20,6 +20,10 @@ Full docs: <a href="https://developers.gardenlabs.com/">developers.gardenlabs.co
   - _Description_: Example PFP NFT collection which uses the programs above to enable token holders to give their NFTs' nicknames.
   - _Program ID_: `48MKwUN9uxxGrFCzXAV4kF5RPMVUyruLyYnapNynNtd4`
   - _Solana Verify Hash_: `81294793bddaeafbff5dd22af361eeb6ece5870caedd32877e82c0c8f2657ead`
+- `the100`
+  - _Description_: NFT collection which mints NFTs that control channels on <a href="https://the100.tv">the100.tv</a>.
+  - _Program ID_: `hundhVJRpUuamCdMthaPchfwEm2fiCpKgpxgUCNWXt9`
+  - _Solana Verify Hash_: `4af2032db69343eaddba2aa63c30d33cc78255925373f1876686352a806b2a79`
 - `vending-machine`
   - In development.
 
