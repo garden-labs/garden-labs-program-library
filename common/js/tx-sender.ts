@@ -87,7 +87,7 @@ async function simWithRetry(
       if (interpretedTxErr.type !== InterpretedTxErrType.Unknown) {
         throw interpretedTxErr;
       } else {
-        throw new Error(`Simulation failed: ${res}`);
+        throw new Error(`Simulation failed: ${JSON.stringify(res)}`);
       }
     } else if (requireCu && !res.unitsConsumed) {
       console.error("CU required but not found during simulation");
