@@ -3,7 +3,7 @@ use {
         constants::{MAX_SUPPLY, MEMBER_PDA_SEED, MINT_FEE_LAMPORTS, THE100_PDA_SEED},
         errors::The100Error,
         helpers::{
-            get_metadata_init_vals, get_reserved_authority, get_treasury_pubkey, update_field,
+            get_metadata_init_vals, get_admin_pubkey, get_treasury_pubkey, update_field,
         },
         state::MemberPda,
     },
@@ -24,7 +24,7 @@ use {
         token_interface::{
             mint_to, set_authority, token_metadata_initialize, token_metadata_update_field, Mint,
             MintTo, SetAuthority, Token2022, TokenAccount, TokenMetadataInitialize,
-            TokenMetadataUpdateField,
+            TokenMetadataUpdateField, token_member_initialize, TokenMemberInitialize
         },
     },
     gpl_common::reach_minimum_rent,
@@ -107,7 +107,7 @@ fn check_max_supply(index: u16) -> Result<()> {
 
 // Indices less than 10 or multiples of 10 are reserved
 fn check_reserved(ctx: &Context<MintNft>, index: u16) -> Result<()> {
-    if ctx.accounts.payer.key() != get_reserved_authority() {
+    if ctx.accounts.payer.key() != get_admin_pubkey() {
         if index < 10 || index % 10 == 0 {
             return err!(The100Error::ReservedChannel);
         }
@@ -209,8 +209,12 @@ fn init_member(ctx: &mut Context<MintNft>) -> Result<()> {
     // TODO: Initialize member with actual Group Interface
     // Group not enabled on Token2022 yet: https://github.com/solana-developers/program-examples/blob/main/tokens/token-2022/group/anchor/programs/group/src/lib.rs
 
-    // For now we'll use a custom Member PDA, which also marks the index as minted
+    // Mark the index as minted
     ctx.accounts.member_pda.mint = ctx.accounts.mint.key();
+
+    // Initialize token group member
+    // let accounts = TokenMemberInitialize {
+    // };
 
     Ok(())
 }

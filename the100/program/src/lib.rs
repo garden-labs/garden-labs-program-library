@@ -14,6 +14,10 @@ declare_id!("hundhVJRpUuamCdMthaPchfwEm2fiCpKgpxgUCNWXt9");
 pub mod the_100 {
     use super::*;
 
+    pub fn init_group(ctx: Context<InitGroup>) -> Result<()> {
+      return handle_init_group(ctx);
+    }
+
     pub fn mint_nft(ctx: Context<MintNft>, index: u16) -> Result<()> {
         return handle_mint_nft(ctx, index);
     }

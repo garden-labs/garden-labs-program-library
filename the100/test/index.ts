@@ -57,6 +57,17 @@ describe("the100", () => {
 
   const mints: Map<number, Keypair> = new Map();
 
+  async function initGroup(payer: Keypair): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    const { program } = setPayer<The100>(payer, workspace.the100);
+
+    await program.methods.initGroup().rpc();
+  }
+
+  it("Initialize group with admin succeeds", async () => {
+    await initGroup(payer);
+  });
+
   it("Setup holder for next tests", async () => {
     // Give holder some lamports
     const amount = 10 * LAMPORTS_PER_SOL;
@@ -376,7 +387,7 @@ describe("the100", () => {
     }
   });
 
-  it("Mint reserved with non-reserve authority fails", async () => {
+  it("Mint reserved with non-admin fails", async () => {
     const index = 1;
 
     try {
@@ -391,7 +402,7 @@ describe("the100", () => {
   });
 
   // NOTE: This will only work if Anchor wallet is the reserve authority
-  it("Mint reserved with reserve authority succeeds", async () => {
+  it("Mint reserved with admin succeeds", async () => {
     const index = 1;
     await testMint(index, ANCHOR_WALLET_KEYPAIR);
   });

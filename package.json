@@ -23,7 +23,7 @@
     "start:localnet": "solana-test-validator",
     "test:localnet": "scripts/build/advanced-token-metadata.sh && anchor test",
     "test:localnet:manual-validator": "npm run test:localnet -- --skip-local-validator",
-    "test:localnet:vending-machine": "TEST_INCLUDE_PATH=vending-machine/test/**/*.ts npm run test:localnet",
+    "test:localnet:the100": "TEST_INCLUDE_PATH=the100/test/**/*.ts npm run test:localnet",
     "verify:get-hash:buffer:mainnet": "solana-verify get-buffer-hash --url https://api.mainnet-beta.solana.com $(solana-keygen pubkey buffer.json)",
     "verify:get-hash:executable": "solana-verify get-executable-hash  --",
     "verify:get-hash:program:mainnet": "solana-verify get-program-hash --url https://api.mainnet-beta.solana.com --",
