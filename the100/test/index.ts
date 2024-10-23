@@ -61,7 +61,15 @@ describe("the100", () => {
     // eslint-disable-next-line @typescript-eslint/dot-notation
     const { program } = setPayer<The100>(payer, workspace.the100);
 
-    await program.methods.initGroup().rpc();
+    const mint = Keypair.generate();
+
+    await program.methods
+      .initGroup()
+      .accounts({
+        mint: mint.publicKey,
+      })
+      .signers([mint])
+      .rpc();
   }
 
   it("Setup holder for next tests", async () => {
