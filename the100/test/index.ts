@@ -64,10 +64,6 @@ describe("the100", () => {
     await program.methods.initGroup().rpc();
   }
 
-  it("Initialize group with admin succeeds", async () => {
-    await initGroup(payer);
-  });
-
   it("Setup holder for next tests", async () => {
     // Give holder some lamports
     const amount = 10 * LAMPORTS_PER_SOL;
@@ -83,6 +79,22 @@ describe("the100", () => {
     ]);
     const holderBalance = await getConnection().getBalance(holder.publicKey);
     assert.equal(holderBalance, amount);
+  });
+
+  it("Initialize group with non-admin fails", async () => {
+    try {
+      await initGroup(holder);
+      throw new Error("Should have thrown");
+    } catch (err) {
+      assert(
+        err instanceof AnchorError &&
+          err.error.errorCode.code === "ConstraintRaw"
+      );
+    }
+  });
+
+  it("Initialize group with admin succeeds", async () => {
+    await initGroup(ANCHOR_WALLET_KEYPAIR);
   });
 
   function getInitMetadataVals(index: number, mint: PublicKey): TokenMetadata {
