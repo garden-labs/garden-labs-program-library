@@ -24,7 +24,7 @@ use {
       token_interface::{
           mint_to, set_authority, token_metadata_initialize, token_metadata_update_field, Mint,
           MintTo, SetAuthority, Token2022, TokenAccount, TokenMetadataInitialize,
-          TokenMetadataUpdateField, token_member_initialize, TokenMemberInitialize
+          TokenMetadataUpdateField, token_group_initialize, TokenGroupInitialize
       },
   },
   gpl_common::reach_minimum_rent,
@@ -96,15 +96,34 @@ fn init_metadata(ctx: &Context<InitGroup>) -> Result<()> {
   Ok(())
 }
 
+fn init_group(ctx: &Context<InitGroup>) -> Result<()> {
+  let accounts = TokenGroupInitialize {
+    token_program_id: ctx.accounts.token_program.to_account_info(),
+    group: ctx.accounts.mint.to_account_info(),
+    mint: ctx.accounts.mint.to_account_info(),
+    mint_authority: ctx.accounts.the100_pda.to_account_info(),
+  };
+  let the100_pda_seeds: &[&[u8]; 2] = &[THE100_PDA_SEED.as_bytes(), &[ctx.bumps.the100_pda]];
+  let signer_seeds = &[&the100_pda_seeds[..]];
+  let cpi_ctx = CpiContext::new_with_signer(
+      ctx.accounts.token_program.to_account_info(),
+      accounts,
+      signer_seeds,
+  );
+  token_group_initialize(
+    cpi_ctx,
+    Some(ctx.accounts.payer.key()), // update_authority
+    100,                             // max_size
+  )
+
+  // TODO: Enable token group in test validator
+}
+
+
 pub fn handle_init_group(mut ctx: Context<InitGroup>) -> Result<()> {
   init_metadata(&ctx)?;
 
-  // let accounts = TokenGroupInitialize {
-  //   token_program_id: ctx.accounts.token_program.to_account_info(),
-  //   group: ctx.accounts.mint.to_account_info(),
-  //   mint: ctx.accounts.mint.to_account_info(),
-  //   mint_authority: ctx.accounts.the100_pda.to_account_info(),
-  // };
+  init_group(&ctx)?;
 
   reach_minimum_rent(
     ctx.accounts.payer.clone(),

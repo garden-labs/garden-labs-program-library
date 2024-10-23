@@ -70,6 +70,10 @@ describe("the100", () => {
       })
       .signers([mint])
       .rpc();
+
+    // TODO: Check metadata
+
+    // TODO: Check group
   }
 
   it("Setup holder for next tests", async () => {
