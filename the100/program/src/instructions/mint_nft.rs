@@ -1,6 +1,6 @@
 use {
     crate::{
-        constants::{MAX_SUPPLY, MEMBER_PDA_SEED, MINT_FEE_LAMPORTS, THE100_PDA_SEED},
+        constants::{MAX_SUPPLY, MEMBER_PDA_SEED, PRICE_LUT, THE100_PDA_SEED},
         errors::The100Error,
         helpers::{get_admin_pubkey, get_metadata_init_vals, get_treasury_pubkey, update_field},
         state::MemberPda,
@@ -114,11 +114,13 @@ fn check_reserved(ctx: &Context<MintNft>, index: u16) -> Result<()> {
     Ok(())
 }
 
-fn pay_mint_fee(ctx: &Context<MintNft>) -> Result<()> {
+fn pay_mint_fee(ctx: &Context<MintNft>, index: u16) -> Result<()> {
+    let mint_fee_lamports = PRICE_LUT[(index - 1) as usize];
+
     let ix = &anchor_lang::solana_program::system_instruction::transfer(
         ctx.accounts.payer.key,
         ctx.accounts.treasury.key,
-        MINT_FEE_LAMPORTS,
+        mint_fee_lamports,
     );
     let accounts = &[
         ctx.accounts.payer.to_account_info(),
@@ -218,7 +220,7 @@ pub fn handle_mint_nft(mut ctx: Context<MintNft>, index: u16) -> Result<()> {
 
     check_reserved(&ctx, index)?;
 
-    pay_mint_fee(&ctx)?;
+    pay_mint_fee(&ctx, index)?;
 
     init_metadata(&ctx, index)?;
 

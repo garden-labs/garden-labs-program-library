@@ -41,11 +41,11 @@ import {
   TREASURY_PUBLIC_KEY,
   MEMBER_PDA_SEED,
   indexToSeed,
+  PRICE_LUT,
 } from "../js";
 
 describe("the100", () => {
   const maxSupply = 100;
-  const mintFee = 4 * LAMPORTS_PER_SOL;
 
   const [the100Pda] = PublicKey.findProgramAddressSync(
     [Buffer.from(THE100_PDA_SEED)],
@@ -189,7 +189,10 @@ describe("the100", () => {
     const postTreasuryBalance = await getConnection().getBalance(
       TREASURY_PUBLIC_KEY
     );
-    assert.equal(postTreasuryBalance - preTreasuryBalance, mintFee);
+    assert.equal(
+      postTreasuryBalance - preTreasuryBalance,
+      PRICE_LUT[index - 1]
+    );
 
     // Check emitted metadata
     const emittedMetadata = await getEmittedMetadata(
@@ -412,7 +415,7 @@ describe("the100", () => {
     }
   });
 
-  it("Mint reserved with non-admin fails", async () => {
+  it("Mint min/reserved with non-admin fails", async () => {
     const index = 1;
 
     try {
@@ -427,8 +430,14 @@ describe("the100", () => {
   });
 
   // NOTE: This will only work if Anchor wallet is the reserve authority
-  it("Mint reserved with admin succeeds", async () => {
-    const index = 1;
+  it("Mint min/reserved with admin succeeds", async () => {
+    const index = 2;
     await testMint(index, ANCHOR_WALLET_KEYPAIR);
+  });
+
+  // Arbitrary channel test (for mint price)
+  it("Mint arbitrary channel", async () => {
+    const index = 44;
+    await testMint(index, holder);
   });
 });

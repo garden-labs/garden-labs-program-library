@@ -27,7 +27,7 @@ url = "https://api.mainnet-beta.solana.com"
 address = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
 
 [scripts]
-test = "yarn run vitest run"
+test = "yarn run vitest"
 
 [workspace]
 members = [
