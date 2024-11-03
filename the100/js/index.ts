@@ -43,16 +43,13 @@ export const PRICE_LUT: number[] = [
 ];
 
 // Sanity checks
-
 assert(PRICE_LUT.length === 100, "PRICE_LUT must have exactly 100 elements");
-
 for (let i = 1; i < PRICE_LUT.length; i += 1) {
   assert(
     PRICE_LUT[i] > PRICE_LUT[i - 1],
     `PRICE_LUT must be strictly increasing`
   );
 }
-
-assert(PRICE_LUT[0] === 2011388284, "Index 0 must be 2011388284");
-assert(PRICE_LUT[26] === 2334482678, "Index 26 must be 2334482678");
-assert(PRICE_LUT[99] === 4426133920089, "Index 99 must be 4426133920089");
+assert(PRICE_LUT[0] === 2011388284);
+assert(PRICE_LUT[26] === 2334482678);
+assert(PRICE_LUT[99] === 4426133920089);

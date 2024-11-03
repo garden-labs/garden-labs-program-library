@@ -22,7 +22,7 @@ pub const HOLDER_FIELD_CONFIGS: [HolderFieldConfig; 3] = [
     },
 ];
 
-pub const PRICE_LUT: [u64; 100] = [
+pub const PRICE_LUT: [u64; MAX_SUPPLY as usize] = [
     2011388284,
     2012969301,
     2014769808,
@@ -126,12 +126,6 @@ pub const PRICE_LUT: [u64; 100] = [
 ];
 
 // Sanity checks
-
-const _: () = assert!(
-    PRICE_LUT.len() == MAX_SUPPLY as usize,
-    "PRICE_LUT must have exactly MAX_SUPPLY elements"
-);
-
 const _: () = assert!(
     {
         let mut is_strictly_increasing = true;
@@ -147,10 +141,6 @@ const _: () = assert!(
     },
     "PRICE_LUT must be strictly increasing"
 );
-
-const _: () = assert!(PRICE_LUT[0] == 2011388284, "Index 0 must be 2011388284");
-const _: () = assert!(PRICE_LUT[26] == 2334482678, "Index 26 must be 2334482678");
-const _: () = assert!(
-    PRICE_LUT[99] == 4426133920089,
-    "Index 99 must be 4426133920089"
-);
+const _: () = assert!(PRICE_LUT[0] == 2011388284);
+const _: () = assert!(PRICE_LUT[26] == 2334482678);
+const _: () = assert!(PRICE_LUT[99] == 4426133920089);
