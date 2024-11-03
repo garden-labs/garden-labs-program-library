@@ -2,9 +2,7 @@ use {
     crate::{
         constants::{MAX_SUPPLY, MEMBER_PDA_SEED, MINT_FEE_LAMPORTS, THE100_PDA_SEED},
         errors::The100Error,
-        helpers::{
-            get_metadata_init_vals, get_admin_pubkey, get_treasury_pubkey, update_field,
-        },
+        helpers::{get_admin_pubkey, get_metadata_init_vals, get_treasury_pubkey, update_field},
         state::MemberPda,
     },
     anchor_lang::{prelude::*, solana_program::program::invoke_signed},
@@ -22,9 +20,9 @@ use {
             instruction::AuthorityType,
         },
         token_interface::{
-            mint_to, set_authority, token_metadata_initialize, token_metadata_update_field, Mint,
-            MintTo, SetAuthority, Token2022, TokenAccount, TokenMetadataInitialize,
-            TokenMetadataUpdateField, token_member_initialize, TokenMemberInitialize
+            mint_to, set_authority, token_member_initialize, token_metadata_initialize,
+            token_metadata_update_field, Mint, MintTo, SetAuthority, Token2022, TokenAccount,
+            TokenMemberInitialize, TokenMetadataInitialize, TokenMetadataUpdateField,
         },
     },
     gpl_common::reach_minimum_rent,
@@ -206,15 +204,11 @@ fn nullify_mint_authority(ctx: &Context<MintNft>) -> Result<()> {
 }
 
 fn init_member(ctx: &mut Context<MintNft>) -> Result<()> {
-    // TODO: Initialize member with actual Group Interface
-    // Group not enabled on Token2022 yet: https://github.com/solana-developers/program-examples/blob/main/tokens/token-2022/group/anchor/programs/group/src/lib.rs
-
     // Mark the index as minted
     ctx.accounts.member_pda.mint = ctx.accounts.mint.key();
 
-    // Initialize token group member
-    // let accounts = TokenMemberInitialize {
-    // };
+    // Initialize member with actual Group Interface
+    // TODO: Finish when Anchor supports: https://github.com/coral-xyz/anchor/blob/v0.30.1/CHANGELOG.md#0301---2024-06-20
 
     Ok(())
 }
@@ -233,8 +227,6 @@ pub fn handle_mint_nft(mut ctx: Context<MintNft>, index: u16) -> Result<()> {
     nullify_mint_authority(&ctx)?;
 
     init_member(&mut ctx)?;
-
-    // TODO: Add holder fields
 
     reach_minimum_rent(
         ctx.accounts.payer.clone(),

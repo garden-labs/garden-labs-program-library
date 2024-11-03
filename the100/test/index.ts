@@ -57,6 +57,7 @@ describe("the100", () => {
 
   const mints: Map<number, Keypair> = new Map();
 
+  // TODO: Finish implementation once Anchor supports
   async function initGroup(payer: Keypair): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/dot-notation
     const { program } = setPayer<The100>(payer, workspace.the100);
@@ -105,7 +106,7 @@ describe("the100", () => {
     }
   });
 
-  it("Initialize group with admin succeeds", async () => {
+  it("Initialize group with admin succeeds (*** WIP ***)", async () => {
     await initGroup(ANCHOR_WALLET_KEYPAIR);
   });
 
