@@ -34,7 +34,7 @@ pub fn remove_field_authority(
 ```
 
 <div style="text-align: right">
-    <a href="https://github.com/garden-labs/garden-labs-program-library/blob/main/field-authority-interface/interface/src/instruction.rs" target="_blank">source code</a>
+    <a href="https://github.com/garden-labs/garden-labs-program-library/blob/e29f973413d7d56e13ad709e57c6b1dc71f882a3/field-authority-interface/interface/src/instructions.rs#L127" target="_blank">source code</a>
 </div>
 
 This interface is meant to work in concert with the Token Metadata Interface. The `update_authority` is the same as the Token Metadata Interface's update authority, and it holds the ability to assign an extra `field_authority` to each field.

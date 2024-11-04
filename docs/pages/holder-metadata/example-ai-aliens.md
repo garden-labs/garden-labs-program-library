@@ -35,7 +35,7 @@ async function updateNickname(): Promise<void> {
 ```
 
 <div style="text-align: right">
-    <a href="https://github.com/garden-labs/garden-labs-program-library/blob/main/ai-aliens/test/ai-aliens.ts" target="_blank">source code</a>
+    <a href="https://github.com/garden-labs/garden-labs-program-library/blob/e29f973413d7d56e13ad709e57c6b1dc71f882a3/ai-aliens/test/index.ts" target="_blank">source code</a>
 </div>
 
 As you can see, we're actually just making a call to the Holder Metadata Program – no code was needed from the AI Aliens collection. If you're developing an NFT project, you can use these same programs and add holder-editable fields with very little work!
