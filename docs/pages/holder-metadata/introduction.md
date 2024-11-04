@@ -19,7 +19,7 @@ Holder Metadata is an <a href="https://github.com/garden-labs/garden-labs-progra
 
 2. <a href="https://www.farcaster.xyz/" target="blank">Farcaster</a> is a decentralized Twitter alternative built on top of Ethereum. Each user has a URL field they can set which points to a server that implements an off-chain protocol called a "hub."
 
-3. <a href="https://the100.tv/beta" target="blank">the100</a> (_in development_) is an internet-native TV built on Solana that aggregates videos from across the web. The owner of each channel NFT can set the video stream's URL.
+3. <a href="https://the100.tv/" target="blank">the100</a> (_in development_) is an internet-native TV built on Solana that aggregates videos from across the web. The owner of each channel NFT can set the video stream's URL.
 
 4. <a href="https://www.gardenbrowser.com/" target="blank">Garden</a> (_in development_) is an AR metaverse. The owner of each land NFT can change its name, description, and iFrame URL, which can serve 3D content.
 
