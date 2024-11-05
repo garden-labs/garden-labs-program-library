@@ -6,4 +6,5 @@ export { TREASURY_PUBLIC_KEY } from "../vending-machine/js";
 export {
   MEMBER_PDA_SEED as THE100_MEMBER_PDA_SEED,
   indexToSeed as the100IndexToSeed,
+  PRICE_LUT as THE100_PRICE_LUT,
 } from "../the100/js";
