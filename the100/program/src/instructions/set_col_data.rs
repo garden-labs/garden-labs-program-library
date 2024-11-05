@@ -6,7 +6,7 @@ pub struct SetColData<'info> {
     pub payer: Signer<'info>,
 
     #[account(
-      init,
+      init_if_needed,
       payer = payer,
       space = ColData::INIT_SPACE + 8,
     )]

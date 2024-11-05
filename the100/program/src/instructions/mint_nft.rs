@@ -222,6 +222,7 @@ pub fn handle_mint_nft(mut ctx: Context<MintNft>, index: u16) -> Result<()> {
 
     check_reserved(&ctx, index)?;
 
+    // TODO: Add free mint with admin
     pay_mint_fee(&ctx, index)?;
 
     init_metadata(&ctx, index)?;
