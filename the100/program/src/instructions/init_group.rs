@@ -25,30 +25,30 @@ pub struct InitGroup<'info> {
     pub payer: Signer<'info>,
 
     #[account(
-    init,
-    signer,
-    payer = payer,
-    mint::token_program = token_program,
-    mint::decimals = 0,
-    mint::authority = the100_pda, // Set to None in ix after mint token
-    mint::freeze_authority = the100_pda,
-    // We'll add these just in case we eventually use them
-    extensions::metadata_pointer::metadata_address = mint,
-    extensions::metadata_pointer::authority = the100_pda,
-    extensions::group_pointer::authority = mint,
-    extensions::group_pointer::group_address = mint,
-    extensions::transfer_hook::authority = the100_pda,
-    // TODO: Implement royalties with transfer hook
-    // extensions::transfer_hook::program_id = crate::ID,
-    extensions::permanent_delegate::delegate = the100_pda,
-  )]
+        init,
+        signer,
+        payer = payer,
+        mint::token_program = token_program,
+        mint::decimals = 0,
+        mint::authority = the100_pda, // Set to None in ix after mint token
+        mint::freeze_authority = the100_pda,
+        // We'll add these just in case we eventually use them
+        extensions::metadata_pointer::metadata_address = mint,
+        extensions::metadata_pointer::authority = the100_pda,
+        extensions::group_pointer::authority = mint,
+        extensions::group_pointer::group_address = mint,
+        extensions::transfer_hook::authority = the100_pda,
+        // TODO: Implement royalties with transfer hook
+        // extensions::transfer_hook::program_id = crate::ID,
+        extensions::permanent_delegate::delegate = the100_pda,
+    )]
     pub mint: Box<InterfaceAccount<'info, Mint>>,
 
     /// CHECK: Account checked in constraints
     #[account(
-    seeds = [THE100_PDA_SEED.as_bytes()],
-    bump
-  )]
+        seeds = [THE100_PDA_SEED.as_bytes()],
+        bump
+    )]
     pub the100_pda: UncheckedAccount<'info>,
 
     pub token_program: Program<'info, Token2022>,
@@ -78,7 +78,7 @@ fn init_metadata(ctx: &Context<InitGroup>) -> Result<()> {
       "the100".to_string(),
       "THE100".to_string(),
       "https://firebasestorage.googleapis.com/v0/b/the100-f61ce.appspot.com/o/uri%2Fgroup.json?alt=media".to_string(),
-  )?;
+    )?;
 
     Ok(())
 }

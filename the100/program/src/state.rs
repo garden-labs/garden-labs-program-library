@@ -12,3 +12,11 @@ pub struct HolderFieldConfig {
     pub name: &'static str,
     pub max_len: u8,
 }
+
+// Makes testing, redeploying easier
+#[account]
+#[derive(Debug, InitSpace)]
+pub struct ColData {
+    pub treasury: Pubkey,
+    pub admin: Pubkey,
+}

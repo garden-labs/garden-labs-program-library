@@ -57,6 +57,8 @@ describe("the100", () => {
 
   const mints: Map<number, Keypair> = new Map();
 
+  // it("Set collection data", async () => {});
+
   // TODO: Finish implementation once Anchor supports
   async function initGroup(payer: Keypair): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/dot-notation
