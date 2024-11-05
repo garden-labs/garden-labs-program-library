@@ -3,7 +3,7 @@ use {
         constants::{MAX_SUPPLY, MEMBER_PDA_SEED, PRICE_LUT, THE100_PDA_SEED},
         errors::The100Error,
         helpers::{get_admin_pubkey, get_metadata_init_vals, get_treasury_pubkey, update_field},
-        state::MemberPda,
+        state::{ColData, MemberPda},
     },
     anchor_lang::{prelude::*, solana_program::program::invoke_signed},
     anchor_spl::{
@@ -88,6 +88,8 @@ pub struct MintNft<'info> {
         bump
     )]
     pub the100_pda: UncheckedAccount<'info>,
+
+    pub col_data: Account<'info, ColData>,
 
     pub token_program: Program<'info, Token2022>,
 
