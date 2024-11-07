@@ -15,6 +15,10 @@ pub struct SetColData<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handle_set_col_data(ctx: Context<SetColData>) -> Result<()> {
+pub fn handle_set_col_data(ctx: Context<SetColData>, admin: Pubkey, treasury: Pubkey) -> Result<()> {
+    // Set data
+    ctx.accounts.col_data.admin = admin;
+    ctx.accounts.col_data.treasury = treasury;
+
     Ok(())
 }

@@ -38,7 +38,6 @@ import {
 } from "../../common/js";
 import {
   THE100_PDA_SEED,
-  TREASURY_PUBLIC_KEY,
   MEMBER_PDA_SEED,
   indexToSeed,
   PRICE_LUT,
@@ -47,17 +46,38 @@ import {
 describe("the100", () => {
   const maxSupply = 100;
 
+  const colData = Keypair.generate();
+  const admin = ANCHOR_WALLET_KEYPAIR.publicKey;
+  const treasury = Keypair.generate().publicKey;
+  const holder = Keypair.generate();
+
   const [the100Pda] = PublicKey.findProgramAddressSync(
     [Buffer.from(THE100_PDA_SEED)],
     // eslint-disable-next-line @typescript-eslint/dot-notation
     new Program<The100>(workspace.the100.idl).programId
   );
 
-  const holder = Keypair.generate();
-
   const mints: Map<number, Keypair> = new Map();
 
-  // it("Set collection data", async () => {});
+  it("Set collection data", async () => {
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    const { program } = setPayer<The100>(
+      ANCHOR_WALLET_KEYPAIR,
+      workspace.the100
+    );
+
+    await program.methods
+      .setColData(admin, treasury)
+      .accounts({
+        colData: colData.publicKey,
+      })
+      .signers([colData])
+      .rpc();
+
+    const c = await program.account.colData.fetch(colData.publicKey);
+    assert(c.admin.equals(admin));
+    assert(c.treasury.equals(treasury));
+  });
 
   // TODO: Finish implementation once Anchor supports
   async function initGroup(payer: Keypair): Promise<void> {
@@ -70,6 +90,7 @@ describe("the100", () => {
       .initGroup()
       .accounts({
         mint: mint.publicKey,
+        colData: colData.publicKey,
       })
       .signers([mint])
       .rpc();
@@ -127,22 +148,25 @@ describe("the100", () => {
     return metadata;
   }
 
-  async function testMint(index: number, receiver: Keypair): Promise<void> {
+  async function testMint(
+    index: number,
+    receiver: Keypair,
+    treasuryPubkey: PublicKey = treasury
+  ): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/dot-notation
     const { program } = setPayer<The100>(receiver, workspace.the100);
 
-    const preTreasuryBalance = await getConnection().getBalance(
-      TREASURY_PUBLIC_KEY
-    );
+    const preTreasuryBalance = await getConnection().getBalance(treasury);
 
     const mint = Keypair.generate();
 
     await program.methods
       .mintNft(index)
       .accounts({
-        treasury: TREASURY_PUBLIC_KEY,
+        treasury: treasuryPubkey,
         mint: mint.publicKey,
         receiver: receiver.publicKey,
+        colData: colData.publicKey,
       })
       .signers([mint])
       .rpc();
@@ -188,9 +212,7 @@ describe("the100", () => {
     assert.equal(receiverAtaBalance.value.amount, 1);
 
     // Check mint fees
-    const postTreasuryBalance = await getConnection().getBalance(
-      TREASURY_PUBLIC_KEY
-    );
+    const postTreasuryBalance = await getConnection().getBalance(treasury);
     assert.equal(
       postTreasuryBalance - preTreasuryBalance,
       PRICE_LUT[index - 1]
@@ -223,6 +245,7 @@ describe("the100", () => {
     );
     const memberPdaData = await program.account.memberPda.fetch(memberPda);
     assert(memberPdaData.mint.equals(mint.publicKey));
+    assert(memberPdaData.colData.equals(colData.publicKey));
 
     // TODO: Check actual member once group is enabled in token-2022
 
@@ -247,15 +270,43 @@ describe("the100", () => {
       await program.methods
         .mintNft(index)
         .accounts({
-          treasury: TREASURY_PUBLIC_KEY,
+          treasury,
           mint: mint.publicKey,
           receiver: holder.publicKey,
+          colData: colData.publicKey,
         })
         .signers([mint])
         .rpc();
       throw new Error("Should have thrown");
     } catch (err) {
       assert(err instanceof SendTransactionError);
+    }
+  });
+
+  it("Mint NFT with wrong treasury fails", async () => {
+    // eslint-disable-next-line @typescript-eslint/dot-notation
+    const { program } = setPayer<The100>(holder, workspace.the100);
+
+    try {
+      const index = 12;
+      const mint = Keypair.generate();
+
+      await program.methods
+        .mintNft(index)
+        .accounts({
+          treasury: Keypair.generate().publicKey,
+          mint: mint.publicKey,
+          receiver: holder.publicKey,
+          colData: colData.publicKey,
+        })
+        .signers([mint])
+        .rpc();
+      throw new Error("Should have thrown");
+    } catch (err) {
+      assert(
+        err instanceof AnchorError &&
+          err.error.errorCode.code === "ConstraintRaw"
+      );
     }
   });
 
@@ -270,9 +321,10 @@ describe("the100", () => {
       await program.methods
         .mintNft(index)
         .accounts({
-          treasury: TREASURY_PUBLIC_KEY,
+          treasury,
           mint: mint.publicKey,
           receiver: holder.publicKey,
+          colData: colData.publicKey,
         })
         .signers([mint])
         .rpc();
@@ -296,9 +348,10 @@ describe("the100", () => {
       await program.methods
         .mintNft(index)
         .accounts({
-          treasury: TREASURY_PUBLIC_KEY,
+          treasury,
           mint: mint.publicKey,
           receiver: holder.publicKey,
+          colData: colData.publicKey,
         })
         .signers([mint])
         .rpc();
