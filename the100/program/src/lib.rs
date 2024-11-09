@@ -14,8 +14,8 @@ declare_id!("hundhVJRpUuamCdMthaPchfwEm2fiCpKgpxgUCNWXt9");
 pub mod the_100 {
     use super::*;
 
-    pub fn set_col_data(ctx: Context<SetColData>) -> Result<()> {
-        return handle_set_col_data(ctx);
+    pub fn set_col_data(ctx: Context<SetColData>, admin: Pubkey, treasury: Pubkey) -> Result<()> {
+        return handle_set_col_data(ctx, admin, treasury);
     }
 
     pub fn init_group(ctx: Context<InitGroup>) -> Result<()> {

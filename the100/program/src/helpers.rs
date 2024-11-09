@@ -1,10 +1,8 @@
 use {
-    crate::constants::{ADMIN_PUBKEY_STR, THE100_PDA_SEED, TREASURY_PUBKEY_STR},
+    crate::constants::THE100_PDA_SEED,
     anchor_lang::{prelude::*, solana_program::native_token::LAMPORTS_PER_SOL},
     anchor_spl::token_interface::{token_metadata_update_field, TokenMetadataUpdateField},
-    gpl_common::get_pubkey,
     spl_token_metadata_interface::state::{Field, TokenMetadata},
-    spl_type_length_value::state::{TlvState, TlvStateBorrowed},
 };
 
 fn get_the100_pda() -> Pubkey {
@@ -25,14 +23,6 @@ pub fn get_metadata_init_vals(index: u16, mint: Pubkey) -> Result<TokenMetadata>
         ],
     };
     return Ok(init_vals);
-}
-
-pub fn get_treasury_pubkey() -> Pubkey {
-    return get_pubkey(TREASURY_PUBKEY_STR).unwrap();
-}
-
-pub fn get_admin_pubkey() -> Pubkey {
-    return get_pubkey(ADMIN_PUBKEY_STR).unwrap();
 }
 
 pub fn update_field<'info>(

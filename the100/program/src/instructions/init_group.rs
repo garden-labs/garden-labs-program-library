@@ -1,5 +1,5 @@
 use {
-    crate::{constants::THE100_PDA_SEED, helpers::get_admin_pubkey},
+    crate::{constants::THE100_PDA_SEED, state::ColData},
     anchor_lang::prelude::*,
     anchor_spl::{
         associated_token::AssociatedToken,
@@ -21,7 +21,7 @@ use {
 
 #[derive(Accounts)]
 pub struct InitGroup<'info> {
-    #[account(mut, constraint = payer.key() == get_admin_pubkey())]
+    #[account(mut, constraint = payer.key() == col_data.admin)]
     pub payer: Signer<'info>,
 
     #[account(
@@ -50,6 +50,8 @@ pub struct InitGroup<'info> {
         bump
     )]
     pub the100_pda: UncheckedAccount<'info>,
+
+    pub col_data: Account<'info, ColData>,
 
     pub token_program: Program<'info, Token2022>,
 
@@ -110,7 +112,7 @@ fn init_group(ctx: &Context<InitGroup>) -> Result<()> {
     // TODO: Enable token group in test validator
 }
 
-pub fn handle_init_group(mut ctx: Context<InitGroup>) -> Result<()> {
+pub fn handle_init_group(ctx: Context<InitGroup>) -> Result<()> {
     init_metadata(&ctx)?;
 
     init_group(&ctx)?;

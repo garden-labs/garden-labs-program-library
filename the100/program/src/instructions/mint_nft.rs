@@ -2,7 +2,7 @@ use {
     crate::{
         constants::{MAX_SUPPLY, MEMBER_PDA_SEED, THE100_PDA_SEED},
         errors::The100Error,
-        helpers::{get_admin_pubkey, get_metadata_init_vals, get_treasury_pubkey, update_field, get_mint_fee_lamports},
+        helpers::{get_metadata_init_vals, update_field, get_mint_fee_lamports},
         state::{ColData, MemberPda},
     },
     anchor_lang::prelude::*,
@@ -35,7 +35,7 @@ pub struct MintNft<'info> {
     pub payer: Signer<'info>,
 
     /// CHECK: Account checked in constraints
-    #[account(mut, constraint = treasury.key() == get_treasury_pubkey())]
+    #[account(mut, constraint = treasury.key() == col_data.treasury)]
     pub treasury: UncheckedAccount<'info>,
 
     /// CHECK: We're just giving them a token
@@ -105,7 +105,7 @@ fn check_max_supply(index: u16) -> Result<()> {
 
 // Indices less than 10 or multiples of 10 are reserved
 fn check_reserved(ctx: &Context<MintNft>, index: u16) -> Result<()> {
-    if ctx.accounts.payer.key() != get_admin_pubkey() {
+    if ctx.accounts.payer.key() != ctx.accounts.col_data.admin {
         if index < 10 || index % 10 == 0 {
             return err!(The100Error::ReservedChannel);
         }
@@ -208,6 +208,7 @@ fn nullify_mint_authority(ctx: &Context<MintNft>) -> Result<()> {
 fn init_member(ctx: &mut Context<MintNft>) -> Result<()> {
     // Mark the index as minted
     ctx.accounts.member_pda.mint = ctx.accounts.mint.key();
+    ctx.accounts.member_pda.col_data = ctx.accounts.col_data.key();
 
     // Initialize member with actual Group Interface
     // TODO: Finish when Anchor supports: https://github.com/coral-xyz/anchor/blob/v0.30.1/CHANGELOG.md#0301---2024-06-20
@@ -220,7 +221,6 @@ pub fn handle_mint_nft(mut ctx: Context<MintNft>, index: u16) -> Result<()> {
 
     check_reserved(&ctx, index)?;
 
-    // TODO: Add free mint with admin
     pay_mint_fee(&ctx, index)?;
 
     init_metadata(&ctx, index)?;
