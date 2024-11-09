@@ -14,5 +14,5 @@ export function indexToSeed(index: number): Buffer {
 }
 
 export function getMintFeeLamports(index: number): number {
-  return 2 * LAMPORTS_PER_SOL + 800_000 * index ** 2;
+  return 1 * LAMPORTS_PER_SOL + 900_000 * index ** 2;
 }

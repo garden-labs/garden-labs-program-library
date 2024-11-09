@@ -57,5 +57,5 @@ pub fn update_field<'info>(
 }
 
 pub fn get_mint_fee_lamports(index: u16) -> u64 {
-    return 2 * LAMPORTS_PER_SOL + 800_000 * (index as u64).pow(2);
+    return 1 * LAMPORTS_PER_SOL + 900_000 * (index as u64).pow(2);
 }
