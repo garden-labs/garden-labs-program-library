@@ -41,7 +41,7 @@ import {
   TREASURY_PUBLIC_KEY,
   MEMBER_PDA_SEED,
   indexToSeed,
-  PRICE_LUT,
+  getMintFeeLamports
 } from "../js";
 
 describe("the100", () => {
@@ -193,7 +193,7 @@ describe("the100", () => {
     );
     assert.equal(
       postTreasuryBalance - preTreasuryBalance,
-      PRICE_LUT[index - 1]
+      getMintFeeLamports(index)
     );
 
     // Check emitted metadata
