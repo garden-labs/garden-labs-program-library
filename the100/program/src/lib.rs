@@ -15,7 +15,7 @@ pub mod the_100 {
     use super::*;
 
     pub fn init_group(ctx: Context<InitGroup>) -> Result<()> {
-      return handle_init_group(ctx);
+        return handle_init_group(ctx);
     }
 
     pub fn mint_nft(ctx: Context<MintNft>, index: u16) -> Result<()> {

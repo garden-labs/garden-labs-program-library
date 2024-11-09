@@ -1,11 +1,14 @@
 use {
     crate::{
-        constants::{MAX_SUPPLY, MEMBER_PDA_SEED, PRICE_LUT, THE100_PDA_SEED},
+        constants::{MAX_SUPPLY, MEMBER_PDA_SEED, THE100_PDA_SEED},
         errors::The100Error,
-        helpers::{get_admin_pubkey, get_metadata_init_vals, get_treasury_pubkey, update_field},
+        helpers::{
+            get_admin_pubkey, get_metadata_init_vals, get_mint_fee_lamports, get_treasury_pubkey,
+            update_field,
+        },
         state::MemberPda,
     },
-    anchor_lang::{prelude::*, solana_program::program::invoke_signed},
+    anchor_lang::prelude::*,
     anchor_spl::{
         associated_token::AssociatedToken,
         token_2022::spl_token_2022::{
@@ -20,14 +23,12 @@ use {
             instruction::AuthorityType,
         },
         token_interface::{
-            mint_to, set_authority, token_member_initialize, token_metadata_initialize,
-            token_metadata_update_field, Mint, MintTo, SetAuthority, Token2022, TokenAccount,
-            TokenMemberInitialize, TokenMetadataInitialize, TokenMetadataUpdateField,
+            mint_to, set_authority, token_metadata_initialize, Mint, MintTo, SetAuthority,
+            Token2022, TokenAccount, TokenMetadataInitialize,
         },
     },
     gpl_common::reach_minimum_rent,
     spl_token_metadata_interface::state::Field,
-    spl_type_length_value::state::{TlvState, TlvStateBorrowed},
 };
 
 #[derive(Accounts)]
@@ -115,7 +116,7 @@ fn check_reserved(ctx: &Context<MintNft>, index: u16) -> Result<()> {
 }
 
 fn pay_mint_fee(ctx: &Context<MintNft>, index: u16) -> Result<()> {
-    let mint_fee_lamports = PRICE_LUT[(index - 1) as usize];
+    let mint_fee_lamports = get_mint_fee_lamports(index);
 
     let ix = &anchor_lang::solana_program::system_instruction::transfer(
         ctx.accounts.payer.key,

@@ -1,6 +1,6 @@
 use {
     crate::constants::{ADMIN_PUBKEY_STR, THE100_PDA_SEED, TREASURY_PUBKEY_STR},
-    anchor_lang::prelude::*,
+    anchor_lang::{prelude::*, solana_program::native_token::LAMPORTS_PER_SOL},
     anchor_spl::token_interface::{token_metadata_update_field, TokenMetadataUpdateField},
     gpl_common::get_pubkey,
     spl_token_metadata_interface::state::{Field, TokenMetadata},
@@ -54,4 +54,8 @@ pub fn update_field<'info>(
     token_metadata_update_field(update_field_ctx, field, val)?;
 
     Ok(())
+}
+
+pub fn get_mint_fee_lamports(index: u16) -> u64 {
+    return 2 * LAMPORTS_PER_SOL + 800_000 * (index as u64).pow(2);
 }

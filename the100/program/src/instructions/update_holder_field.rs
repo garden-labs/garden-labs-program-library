@@ -19,7 +19,6 @@ use {
     },
     gpl_common::reach_minimum_rent,
     spl_token_metadata_interface::state::Field,
-    spl_type_length_value::state::{TlvState, TlvStateBorrowed},
 };
 
 #[derive(Accounts)]
