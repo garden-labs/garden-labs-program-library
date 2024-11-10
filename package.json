@@ -14,8 +14,6 @@
     "build:sdk": "tsup sdk/index.ts --format esm --dts --clean --outDir build",
     "deploy:mainnet": "solana program deploy --with-compute-unit-price 200000 --max-sign-attempts 10000 --buffer $(solana-keygen pubkey buffer.json) --program-id --",
     "dev:sdk": "tsc --project sdk/tsconfig.json --watch",
-    "get-size:executable": "stat -f %z --",
-    "get-size:program": "solana program show --",
     "lint": "eslint .",
     "recover-all-buffers": "solana program close --buffers",
     "recover-buffer": "solana-keygen recover -o buffer.json",
@@ -24,6 +22,8 @@
     "test:localnet": "scripts/build/advanced-token-metadata.sh && anchor test",
     "test:localnet:manual-validator": "npm run test:localnet -- --skip-local-validator",
     "test:localnet:the100": "TEST_INCLUDE_PATH=the100/test/**/*.ts npm run test:localnet",
+    "get-size:the100:executable": "stat -f %z target/deploy/the_100.so",
+    "get-size:the100:program": "solana program show --url https://api.mainnet-beta.solana.com hundhVJRpUuamCdMthaPchfwEm2fiCpKgpxgUCNWXt9",
     "verify:the100:executable": "solana-verify get-executable-hash  target/deploy/the_100.so",
     "verify:the100:program": "solana-verify get-program-hash --url https://api.mainnet-beta.solana.com hundhVJRpUuamCdMthaPchfwEm2fiCpKgpxgUCNWXt9",
     "write-buffer:prio-fees:staked-rpc": "solana program write-buffer --url https://deploy-qos.mainnet.rpcpool.com --with-compute-unit-price 200000 --max-sign-attempts 10000 --"
