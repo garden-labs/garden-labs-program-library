@@ -1,5 +1,5 @@
 use {
-    crate::constants::THE100_PDA_SEED,
+    crate::{constants::THE100_PDA_SEED},
     anchor_lang::{prelude::*, solana_program::native_token::LAMPORTS_PER_SOL},
     anchor_spl::token_interface::{token_metadata_update_field, TokenMetadataUpdateField},
     spl_token_metadata_interface::state::{Field, TokenMetadata},
@@ -47,5 +47,5 @@ pub fn update_field<'info>(
 }
 
 pub fn get_mint_fee_lamports(index: u16) -> u64 {
-    return 1 * LAMPORTS_PER_SOL + 900_000 * (index as u64).pow(2);
+    return 1 * LAMPORTS_PER_SOL + 900_000 * u64::from(index).pow(2);
 }

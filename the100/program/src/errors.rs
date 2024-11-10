@@ -10,4 +10,6 @@ pub enum The100Error {
     HolderFieldValTooLong,
     #[msg("Channel is reserved")]
     ReservedChannel,
+    #[msg("Not admin of collection data")]
+    NotAdminOfColData,
 }

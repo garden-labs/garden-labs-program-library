@@ -18,9 +18,10 @@ pub mod the_100 {
         return handle_set_col_data(ctx, admin, treasury);
     }
 
-    pub fn init_group(ctx: Context<InitGroup>) -> Result<()> {
-        return handle_init_group(ctx);
-    }
+    // TODO: Finish / enable once Anchor supports
+    // pub fn init_group(ctx: Context<InitGroup>) -> Result<()> {
+    //     return handle_init_group(ctx);
+    // }
 
     pub fn mint_nft(ctx: Context<MintNft>, index: u16) -> Result<()> {
         return handle_mint_nft(ctx, index);

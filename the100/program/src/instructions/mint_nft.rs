@@ -155,7 +155,7 @@ fn init_metadata(ctx: &Context<MintNft>, index: u16) -> Result<()> {
         token_metadata.uri,
     )?;
 
-    // Add additional fields
+    // Add additional fields (require additional instructions)
     for (key, val) in token_metadata.additional_metadata {
         update_field(
             ctx.accounts.token_program.to_account_info(),

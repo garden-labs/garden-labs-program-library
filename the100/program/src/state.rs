@@ -6,10 +6,12 @@ use anchor_lang::prelude::*;
 pub struct ColData {
     pub treasury: Pubkey,
     pub admin: Pubkey,
+    pub was_initialized: bool,
 }
 
-// TODO: Perhaps GroupPointer could be used instead – doesn't appear to support non-sequential
-// indexing right now. Hashes are also probably better than sequential indexing.
+
+// TODO: Perhaps GroupPointer could be used instead. 
+// It doesn't appear to support non-sequential ndexing right now.
 #[account]
 #[derive(Debug, InitSpace)]
 pub struct MemberPda {

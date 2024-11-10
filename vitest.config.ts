@@ -7,6 +7,5 @@ export default defineConfig({
     exclude: ["node_modules", "build"],
     testTimeout: 1000000,
     globalSetup: "./util/test-setup.ts",
-    fileParallelism: false, // Refactor tests to allow parallelism
   },
 });

@@ -2,7 +2,7 @@ import assert from "assert";
 
 // TODO: Get globals recognized in Cursor IDE
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { describe, it } from "vitest";
+import { describe, it, beforeAll } from "vitest";
 import { workspace, Program, AnchorError } from "@coral-xyz/anchor";
 import {
   Keypair,
@@ -47,7 +47,7 @@ describe("the100", () => {
   const maxSupply = 100;
 
   const colData = Keypair.generate();
-  const admin = ANCHOR_WALLET_KEYPAIR.publicKey;
+  const admin = ANCHOR_WALLET_KEYPAIR;
   const treasury = Keypair.generate().publicKey;
   const holder = Keypair.generate();
 
@@ -59,48 +59,8 @@ describe("the100", () => {
 
   const mints: Map<number, Keypair> = new Map();
 
-  it("Set collection data", async () => {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
-    const { program } = setPayer<The100>(
-      ANCHOR_WALLET_KEYPAIR,
-      workspace.the100
-    );
-
-    await program.methods
-      .setColData(admin, treasury)
-      .accounts({
-        colData: colData.publicKey,
-      })
-      .signers([colData])
-      .rpc();
-
-    const c = await program.account.colData.fetch(colData.publicKey);
-    assert(c.admin.equals(admin));
-    assert(c.treasury.equals(treasury));
-  });
-
-  // TODO: Finish implementation once Anchor supports
-  async function initGroup(payer: Keypair): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
-    const { program } = setPayer<The100>(payer, workspace.the100);
-
-    const mint = Keypair.generate();
-
-    await program.methods
-      .initGroup()
-      .accounts({
-        mint: mint.publicKey,
-        colData: colData.publicKey,
-      })
-      .signers([mint])
-      .rpc();
-
-    // TODO: Check metadata
-
-    // TODO: Check group
-  }
-
-  it("Setup holder for next tests", async () => {
+  // Setup holder
+  beforeAll(async () => {
     // Give holder some lamports
     const amount = 10 * LAMPORTS_PER_SOL;
     const tx = new Transaction().add(
@@ -117,21 +77,65 @@ describe("the100", () => {
     assert.equal(holderBalance, amount);
   });
 
-  it("Initialize group with non-admin fails", async () => {
+  async function setColData(a: Keypair, t: PublicKey): Promise<void> {
+    const { program } = setPayer<The100>(a, workspace.the100);
+
+    await program.methods
+      .setColData(a.publicKey, t)
+      .accounts({
+        colData: colData.publicKey,
+      })
+      .signers([colData])
+      .rpc();
+
+    const c = await program.account.colData.fetch(colData.publicKey);
+    assert(c.admin.equals(a.publicKey));
+    assert(c.treasury.equals(t));
+  }
+
+  it("Init collection data", async () => {
+    const tempTreasury = Keypair.generate().publicKey;
+    await setColData(admin, tempTreasury);
+  });
+
+  it("Update collection data", async () => {
+    await setColData(admin, treasury);
+  });
+
+  it("Update collection data with non-admin fails", async () => {
+    const newTreasury = Keypair.generate().publicKey;
+
     try {
-      await initGroup(holder);
+      await setColData(holder, newTreasury);
       throw new Error("Should have thrown");
     } catch (err) {
       assert(
         err instanceof AnchorError &&
-          err.error.errorCode.code === "ConstraintRaw"
+          err.error.errorCode.code === "NotAdminOfColData", JSON.stringify(err, null, 2)
       );
     }
   });
 
-  it("Initialize group with admin succeeds (*** WIP ***)", async () => {
-    await initGroup(ANCHOR_WALLET_KEYPAIR);
-  });
+  // TODO: Finish implementation once Anchor supports
+  // async function initGroup(payer: Keypair): Promise<void> {
+  //   // eslint-disable-next-line @typescript-eslint/dot-notation
+  //   const { program } = setPayer<The100>(payer, workspace.the100);
+
+  //   const mint = Keypair.generate();
+
+  //   await program.methods
+  //     .initGroup()
+  //     .accounts({
+  //       mint: mint.publicKey,
+  //       colData: colData.publicKey,
+  //     })
+  //     .signers([mint])
+  //     .rpc();
+
+  //   // TODO: Check metadata
+
+  //   // TODO: Check group
+  // }
 
   function getInitMetadataVals(index: number, mint: PublicKey): TokenMetadata {
     const metadata: TokenMetadata = {
@@ -460,7 +464,7 @@ describe("the100", () => {
 
   it("Update field with non-holder fails", async () => {
     try {
-      await updateHolderField(11, "network", "The Lab", ANCHOR_WALLET_KEYPAIR);
+      await updateHolderField(11, "network", "The Lab", admin);
       throw new Error("Should have thrown");
     } catch (err) {
       assert(
@@ -484,10 +488,9 @@ describe("the100", () => {
     }
   });
 
-  // NOTE: This will only work if Anchor wallet is the reserve authority
   it("Mint min/reserved with admin succeeds", async () => {
     const index = 2;
-    await testMint(index, ANCHOR_WALLET_KEYPAIR);
+    await testMint(index, admin);
   });
 
   // Arbitrary channel test (for mint price)
