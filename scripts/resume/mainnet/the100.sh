@@ -11,6 +11,6 @@ THE100_KEYPAIR="$DEPLOY_DIR/the_100-keypair.json"
 THE100_BINARY="$DEPLOY_DIR/the_100.so"
 
 # NOTE: Change this as needed
-BUFFER="the100-temp.json"
+BUFFER="temp.json"
 
 solana program deploy --with-compute-unit-price 200000 --max-sign-attempts 10000 --program-id $THE100_KEYPAIR --buffer $BUFFER $THE100_BINARY

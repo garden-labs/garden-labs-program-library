@@ -384,7 +384,6 @@ describe("the100", () => {
 
     const mint = mints.get(index)!.publicKey;
 
-    // Get prev vals
     const prevVals = await getAccountMetadata(getConnection(), mint);
 
     await program.methods
@@ -468,7 +467,7 @@ describe("the100", () => {
     }
   });
 
-  it("Update field with wrong holder fails", async () => {
+  it("Update holder field with wrong holder fails", async () => {
     try {
       await updateHolderField(11, "network", "The Lab", admin);
       throw new Error("Should have thrown");

@@ -6,7 +6,7 @@ source $ROOT_DIR/.env
 # Config
 BYTES=30000
 
-solana config set --url $DEVNET_RPC
+solana config set --url $MAINNET_RPC
 
 DEPLOY_DIR="$ROOT_DIR/target/deploy"
 

@@ -24,9 +24,8 @@
     "test:localnet": "scripts/build/advanced-token-metadata.sh && anchor test",
     "test:localnet:manual-validator": "npm run test:localnet -- --skip-local-validator",
     "test:localnet:the100": "TEST_INCLUDE_PATH=the100/test/**/*.ts npm run test:localnet",
-    "verify:get-hash:buffer:mainnet": "solana-verify get-buffer-hash --url https://api.mainnet-beta.solana.com $(solana-keygen pubkey buffer.json)",
-    "verify:get-hash:executable": "solana-verify get-executable-hash  --",
-    "verify:get-hash:program:mainnet": "solana-verify get-program-hash --url https://api.mainnet-beta.solana.com --",
+    "verify:the100:executable": "solana-verify get-executable-hash  target/deploy/the_100.so",
+    "verify:the100:program": "solana-verify get-program-hash --url https://api.mainnet-beta.solana.com hundhVJRpUuamCdMthaPchfwEm2fiCpKgpxgUCNWXt9",
     "write-buffer:prio-fees:staked-rpc": "solana program write-buffer --url https://deploy-qos.mainnet.rpcpool.com --with-compute-unit-price 200000 --max-sign-attempts 10000 --"
   },
   "dependencies": {

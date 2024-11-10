@@ -23,7 +23,7 @@ Full docs: <a href="https://developers.gardenlabs.com/">developers.gardenlabs.co
 - `the100`
   - _Description_: NFT collection which mints NFTs that control channels on <a href="https://the100.tv">the100.tv</a>.
   - _Program ID_: `hundhVJRpUuamCdMthaPchfwEm2fiCpKgpxgUCNWXt9`
-  - _Solana Verify Hash_: `4af2032db69343eaddba2aa63c30d33cc78255925373f1876686352a806b2a79`
+  - _Solana Verify Hash_: `795fe7d41215f1d115e472353551527bc6b6da4b9cfac8ca127b1e28f2edaf0a`
 - `vending-machine`
   - In development.
 
