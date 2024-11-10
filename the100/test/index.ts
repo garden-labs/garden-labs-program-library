@@ -114,7 +114,7 @@ describe("the100", () => {
     await updateColData(admin, treasury);
   });
 
-  it("Update collection data with non-admin fails", async () => {
+  it("Update collection data with wrong admin fails", async () => {
     const newTreasury = Keypair.generate().publicKey;
 
     try {
@@ -169,7 +169,6 @@ describe("the100", () => {
     receiver: Keypair,
     treasuryPubkey: PublicKey = treasury
   ): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
     const { program } = setPayer<The100>(receiver, workspace.the100);
 
     const preTreasuryBalance = await getConnection().getBalance(treasury);
@@ -263,28 +262,26 @@ describe("the100", () => {
     assert(memberPdaData.mint.equals(mint.publicKey));
     assert(memberPdaData.colData.equals(colData.publicKey));
 
-    // TODO: Check actual member once group is enabled in token-2022
+    // TODO: Check actual group member once supported in Anchor
 
     // Add if succeeded
     mints.set(index, mint);
   }
 
-  it("Mint NFT", async () => {
-    const index = 11;
+  const sharedIndex = 11;
 
-    await testMint(index, holder);
+  it("Mint NFT", async () => {
+    await testMint(sharedIndex, holder);
   });
 
   it("Mint NFT index 11 twice fails", async () => {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
     const { program } = setPayer<The100>(holder, workspace.the100);
 
     try {
-      const index = 11;
       const mint = Keypair.generate();
 
       await program.methods
-        .mintNft(index)
+        .mintNft(sharedIndex)
         .accounts({
           treasury,
           mint: mint.publicKey,
@@ -300,7 +297,6 @@ describe("the100", () => {
   });
 
   it("Mint NFT with wrong treasury fails", async () => {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
     const { program } = setPayer<The100>(holder, workspace.the100);
 
     try {
@@ -327,7 +323,6 @@ describe("the100", () => {
   });
 
   it("Mint NFT index 0 fails", async () => {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
     const { program } = setPayer<The100>(holder, workspace.the100);
 
     try {
@@ -354,7 +349,6 @@ describe("the100", () => {
   });
 
   it("Mint NFT index above max supply fails", async () => {
-    // eslint-disable-next-line @typescript-eslint/dot-notation
     const { program } = setPayer<The100>(holder, workspace.the100);
 
     try {
@@ -462,7 +456,7 @@ describe("the100", () => {
     }
   });
 
-  it("Update non-holder field fails", async () => {
+  it("Update invalid holder field fails", async () => {
     try {
       await updateHolderField(11, "non-holder-field", "blablabla");
       throw new Error("Should have thrown");
@@ -474,7 +468,7 @@ describe("the100", () => {
     }
   });
 
-  it("Update field with non-holder fails", async () => {
+  it("Update field with wrong holder fails", async () => {
     try {
       await updateHolderField(11, "network", "The Lab", admin);
       throw new Error("Should have thrown");
@@ -486,7 +480,7 @@ describe("the100", () => {
     }
   });
 
-  it("Mint min/reserved with non-admin fails", async () => {
+  it("Mint min/reserved with wrong admin fails", async () => {
     const index = 1;
 
     try {
