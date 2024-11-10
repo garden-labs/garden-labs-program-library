@@ -1,9 +1,13 @@
 import { PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 export const THE100_PDA_SEED = "the100-pda";
-export const TREASURY_PUBLIC_KEY = new PublicKey(
-  "JCXiqb3oL3xPrs9VWbDPcotEN8mEiNNba7E5fWhz6k8R"
-);
+// TEMP (Hot 2): Change back on final deployment
+// export const TREASURY_PUBKEY = new PublicKey(
+//   "JCXiqb3oL3xPrs9VWbDPcotEN8mEiNNba7E5fWhz6k8R"
+// );
+export const TREASURY_PUBKEY = new PublicKey("FqAtC5ZXgmp47g3fJncrvUwicbNuNveoUKdbtF6JZSqc");
+
+export const COL_DATA_PUBKEY = new PublicKey("5nsUiCG3YhmMFCUbVNqjccCsdyhrRA9xj3zoQJQCB2zB");
 
 export const MEMBER_PDA_SEED = "member-pda";
 

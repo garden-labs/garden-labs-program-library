@@ -8,6 +8,45 @@
   },
   "instructions": [
     {
+      "name": "init_col_data",
+      "discriminator": [
+        212,
+        90,
+        64,
+        12,
+        47,
+        10,
+        148,
+        64
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "col_data",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "admin",
+          "type": "pubkey"
+        },
+        {
+          "name": "treasury",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
       "name": "mint_nft",
       "discriminator": [
         211,
@@ -115,6 +154,10 @@
                 ]
               },
               {
+                "kind": "account",
+                "path": "col_data"
+              },
+              {
                 "kind": "arg",
                 "path": "index"
               }
@@ -144,6 +187,9 @@
           }
         },
         {
+          "name": "col_data"
+        },
+        {
           "name": "token_program",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         },
@@ -160,6 +206,48 @@
         {
           "name": "index",
           "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "update_col_data",
+      "discriminator": [
+        125,
+        142,
+        255,
+        220,
+        209,
+        161,
+        3,
+        50
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "col_data",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "admin",
+          "type": "pubkey"
+        },
+        {
+          "name": "treasury",
+          "type": "pubkey"
         }
       ]
     },
@@ -295,6 +383,19 @@
   ],
   "accounts": [
     {
+      "name": "ColData",
+      "discriminator": [
+        107,
+        169,
+        189,
+        167,
+        153,
+        208,
+        163,
+        185
+      ]
+    },
+    {
       "name": "MemberPda",
       "discriminator": [
         187,
@@ -328,9 +429,30 @@
       "code": 6003,
       "name": "ReservedChannel",
       "msg": "Channel is reserved"
+    },
+    {
+      "code": 6004,
+      "name": "NotAdminOfColData",
+      "msg": "Not admin of collection data"
     }
   ],
   "types": [
+    {
+      "name": "ColData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
     {
       "name": "MemberPda",
       "type": {
@@ -338,6 +460,10 @@
         "fields": [
           {
             "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "col_data",
             "type": "pubkey"
           }
         ]

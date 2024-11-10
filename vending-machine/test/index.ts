@@ -34,7 +34,7 @@ import {
 } from "../../common/js";
 import {
   VENDING_MACHINE_PDA_SEED,
-  TREASURY_PUBLIC_KEY,
+  TREASURY_PUBKEY,
   MEMBER_PDA_SEED,
   indexToSeed,
 } from "../js";
@@ -213,7 +213,7 @@ describe("Vending Machine", () => {
     metadatas.push(metadata);
 
     const preTreasuryBalance = await getConnection().getBalance(
-      TREASURY_PUBLIC_KEY
+      TREASURY_PUBKEY
     );
     const preCreatorBalance = await getConnection().getBalance(
       creator.publicKey
@@ -222,7 +222,7 @@ describe("Vending Machine", () => {
     await program.methods
       .mintNft(new BN(index.toString()))
       .accounts({
-        treasury: TREASURY_PUBLIC_KEY,
+        treasury: TREASURY_PUBKEY,
         creator: creator.publicKey,
         mint: mint.publicKey,
         metadata: metadata.publicKey,
@@ -276,7 +276,7 @@ describe("Vending Machine", () => {
 
     // Check protocol fees
     const postTreasuryBalance = await getConnection().getBalance(
-      TREASURY_PUBLIC_KEY
+      TREASURY_PUBKEY
     );
     assert.equal(postTreasuryBalance - preTreasuryBalance, 1_000_000);
 
@@ -335,7 +335,7 @@ describe("Vending Machine", () => {
       await program.methods
         .mintNft(new BN(index.toString()))
         .accounts({
-          treasury: TREASURY_PUBLIC_KEY,
+          treasury: TREASURY_PUBKEY,
           creator: creator.publicKey,
           mint: mint.publicKey,
           metadata: metadata.publicKey,
@@ -366,7 +366,7 @@ describe("Vending Machine", () => {
       await program.methods
         .mintNft(new BN(index.toString()))
         .accounts({
-          treasury: TREASURY_PUBLIC_KEY,
+          treasury: TREASURY_PUBKEY,
           creator: creator.publicKey,
           mint: mint.publicKey,
           metadata: metadata.publicKey,
@@ -400,7 +400,7 @@ describe("Vending Machine", () => {
       await program.methods
         .mintNft(new BN(index.toString()))
         .accounts({
-          treasury: TREASURY_PUBLIC_KEY,
+          treasury: TREASURY_PUBKEY,
           creator: creator.publicKey,
           mint: mint.publicKey,
           metadata: metadata.publicKey,

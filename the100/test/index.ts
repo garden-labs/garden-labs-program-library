@@ -255,7 +255,7 @@ describe("the100", () => {
 
     // Check member PDA data
     const [memberPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from(MEMBER_PDA_SEED), indexToSeed(index)],
+      [Buffer.from(MEMBER_PDA_SEED), colData.publicKey.toBuffer(), indexToSeed(index)],
       program.programId
     );
     const memberPdaData = await program.account.memberPda.fetch(memberPda);

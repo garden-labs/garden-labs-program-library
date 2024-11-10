@@ -75,7 +75,7 @@ pub struct MintNft<'info> {
         init,
         payer = payer,
         space = MemberPda::INIT_SPACE + 8,
-        seeds = [MEMBER_PDA_SEED.as_bytes(), &index.to_le_bytes()],
+        seeds = [MEMBER_PDA_SEED.as_bytes(), col_data.key().as_ref(), &index.to_le_bytes()],
         bump,
     )]
     pub member_pda: Account<'info, MemberPda>,

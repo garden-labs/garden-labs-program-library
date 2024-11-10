@@ -14,6 +14,45 @@ export type The100 = {
   },
   "instructions": [
     {
+      "name": "initColData",
+      "discriminator": [
+        212,
+        90,
+        64,
+        12,
+        47,
+        10,
+        148,
+        64
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "colData",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "admin",
+          "type": "pubkey"
+        },
+        {
+          "name": "treasury",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
       "name": "mintNft",
       "discriminator": [
         211,
@@ -121,6 +160,10 @@ export type The100 = {
                 ]
               },
               {
+                "kind": "account",
+                "path": "colData"
+              },
+              {
                 "kind": "arg",
                 "path": "index"
               }
@@ -150,6 +193,9 @@ export type The100 = {
           }
         },
         {
+          "name": "colData"
+        },
+        {
           "name": "tokenProgram",
           "address": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
         },
@@ -166,6 +212,48 @@ export type The100 = {
         {
           "name": "index",
           "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "updateColData",
+      "discriminator": [
+        125,
+        142,
+        255,
+        220,
+        209,
+        161,
+        3,
+        50
+      ],
+      "accounts": [
+        {
+          "name": "payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "colData",
+          "writable": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "admin",
+          "type": "pubkey"
+        },
+        {
+          "name": "treasury",
+          "type": "pubkey"
         }
       ]
     },
@@ -301,6 +389,19 @@ export type The100 = {
   ],
   "accounts": [
     {
+      "name": "colData",
+      "discriminator": [
+        107,
+        169,
+        189,
+        167,
+        153,
+        208,
+        163,
+        185
+      ]
+    },
+    {
       "name": "memberPda",
       "discriminator": [
         187,
@@ -334,9 +435,30 @@ export type The100 = {
       "code": 6003,
       "name": "reservedChannel",
       "msg": "Channel is reserved"
+    },
+    {
+      "code": 6004,
+      "name": "notAdminOfColData",
+      "msg": "Not admin of collection data"
     }
   ],
   "types": [
+    {
+      "name": "colData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
     {
       "name": "memberPda",
       "type": {
@@ -344,6 +466,10 @@ export type The100 = {
         "fields": [
           {
             "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "colData",
             "type": "pubkey"
           }
         ]
