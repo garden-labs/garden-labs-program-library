@@ -1,5 +1,5 @@
 use {
-    crate::{constants::THE100_PDA_SEED},
+    crate::constants::THE100_PDA_SEED,
     anchor_lang::{prelude::*, solana_program::native_token::LAMPORTS_PER_SOL},
     anchor_spl::token_interface::{token_metadata_update_field, TokenMetadataUpdateField},
     spl_token_metadata_interface::state::{Field, TokenMetadata},

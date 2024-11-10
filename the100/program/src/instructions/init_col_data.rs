@@ -15,7 +15,11 @@ pub struct InitColData<'info> {
     pub system_program: Program<'info, System>,
 }
 
-pub fn handle_init_col_data(ctx: Context<InitColData>, admin: Pubkey, treasury: Pubkey) -> Result<()> {
+pub fn handle_init_col_data(
+    ctx: Context<InitColData>,
+    admin: Pubkey,
+    treasury: Pubkey,
+) -> Result<()> {
     // Set data
     ctx.accounts.col_data.admin = admin;
     ctx.accounts.col_data.treasury = treasury;

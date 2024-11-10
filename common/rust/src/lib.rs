@@ -1,8 +1,4 @@
-use {
-    anchor_lang::prelude::*,
-    spl_token_metadata_interface::state::Field,
-    std::str::FromStr,
-};
+use {anchor_lang::prelude::*, spl_token_metadata_interface::state::Field, std::str::FromStr};
 
 #[error_code]
 pub enum GplError {

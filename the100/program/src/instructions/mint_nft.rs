@@ -2,7 +2,7 @@ use {
     crate::{
         constants::{MAX_SUPPLY, MEMBER_PDA_SEED, THE100_PDA_SEED},
         errors::The100Error,
-        helpers::{get_metadata_init_vals, update_field, get_mint_fee_lamports},
+        helpers::{get_metadata_init_vals, get_mint_fee_lamports, update_field},
         state::{ColData, MemberPda},
     },
     anchor_lang::prelude::*,

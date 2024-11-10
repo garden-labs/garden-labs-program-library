@@ -18,7 +18,11 @@ pub mod the_100 {
         return handle_init_col_data(ctx, admin, treasury);
     }
 
-    pub fn update_col_data(ctx: Context<UpdateColData>, admin: Pubkey, treasury: Pubkey) -> Result<()> {
+    pub fn update_col_data(
+        ctx: Context<UpdateColData>,
+        admin: Pubkey,
+        treasury: Pubkey,
+    ) -> Result<()> {
         return handle_update_col_data(ctx, admin, treasury);
     }
 

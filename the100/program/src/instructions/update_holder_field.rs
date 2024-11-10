@@ -43,9 +43,9 @@ pub struct UpdateHolderField<'info> {
 
     /// CHECK: Account checked in constraints
     #[account(
-      seeds = [THE100_PDA_SEED.as_bytes()],
-      bump
-  )]
+        seeds = [THE100_PDA_SEED.as_bytes()],
+        bump
+    )]
     pub the100_pda: UncheckedAccount<'info>,
 
     pub token_program: Program<'info, Token2022>,

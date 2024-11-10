@@ -8,8 +8,7 @@ pub struct ColData {
     pub admin: Pubkey,
 }
 
-
-// TODO: Perhaps GroupPointer could be used instead. 
+// TODO: Perhaps GroupPointer could be used instead.
 // It doesn't appear to support non-sequential ndexing right now.
 #[account]
 #[derive(Debug, InitSpace)]
