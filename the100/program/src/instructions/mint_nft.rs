@@ -52,8 +52,8 @@ pub struct MintNft<'info> {
         mint::freeze_authority = the100_pda,
         extensions::metadata_pointer::metadata_address = mint,
         extensions::metadata_pointer::authority = the100_pda,
-        extensions::group_member_pointer::authority = the100_pda,
         extensions::group_member_pointer::member_address = mint,
+        extensions::group_member_pointer::authority = the100_pda,
         extensions::transfer_hook::authority = the100_pda,
         // TODO: Implement royalties with transfer hook
         // extensions::transfer_hook::program_id = crate::ID,

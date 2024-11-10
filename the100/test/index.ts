@@ -77,11 +77,13 @@ describe("the100", () => {
     assert.equal(holderBalance, amount);
   });
 
-  async function setColData(a: Keypair, t: PublicKey): Promise<void> {
-    const { program } = setPayer<The100>(a, workspace.the100);
+  it("Init collection data", async () => {
+    const tempTreasury = Keypair.generate().publicKey;
+
+    const { program } = setPayer<The100>(admin, workspace.the100);
 
     await program.methods
-      .setColData(a.publicKey, t)
+      .initColData(admin.publicKey, tempTreasury)
       .accounts({
         colData: colData.publicKey,
       })
@@ -89,29 +91,39 @@ describe("the100", () => {
       .rpc();
 
     const c = await program.account.colData.fetch(colData.publicKey);
+    assert(c.admin.equals(admin.publicKey));
+    assert(c.treasury.equals(tempTreasury));
+  });
+
+  async function updateColData(a: Keypair, t: PublicKey): Promise<void> {
+    const { program } = setPayer<The100>(a, workspace.the100);
+
+    await program.methods
+      .updateColData(a.publicKey, t)
+      .accounts({
+        colData: colData.publicKey,
+      })
+      .rpc();
+
+    const c = await program.account.colData.fetch(colData.publicKey);
     assert(c.admin.equals(a.publicKey));
     assert(c.treasury.equals(t));
   }
 
-  it("Init collection data", async () => {
-    const tempTreasury = Keypair.generate().publicKey;
-    await setColData(admin, tempTreasury);
-  });
-
   it("Update collection data", async () => {
-    await setColData(admin, treasury);
+    await updateColData(admin, treasury);
   });
 
   it("Update collection data with non-admin fails", async () => {
     const newTreasury = Keypair.generate().publicKey;
 
     try {
-      await setColData(holder, newTreasury);
+      await updateColData(holder, newTreasury);
       throw new Error("Should have thrown");
     } catch (err) {
       assert(
         err instanceof AnchorError &&
-          err.error.errorCode.code === "NotAdminOfColData", JSON.stringify(err, null, 2)
+        err.error.errorCode.code === "ConstraintRaw"
       );
     }
   });

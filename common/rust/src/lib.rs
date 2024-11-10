@@ -1,7 +1,6 @@
 use {
     anchor_lang::prelude::*,
     spl_token_metadata_interface::state::Field,
-    spl_type_length_value::state::{TlvState, TlvStateBorrowed},
     std::str::FromStr,
 };
 

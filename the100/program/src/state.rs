@@ -6,7 +6,6 @@ use anchor_lang::prelude::*;
 pub struct ColData {
     pub treasury: Pubkey,
     pub admin: Pubkey,
-    pub was_initialized: bool,
 }
 
 
