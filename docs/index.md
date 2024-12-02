@@ -1,6 +1,6 @@
 # Developer Hub
 
-Garden Labs is a web3 startup building products and tools. This guide takes you through our open source code.
+Garden Labs is a web3 startup building novel products and tools. This guide takes you through our open source code.
 
 ### Explore
 
