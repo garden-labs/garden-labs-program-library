@@ -1,0 +1,30 @@
+[package]
+name = "advanced-token-metadata"
+version = "0.3.0"
+description = "SPL Token Metadata Fork with Add-Ons"
+authors = ["Garden Labs <jackson@gardenlabs.com>"]
+repository = "https://github.com/garden-labs/garden-labs-program-library"
+license = "Apache-2.0"
+edition = "2021"
+
+[features]
+no-entrypoint = []
+test-sbf = []
+
+[dependencies]
+solana-program = { workspace = true }
+spl-token-2022 = { workspace = true }
+spl-token-metadata-interface = { workspace = true }
+spl-type-length-value = { workspace = true }
+spl-pod = { workspace = true }
+borsh = { workspace = true }
+field-authority-interface = { version = "0.3.3", path = "../../field-authority-interface/interface" }
+
+[dev-dependencies]
+solana-program-test = ">=1.18.11,<=2"
+solana-sdk = ">=1.18.11,<=2"
+spl-token-client = "0.10.0"
+test-case = "3.3"
+
+[lib]
+crate-type = ["cdylib", "lib"]

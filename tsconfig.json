@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "module": "commonjs",
+    "lib": ["esnext"],
+    "types": ["node"],
+    "esModuleInterop": true,
+    "strict": true,
+    "baseUrl": ".",
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "outDir": "build",
+    "moduleResolution": "node"
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["vitest.config.ts", "tsconfig.json", "build"]
+}

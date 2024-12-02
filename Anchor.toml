@@ -1,0 +1,36 @@
+[toolchain]
+
+[features]
+seeds = false
+skip-lint = false
+
+[programs.localnet]
+holder_metadata_plugin = "3DkEmKWuBJbza9ur1BnVVhXrzkuiMCqBuKHdoDBdLpxZ"
+ai_aliens = "48MKwUN9uxxGrFCzXAV4kF5RPMVUyruLyYnapNynNtd4"
+toolkit = "5HgftVXMq36xbvsuAd1wANdQnVTm9Zw7EQuXmke5Uqqw"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "Localnet"
+wallet = "~/.config/solana/id.json"
+
+[test]
+startup_wait = 100000
+
+[test.validator]
+url = "https://api.mainnet-beta.solana.com"
+
+[[test.validator.clone]]
+address = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+
+[scripts]
+test = "yarn run vitest"
+
+[workspace]
+members = [
+  "holder-metadata-plugin/program",
+  "ai-aliens/program",
+  "toolkit/program",
+]

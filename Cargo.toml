@@ -1,0 +1,31 @@
+[workspace]
+members = [
+    "common/rust",
+    "field-authority-interface/interface",
+    "advanced-token-metadata/program",
+    "holder-metadata-plugin/program",
+    "ai-aliens/program",
+    "toolkit/program"
+]
+resolver = "2"
+
+[workspace.dependencies]
+anchor-lang = { version = "0.30.1", features = ["init-if-needed"] }
+anchor-spl = { version = "0.30.1" }
+solana-program = ">=1.18.11,<=2"
+spl-token-metadata-interface = "0.3.3"
+spl-token-2022 = { version = "3.0.2", features = ["no-entrypoint"] }
+spl-pod = "0.2.2"
+spl-type-length-value = "0.4.3"
+borsh = "1.5.0"
+thiserror = "1.0"
+spl-discriminator = "0.2.2"
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1
+[profile.release.build-override]
+opt-level = 3
+incremental = false
+codegen-units = 1
