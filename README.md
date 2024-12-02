@@ -17,7 +17,7 @@ Full docs: <a href="https://developers.gardenlabs.com/">developers.gardenlabs.co
   - _Program ID_: `3DkEmKWuBJbza9ur1BnVVhXrzkuiMCqBuKHdoDBdLpxZ`
   - _Solana Verify Hash_: `a11a4b4090d11a1b50a2005b048ecbe37b84bf4c808198700babd0ca3a722341`
 - `ai-aliens`
-  - _Description_: Example PFP NFT collection which uses the programs above to enable token holders to give their NFTs' nicknames.
+  - _Description_: Example PFP <a href="https://www.ai-aliens.xyz/">NFT collection</a> which uses the programs above to enable token holders to give their NFTs' nicknames.
   - _Program ID_: `48MKwUN9uxxGrFCzXAV4kF5RPMVUyruLyYnapNynNtd4`
   - _Solana Verify Hash_: `81294793bddaeafbff5dd22af361eeb6ece5870caedd32877e82c0c8f2657ead`
 - `toolkit`
