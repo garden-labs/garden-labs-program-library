@@ -24,8 +24,8 @@ import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 
 import { getConnection, setPayer, ANCHOR_WALLET_KEYPAIR } from "../../test";
 import {
-  interpretTxErr,
-  InterpretedTxErrType,
+  parseForTxErr,
+  InsufficientFundsTxErr,
   getEmittedMetadata,
   randomStr,
   fieldToAnchorParam,
@@ -301,11 +301,8 @@ describe("AI Aliens Program", () => {
       await createMint(3, insufficientFundsAccount);
       throw new Error("Expected error to be thrown");
     } catch (err) {
-      const interpretedTxErr = interpretTxErr(err);
-      assert.equal(
-        interpretedTxErr.type,
-        InterpretedTxErrType.InsufficientFunds
-      );
+      const txErr = parseForTxErr(err);
+      assert(txErr instanceof InsufficientFundsTxErr);
     }
   });
 
@@ -315,11 +312,8 @@ describe("AI Aliens Program", () => {
       await createMint(4, zeroFundsAccount);
       throw new Error("Expected error to be thrown");
     } catch (err) {
-      const interpretedTxErr = interpretTxErr(err);
-      assert.equal(
-        interpretedTxErr.type,
-        InterpretedTxErrType.InsufficientFunds
-      );
+      const txErr = parseForTxErr(err);
+      assert(txErr instanceof InsufficientFundsTxErr);
     }
   });
 
