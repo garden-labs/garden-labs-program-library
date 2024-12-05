@@ -31,7 +31,7 @@ Full docs: <a href="https://developers.gardenlabs.com/">developers.gardenlabs.co
 - Create `.env` file based on `.env.example`
 - Run `npm run build`
 - Replace `METADATA_PROGRAM_ID_STR` in `ai-aliens/program/src/constant` with the generated program ID
-- Test on local validator with `npm run test:localnet`
+- Test on local validator with `npm run test`
 
 ### Roadmap
 

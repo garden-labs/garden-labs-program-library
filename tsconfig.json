@@ -17,5 +17,5 @@
     "moduleResolution": "node"
   },
   "include": ["**/*.ts"],
-  "exclude": ["vitest.config.ts", "tsconfig.json", "build"]
+  "exclude": ["tsconfig.json", "build"]
 }

@@ -1,5 +1,6 @@
 import assert from "assert";
 
+import { describe, it } from "vitest";
 import {
   Keypair,
   SendTransactionError,
@@ -15,16 +16,16 @@ import {
   createUpdateFieldInstruction,
 } from "@solana/spl-token-metadata";
 
-import { ANCHOR_WALLET_KEYPAIR } from "../../util/constants";
+import { ANCHOR_WALLET_KEYPAIR } from "../../test/constants";
 import { ATM_PROGRAM_ID } from "../js";
-import { setupMintMetadataToken, updateField } from "../../util/helpers";
+import { setupMintMetadataToken, updateField } from "../../test/helpers";
 import {
   getEmittedMetadata,
   getAccountMetadata,
   randomStr,
   getReachMinRentTx,
 } from "../../common/js";
-import { getConnection } from "../../util/config";
+import { getConnection } from "../../test/config";
 import {
   createInitializeFieldAuthoritiesIx,
   FieldAuthority,

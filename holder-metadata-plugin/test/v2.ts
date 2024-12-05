@@ -1,7 +1,5 @@
 import assert from "assert";
 
-// TODO: Get globals recognized in Cursor IDE
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { describe, it } from "vitest";
 import {
   PublicKey,
@@ -15,7 +13,7 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 import { workspace } from "@coral-xyz/anchor";
 
-import { ANCHOR_WALLET_KEYPAIR } from "../../util/constants";
+import { ANCHOR_WALLET_KEYPAIR } from "../../test/constants";
 import { ATM_PROGRAM_ID } from "../../advanced-token-metadata/js";
 import { HOLDER_METADATA_PDA_SEED } from "../js";
 import {
@@ -26,7 +24,7 @@ import {
   getFieldAuthorities,
   getSpaceRent,
 } from "../../field-authority-interface/js";
-import { setupMintMetadataToken } from "../../util/helpers";
+import { setupMintMetadataToken } from "../../test/helpers";
 import {
   getEmittedMetadata,
   randomStr,
@@ -34,7 +32,7 @@ import {
   getReachMinRentTx,
   getAccountMetadata,
 } from "../../common/js";
-import { getConnection, setPayer } from "../../util/config";
+import { getConnection, setPayer } from "../../test/config";
 import { HolderMetadataPlugin } from "../../target/types/holder_metadata_plugin";
 
 describe("Holder Metadata Plugin", () => {

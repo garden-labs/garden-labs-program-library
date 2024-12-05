@@ -1,5 +1,6 @@
 import assert from "assert";
 
+import { describe, it } from "vitest";
 import {
   PublicKey,
   Keypair,
@@ -20,7 +21,7 @@ import {
   updateField,
   getConnection,
   ANCHOR_WALLET_KEYPAIR,
-} from "../../util";
+} from "../../test";
 import { getEmittedMetadata, randomStr } from "../../common/js";
 import {
   createAddFieldAuthorityIx,

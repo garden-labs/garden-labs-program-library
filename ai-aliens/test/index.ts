@@ -1,7 +1,5 @@
 import assert from "assert";
 
-// TODO: Get globals recognized in Cursor IDE
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { describe, it } from "vitest";
 import {
   Keypair,
@@ -24,7 +22,7 @@ import {
 } from "@solana/spl-token";
 import { TokenMetadata, Field } from "@solana/spl-token-metadata";
 
-import { getConnection, setPayer, ANCHOR_WALLET_KEYPAIR } from "../../util";
+import { getConnection, setPayer, ANCHOR_WALLET_KEYPAIR } from "../../test";
 import {
   interpretTxErr,
   InterpretedTxErrType,

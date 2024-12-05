@@ -1,7 +1,5 @@
 import assert from "assert";
 
-// TODO: Get globals recognized in Cursor IDE
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { describe, it, beforeAll } from "vitest";
 import { workspace } from "@coral-xyz/anchor";
 import { Keypair } from "@solana/web3.js";
@@ -12,7 +10,7 @@ import {
   getAccount,
 } from "@solana/spl-token";
 
-import { setPayer, ANCHOR_WALLET_KEYPAIR, getConnection } from "../../util";
+import { setPayer, ANCHOR_WALLET_KEYPAIR, getConnection } from "../../test";
 import { Toolkit } from "../../target/types/toolkit";
 
 describe("toolkit", () => {

@@ -4,8 +4,8 @@ export default defineConfig({
   test: {
     globals: true,
     include: [process.env.TEST_INCLUDE_PATH || "**/test/**/*.ts"],
-    exclude: ["node_modules", "build"],
+    exclude: ["node_modules", "build", "test"],
     testTimeout: 1000000,
-    globalSetup: "./util/test-setup.ts",
+    globalSetup: "./test/setup.ts",
   },
 });
