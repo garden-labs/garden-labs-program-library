@@ -1,14 +1,4 @@
 {
-  "name": "@garden-labs/sdk",
-  "version": "0.1.0",
-  "description": "",
-  "author": "Garden Labs",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
-  "files": [
-    "build",
-    "Anchor.toml"
-  ],
   "scripts": {
     "build": "anchor build && scripts/build-advanced-token-metadata.sh",
     "test": "scripts/build-atm.sh && anchor test",
@@ -46,6 +36,5 @@
   },
   "engines": {
     "node": "18.x"
-  },
-  "type": "module"
+  }
 }
