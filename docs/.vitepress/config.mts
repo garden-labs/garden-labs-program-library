@@ -3,7 +3,7 @@ import { defineConfig } from "vitepress";
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   title: "Developer Hub",
-  description: "Documentation for Garden Labs programs",
+  description: "Docs for Garden Labs open source code and APIs",
   head: [["link", { rel: "icon", type: "image/png", href: "/icon.png" }]],
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
