@@ -3,7 +3,7 @@
 ### Request Format
 
 ```
-curl -H "Authorization: Bearer YOUR_TOKEN_HERE" https://api.cabal.so
+curl -H "Authorization: Bearer YOUR_TOKEN_HERE" https://api.cabal.so/api/v1/feed
 
 ```
 
