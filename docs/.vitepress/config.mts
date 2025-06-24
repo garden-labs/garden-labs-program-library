@@ -22,6 +22,19 @@ export default defineConfig({
         ],
       },
       {
+        text: "Cabal",
+        items: [
+          {
+            text: "Introduction",
+            link: "/pages/cabal/introduction",
+          },
+          {
+            text: "API",
+            link: "/pages/cabal/api",
+          },
+        ],
+      },
+      {
         text: "Holder Metadata",
         items: [
           {
